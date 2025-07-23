@@ -45,9 +45,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
       if (settings.partOfSpeech.number.enabled) {
         const numberRegex = /\b\d+(?:\.\d+)?\b/g;
         processedText = processedText.replace(numberRegex, 
-          `<span style="color: ${settings.partOfSpeech.number.color};">processedText = processedText.replace(numberRegex, 
           `<span style="background-color: ${settings.partOfSpeech.number.color}; color: white; padding: 1px 3px; border-radius: 3px; font-weight: 500;">$&</span>`
-        );</span>`
         );
       }
 
