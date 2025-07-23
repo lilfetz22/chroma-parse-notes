@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -35,26 +36,65 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const [selectedText, setSelectedText] = useState('');
   const [processedContent, setProcessedContent] = useState(content);
   const [showNoteLinker, setShowNoteLinker] = useState(false);
+  const [isProcessingNLH, setIsProcessingNLH] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const linkInputRef = useRef<HTMLInputElement>(null);
 
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
 
-  // Debounced content processing
+  // Apply processed content to editor
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (nlhEnabled) {
-        // Process content for highlighting
+    if (editorRef.current && processedContent !== content && !isProcessingNLH) {
+      const currentSelection = window.getSelection();
+      const currentRange = currentSelection?.rangeCount ? currentSelection.getRangeAt(0) : null;
+      
+      // Store cursor position
+      let cursorOffset = 0;
+      if (currentRange && editorRef.current.contains(currentRange.startContainer)) {
+        cursorOffset = currentRange.startOffset;
       }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [content, nlhEnabled]);
+      
+      editorRef.current.innerHTML = processedContent;
+      
+      // Restore cursor position if possible
+      if (currentSelection && currentRange) {
+        try {
+          const newRange = document.createRange();
+          const textNodes = [];
+          const walker = document.createTreeWalker(
+            editorRef.current,
+            NodeFilter.SHOW_TEXT,
+            null
+          );
+          
+          let node;
+          while (node = walker.nextNode()) {
+            textNodes.push(node);
+          }
+          
+          if (textNodes.length > 0) {
+            const targetNode = textNodes[0];
+            const offset = Math.min(cursorOffset, targetNode.textContent?.length || 0);
+            newRange.setStart(targetNode, offset);
+            newRange.setEnd(targetNode, offset);
+            currentSelection.removeAllRanges();
+            currentSelection.addRange(newRange);
+          }
+        } catch (error) {
+          console.error('Error restoring cursor position:', error);
+        }
+      }
+    }
+  }, [processedContent, content, isProcessingNLH]);
 
   const handleProcessedContent = useCallback((processed: string) => {
+    setIsProcessingNLH(true);
     setProcessedContent(processed);
+    // Small delay to ensure the content is applied before allowing further processing
+    setTimeout(() => setIsProcessingNLH(false), 50);
   }, []);
 
   const insertText = (text: string) => {
@@ -97,9 +137,13 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
   const handleLinkClick = () => {
     const selection = window.getSelection();
-    if (selection && selection.toString()) {
-      setSelectedText(selection.toString());
+    if (selection && selection.toString().trim()) {
+      setSelectedText(selection.toString().trim());
       setShowLinkInput(true);
+      // Focus the input after a brief delay to ensure the UI is updated
+      setTimeout(() => {
+        linkInputRef.current?.focus();
+      }, 100);
     } else {
       toast({
         title: "Select text first",
@@ -117,10 +161,16 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         link.href = linkUrl;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
-        link.className = 'text-primary underline hover:text-primary/80';
+        link.className = 'text-black underline hover:text-black/80';
+        link.style.color = 'black';
         link.textContent = selectedText;
         range.deleteContents();
         range.insertNode(link);
+        
+        // Update the content
+        if (editorRef.current) {
+          onChange(editorRef.current.innerHTML);
+        }
       }
       setShowLinkInput(false);
       setLinkUrl('');
@@ -177,7 +227,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   };
 
   const handleContentChange = () => {
-    if (editorRef.current) {
+    if (editorRef.current && !isProcessingNLH) {
       let newContent = editorRef.current.innerHTML;
       
       // Convert checkboxes
@@ -197,7 +247,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       const link = document.createElement('a');
       link.href = `/note/${note.id}`;
       link.textContent = note.title;
-      link.className = 'text-primary underline hover:text-primary/80';
+      link.className = 'text-black underline hover:text-black/80';
+      link.style.color = 'black';
 
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
@@ -211,10 +262,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   };
 
   useEffect(() => {
-    if (editorRef.current && content !== editorRef.current.innerHTML) {
+    if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH) {
       editorRef.current.innerHTML = content;
     }
-  }, [content]);
+  }, [content, isProcessingNLH]);
 
   return (
     <div className="flex flex-col h-full">
@@ -285,10 +336,12 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       {showLinkInput && (
         <div className="flex items-center gap-2 p-3 bg-muted">
           <Input
+            ref={linkInputRef}
             placeholder="Enter URL..."
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && insertLink()}
+            onKeyDown={(e) => e.key === 'Escape' && setShowLinkInput(false)}
           />
           <Button size="sm" onClick={insertLink}>Add Link</Button>
           <Button 
@@ -328,8 +381,11 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         <div
           ref={editorRef}
           contentEditable
-          className="w-full h-full p-4 outline-none prose prose-sm max-w-none"
-          style={{ minHeight: '100%' }}
+          className="w-full h-full p-4 outline-none prose prose-sm max-w-none text-black"
+          style={{ 
+            minHeight: '100%',
+            color: 'black'
+          }}
           onInput={handleContentChange}
           onPaste={handlePaste}
         />
