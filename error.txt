@@ -1,13 +1,1002 @@
-preview--chroma-pars…otes.lovable.app/:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
-Explanation
-
-Understanding the problem
-This error occurs when a message listener in a browser extension or web page signals that it will send an asynchronous response by returning true, but the message channel is closed before the response is actually sent. This often happens when the page or extension context is destroyed (e.g., a tab is closed or the extension background page unloads) before the asynchronous operation initiated by the message listener completes and sends its response.
-
-Suggested fix
-Ensure that the asynchronous operation completes and sends a response before the context in which the message listener is running is destroyed. If the context is likely to be destroyed, consider handling the asynchronous operation in a persistent context (like a background script for extensions) and sending the response back to the original sender from there.
-
-If the asynchronous response is not strictly necessary and the error is benign (as suggested in [1]), you might consider not returning true from the listener if no asynchronous response will be sent.
-
-Summary
-The error "A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received" means that a message listener expected to send an asynchronous response, but the communication channel was closed prematurely. To fix this, ensure asynchronous operations complete and respond before the context closes, or avoid returning true if no asynchronous response is needed.
+/auth:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) null
+/auth:1 [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) <input type=​"password" class=​"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:​border-0 file:​bg-transparent file:​text-sm file:​font-medium file:​text-foreground placeholder:​text-muted-foreground focus-visible:​outline-none focus-visible:​ring-2 focus-visible:​ring-ring focus-visible:​ring-offset-2 disabled:​cursor-not-allowed disabled:​opacity-50 md:​text-sm" id=​"signin-password" required value=​"j9`9N&5xuI6m">​
+index-WuJ96ZaL.js:239 ✅ Found match "Clicking" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Clicking" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Clicking" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "opens" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "opens" with regex: /\bopens\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "opens" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "opens" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "opens" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "opens" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "opens" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "is displayed" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "is displayed" with regex: /\bis displayed\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "is displayed" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is displayed" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "is displayed" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "can be" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "can be" with regex: /\bcan be\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "can be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "can be" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "can be" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "is" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "is" with regex: /\bis\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "is" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be" with regex: /\bmust be\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "&nbsp;**Required" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "&nbsp;**Required" with regex: /\b&nbsp;\*\*Required\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "&nbsp;**Required" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must support creating" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must support creating" with regex: /\bmust support creating\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must support creating" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must support creating" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must support creating" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Use" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "Use" with regex: /\bUse\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Use" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Use" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Use" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "renders" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "renders" with regex: /\brenders\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "renders" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "renders" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "renders" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "checked=""" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "checked=""" with regex: /\bchecked=""\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "checked=""" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be" with regex: /\bmust be\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "highlight" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "highlight" with regex: /\bhighlight\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "highlight" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlight" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlight" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlight" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "highlight" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "should appear" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "should appear" with regex: /\bshould appear\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "should appear" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "should appear" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "should appear" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "turning" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "turning" with regex: /\bturning\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "turning" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "turning" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "turning" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "highlighted text" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "highlighted text" with regex: /\bhighlighted text\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "highlighted text" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighted text" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "highlighted text" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be" with regex: /\bmust be\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "add" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "add" with regex: /\badd\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "add" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "add" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "add" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Implement" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "Implement" with regex: /\bImplement\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Implement" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Implement" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Implement" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Implement" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Implement" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Implement" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Implement" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Implement" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Implement" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "&nbsp;Pasting" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "&nbsp;Pasting" with regex: /\b&nbsp;Pasting\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "&nbsp;Pasting" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "opens" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "opens" with regex: /\bopens\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "opens" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "opens" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "opens" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "opens" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "opens" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "uploaded" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "uploaded" with regex: /\buploaded\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Uploaded" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Uploaded" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "uploaded" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "uploaded" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "uploaded" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be stored" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be stored" with regex: /\bmust be stored\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be stored" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be stored" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be stored" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Highlighting" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "Highlighting" with regex: /\bHighlighting\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Highlighting" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "is" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "is" with regex: /\bis\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "is" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "is" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "is" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be applied automatically" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be applied automatically" with regex: /\bmust be applied automatically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be applied automatically" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be applied automatically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be applied automatically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "optimize" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "optimize" with regex: /\boptimize\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "optimize" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "optimize" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "optimize" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "trigger" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "trigger" with regex: /\btrigger\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "trigger" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "trigger" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "trigger" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "has paused typing" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "has paused typing" with regex: /\bhas paused typing\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "has paused typing" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "has paused typing" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "has paused typing" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "&nbsp;**Required" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "&nbsp;**Required" with regex: /\b&nbsp;\*\*Required\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "&nbsp;**Required" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "switch" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "switch" with regex: /\bswitch\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "switch" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "switch" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "switch" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "switch" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "switch" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "switch" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "switch" with regex: /\bswitch\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "switch" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "switch" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "switch" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "switch" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "switch" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "overrides" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "overrides" with regex: /\boverrides\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "overrides" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "overrides" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "overrides" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "allow" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "allow" with regex: /\ballow\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "allow" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "allow" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "allow" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "enable/disable highlighting" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "enable/disable highlighting" with regex: /\benable\/disable highlighting\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "enable/disable highlighting" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "enable/disable highlighting" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "enable/disable highlighting" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "**Color" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "**Color" with regex: /\b\*\*Color\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "**Color" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "include" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "include" with regex: /\binclude\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "include" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "include" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "include" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "allows" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "allows" with regex: /\ballows\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "allows" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "allows" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "allows" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "change" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "change" with regex: /\bchange\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "change" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "change" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "change" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Note" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "Note" with regex: /\bNote\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "note" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "note" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Note" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "creates" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "creates" with regex: /\bcreates\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "creates" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "creates" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "creates" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "adds" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "adds" with regex: /\badds\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "adds" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "adds" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "adds" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "will simply be" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "will simply be" with regex: /\bwill simply be\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "will simply be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "will simply be" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "will simply be" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "chronologically sorted" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "chronologically sorted" with regex: /\bchronologically sorted\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "chronologically sorted" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "chronologically sorted" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "chronologically sorted" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be saved automatically" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be saved automatically" with regex: /\bmust be saved automatically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be saved automatically" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be saved automatically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be saved automatically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "types" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "types" with regex: /\btypes\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "types" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "types" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "types" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "types" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "types" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "must be" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "must be" with regex: /\bmust be\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "must be" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "must be" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "must be" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "querying" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "querying" with regex: /\bquerying\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "querying" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "querying" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "querying" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "should be displayed clearly," for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "should be displayed clearly," with regex: /\bshould be displayed clearly,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "should be displayed clearly," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "allowing" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "allowing" with regex: /\ballowing\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "allowing" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "allowing" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "allowing" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "click" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "click" with regex: /\bclick\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "click" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "click" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "click" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "navigate" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "navigate" with regex: /\bnavigate\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "navigate" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "navigate" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "navigate" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "outlines" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "outlines" with regex: /\boutlines\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "outlines" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "outlines" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "outlines" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "will produce" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "will produce" with regex: /\bwill produce\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "will produce" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "will produce" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "will produce" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "desired" for verb
+index-WuJ96ZaL.js:239 🔍 Looking for "desired" with regex: /\bdesired\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "desired" for verb, applying color #eab308
+index-WuJ96ZaL.js:239 ⚠️ Skipping "desired" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "desired" in content
+index-WuJ96ZaL.js:239 🔤 Processing adjective: Object
+index-WuJ96ZaL.js:239 📚 Finding adjectives using method: adjectives
+index-WuJ96ZaL.js:239 📚 Found adjectives: Array(64)
+index-WuJ96ZaL.js:239 🎯 Processing term "&quot;Courier" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "&quot;Courier" with regex: /\b&quot;Courier\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "&quot;Courier" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "white-" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "white-" with regex: /\bwhite-\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "white-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "white-" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "white-" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "single," for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "single," with regex: /\bsingle,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "single," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "comprehensive" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "comprehensive" with regex: /\bcomprehensive\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "comprehensive" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "comprehensive" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "comprehensive" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "clear," for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "clear," with regex: /\bclear,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "clear," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "explicit," for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "explicit," with regex: /\bexplicit,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "explicit," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "single-" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "single-" with regex: /\bsingle-\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "single-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "single-" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "single-" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "primary," for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "primary," with regex: /\bprimary,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "primary," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "negotiable" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "negotiable" with regex: /\bnegotiable\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "negotiable" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "negotiable" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "negotiable" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "grammatical" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "grammatical" with regex: /\bgrammatical\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "grammatical" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "grammatical" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "grammatical" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "functional" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "functional" with regex: /\bfunctional\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "functional" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "functional" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "functional" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "powerful" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "powerful" with regex: /\bpowerful\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "powerful" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "powerful" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "powerful" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "rich-" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "rich-" with regex: /\brich-\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "rich-" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Rich-" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "rich-" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "rich-" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "real-" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "real-" with regex: /\breal-\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "real-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "real-" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "real-" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "basic" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "basic" with regex: /\bbasic\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "basic" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "basic" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "basic" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "all" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "all" with regex: /\ball\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "All" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "All" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "all" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "highlighting" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "highlighting" with regex: /\bhighlighting\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "highlighting" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "highlighting" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "highlighting" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "entire" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "entire" with regex: /\bentire\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "entire" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Detailed" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "Detailed" with regex: /\bDetailed\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Detailed" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Detailed" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Detailed" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "standard" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "standard" with regex: /\bstandard\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "standard" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "standard" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "standard" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "persistent" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "persistent" with regex: /\bpersistent\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "persistent" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "persistent" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "persistent" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "accessible" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "accessible" with regex: /\baccessible\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "accessible" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "accessible" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "accessible" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Main" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "Main" with regex: /\bMain\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Main" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "main" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "main" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Main" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "main" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "main" with regex: /\bmain\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Main" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "main" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "main" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "main" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "scrollable" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "scrollable" with regex: /\bscrollable\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "scrollable" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "scrollable" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "scrollable" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "right" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "right" with regex: /\bright\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "right" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "right" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Right" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Right" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "right" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "right" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "right" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "main" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "main" with regex: /\bmain\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Main" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "main" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "main" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "main" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "main" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "selected" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "selected" with regex: /\bselected\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "selected" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "selected" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "selected" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Rich-" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "Rich-" with regex: /\bRich-\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "rich-" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Rich-" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "rich-" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Rich-" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "right" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "right" with regex: /\bright\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "right" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "right" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Right" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Right" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "right" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "right" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "right" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "rich-" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "rich-" with regex: /\brich-\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "rich-" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Rich-" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "rich-" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "rich-" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "rich-" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "plain" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "plain" with regex: /\bplain\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "plain" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "plain" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "plain" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "interactive" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "interactive" with regex: /\binteractive\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "interactive" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "interactive" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "interactive" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "clickable" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "clickable" with regex: /\bclickable\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "clickable" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "clickable" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "clickable" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "incomplete" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "incomplete" with regex: /\bincomplete\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "incomplete" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "incomplete" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "incomplete" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "complete" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "complete" with regex: /\bcomplete\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "complete" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "complete" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "complete" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "complete" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "complete" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "able" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "able" with regex: /\bable\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "able" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "able" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "able" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "able" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "able" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "small" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "small" with regex: /\bsmall\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "small" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "small" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "small" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "able" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "able" with regex: /\bable\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "able" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "able" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "able" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "able" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "able" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "Natural" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "Natural" with regex: /\bNatural\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Natural" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Natural" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Natural" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Natural" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "Natural" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Natural" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "Natural" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "critical" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "critical" with regex: /\bcritical\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "critical" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "critical" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "critical" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "&nbsp;**Adjective:**" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "&nbsp;**Adjective:**" with regex: /\b&nbsp;\*\*Adjective:\*\*\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "&nbsp;**Adjective:**" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "`purple`" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "`purple`" with regex: /\b`purple`\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "`purple`" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "distinct" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "distinct" with regex: /\bdistinct\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "distinct" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "distinct" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "distinct" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "dedicated" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "dedicated" with regex: /\bdedicated\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "dedicated" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "dedicated" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "dedicated" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "**Global" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "**Global" with regex: /\b\*\*Global\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "**Global" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "entire" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "entire" with regex: /\bentire\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "entire" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "visible" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "visible" with regex: /\bvisible\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "visible" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "visible" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "visible" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "visible" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "visible" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "global" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "global" with regex: /\bglobal\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Global" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Global" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "global" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "global" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "global" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "global" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "global" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "active" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "active" with regex: /\bactive\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "active" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "active" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "active" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "specific" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "specific" with regex: /\bspecific\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "specific" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "specific" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "specific" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "visible" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "visible" with regex: /\bvisible\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "visible" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "visible" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "visible" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "visible" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "visible" in content
+index-WuJ96ZaL.js:239 🎯 Processing term ""New" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for ""New" with regex: /\b"New\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for ""New" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "new," for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "new," with regex: /\bnew,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "new," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "blank" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "blank" with regex: /\bblank\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "blank" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "blank" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "blank" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "left" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "left" with regex: /\bleft\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Left" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Left" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "left" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "left" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "left" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "left" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "left" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "left" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "left" with regex: /\bleft\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Left" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Left" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "left" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "left" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "left" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "left" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "left" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "all" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "all" with regex: /\ball\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "All" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "All" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "all" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "(newest" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "(newest" with regex: /\b\(newest\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "(newest" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "prominent," for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "prominent," with regex: /\bprominent,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "prominent," in content
+index-WuJ96ZaL.js:239 🎯 Processing term "global" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "global" with regex: /\bglobal\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "Global" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "Global" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "global" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "global" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "global" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "global" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "global" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "entire" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "entire" with regex: /\bentire\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "entire" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "entire" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "entire" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "relevant" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "relevant" with regex: /\brelevant\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "relevant" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "relevant" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "relevant" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "complete" for adjective
+index-WuJ96ZaL.js:239 🔍 Looking for "complete" with regex: /\bcomplete\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "complete" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "complete" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "complete" for adjective, applying color #3b82f6
+index-WuJ96ZaL.js:239 ⚠️ Skipping "complete" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "complete" in content
+index-WuJ96ZaL.js:239 🔤 Processing adverb: Object
+index-WuJ96ZaL.js:239 📚 Finding adverbs using method: adverbs
+index-WuJ96ZaL.js:239 📚 Found adverbs: Array(14)
+index-WuJ96ZaL.js:239 🎯 Processing term "dynamically" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "dynamically" with regex: /\bdynamically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "dynamically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "dynamically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "dynamically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "all" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "all" with regex: /\ball\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "All" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "All" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "all" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "all" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "all" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "easily" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "easily" with regex: /\beasily\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "easily" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "easily" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "easily" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "directly" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "directly" with regex: /\bdirectly\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "directly" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "directly" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "directly" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "most" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "most" with regex: /\bmost\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "most" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "most" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "most" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "automatically" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "automatically" with regex: /\bautomatically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "automatically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "automatically" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "automatically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "automatically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "automatically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "approximately" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "approximately" with regex: /\bapproximately\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "approximately" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "approximately" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "approximately" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "currently" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "currently" with regex: /\bcurrently\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "currently" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "currently" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "currently" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "clearly" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "clearly" with regex: /\bclearly\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "clearly" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "clearly" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "clearly" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "clearly" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "clearly" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "simply" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "simply" with regex: /\bsimply\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "simply" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "simply" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "simply" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "chronologically" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "chronologically" with regex: /\bchronologically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "chronologically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "chronologically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "chronologically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "automatically" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "automatically" with regex: /\bautomatically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "automatically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "automatically" - already processed
+index-WuJ96ZaL.js:239 ✅ Found match "automatically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "automatically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "automatically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "periodically" for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "periodically" with regex: /\bperiodically\b/gi
+index-WuJ96ZaL.js:239 ✅ Found match "periodically" for adverb, applying color #f97316
+index-WuJ96ZaL.js:239 ⚠️ Skipping "periodically" - already processed
+index-WuJ96ZaL.js:239 ❌ No matches found for "periodically" in content
+index-WuJ96ZaL.js:239 🎯 Processing term "clearly," for adverb
+index-WuJ96ZaL.js:239 🔍 Looking for "clearly," with regex: /\bclearly,\b/gi
+index-WuJ96ZaL.js:239 ❌ No matches found for "clearly," in content
+index-WuJ96ZaL.js:239 🔢 Processing numbers with color: #ef4444
+index-WuJ96ZaL.js:239 🔢 Found number "255"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "255" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "255"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "255" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "255"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "255" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "0"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "0" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "0"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "0" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "0"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "0" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1753271608479"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1753271608479" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "255"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "255" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "255"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "255" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "255"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "255" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "8"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "8" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "23"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "23" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1.0"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1.0" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1.0"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1.0" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3.1"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3.1" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3.2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3.2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3.3"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3.3" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3.4"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3.4" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "2"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "2" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "4"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "4" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "3.5"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "3.5" - already processed
+index-WuJ96ZaL.js:239 🔢 Found number "1.0"
+index-WuJ96ZaL.js:239 ⚠️ Skipping number "1.0" - already processed
+index-WuJ96ZaL.js:239 🎉 NLH Processing completed
+index-WuJ96ZaL.js:239 📊 Content comparison: Object
+index-WuJ96ZaL.js:239 📤 Sending processed content to parent: Object
+index-WuJ96ZaL.js:239 📥 RichTextEditor: Received processed content from NLHHighlighter: Object
+index-WuJ96ZaL.js:239 🔄 RichTextEditor: Checking if processed content should be applied: Object
+index-WuJ96ZaL.js:239 ⏭️ RichTextEditor: Skipping content application: Object
+index-WuJ96ZaL.js:239 ⚙️ useNLHSettings: Hook initialized with default settings: Object
+index-WuJ96ZaL.js:239 📤 useNLHSettings: Returning current settings: Object
+index-WuJ96ZaL.js:239 ⚙️ useNLHSettings: Hook initialized with default settings: Object
+index-WuJ96ZaL.js:239 📤 useNLHSettings: Returning current settings: Object
+index-WuJ96ZaL.js:239 🔍 NLHHighlighter render: Object
+index-WuJ96ZaL.js:239 🔄 RichTextEditor: Checking if processed content should be applied: Object
+index-WuJ96ZaL.js:239 ⏭️ RichTextEditor: Skipping content application: Object
+index-WuJ96ZaL.js:239 ⏰ RichTextEditor: NLH processing timeout completed
+index-WuJ96ZaL.js:239 ⚙️ useNLHSettings: Hook initialized with default settings: Object
+index-WuJ96ZaL.js:239 📤 useNLHSettings: Returning current settings: Object
+index-WuJ96ZaL.js:239 🔍 NLHHighlighter render: Object
+index-WuJ96ZaL.js:239 🔄 RichTextEditor: Checking if processed content should be applied: Object
+index-WuJ96ZaL.js:239 🎯 RichTextEditor: Applying processed content to editor
+index-WuJ96ZaL.js:239 📝 RichTextEditor: Setting innerHTML to processed content
+index-WuJ96ZaL.js:239 📍 RichTextEditor: Attempting to restore cursor position
+index-WuJ96ZaL.js:239 📍 RichTextEditor: Found text nodes: 155
+index-WuJ96ZaL.js:239 ✅ RichTextEditor: Cursor position restored
+index-WuJ96ZaL.js:239 ⚙️ useNLHSettings: Hook initialized with default settings: Object
+index-WuJ96ZaL.js:239 📤 useNLHSettings: Returning current settings: Object
+index-WuJ96ZaL.js:239 ⏰ RichTextEditor: NLH processing timeout completed
