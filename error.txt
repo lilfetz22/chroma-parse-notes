@@ -1,0 +1,40 @@
+[plugin:vite:react-swc] x Expected ',', got 'style'
+    ,-[/dev-server/src/components/NLHHighlighter.tsx:49:1]
+ 46 |         const numberRegex = /\b\d+(?:\.\d+)?\b/g;
+ 47 |         processedText = processedText.replace(numberRegex, 
+ 48 |           `<span style="color: ${settings.partOfSpeech.number.color};">processedText = processedText.replace(numberRegex, 
+ 49 |           `<span style="background-color: ${settings.partOfSpeech.number.color}; color: white; padding: 1px 3px; border-radius: 3px; font-weight: 500;">$&</span>`
+    :                  ^^^^^
+ 50 |         );</span>`
+ 51 |         );
+ 52 |       }
+    `----
+
+
+Caused by:
+    Syntax Error
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: <unknown>
+  11: <unknown>
+  12: <unknown>
+  13: <unknown>
+  14: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_
+  15: worker
+             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:123:5
+  16: <unknown>
+  17: <unknown>
+/dev-server/src/components/NLHHighlighter.tsx
+             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:123:5
+Click outside, press Esc key, or fix the code to dismiss.
+You can also disable this overlay by setting server.hmr.overlay to false in vite.config.ts.
