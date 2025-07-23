@@ -1,11 +1,13 @@
-Uncaught TypeError: Cannot read properties of null (reading 'useEffect')
+preview--chroma-pars…otes.lovable.app/:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Explanation
 
-{
-  "timestamp": 1753310196736,
-  "error_type": "RUNTIME_ERROR",
-  "filename": "https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20",
-  "lineno": 19413,
-  "colno": 13,
-  "stack": "TypeError: Cannot read properties of null (reading 'useEffect')\n    at Object.useEffect (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-BG45W2ER.js?v=7dc4bf1c:1078:29)\n    at QueryClientProvider (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/@tanstack_react-query.js?v=7dc4bf1c:2797:9)\n    at renderWithHooks (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:11548:26)\n    at mountIndeterminateComponent (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:14926:21)\n    at beginWork (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:15914:22)\n    at beginWork$1 (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:19753:22)\n    at performUnitOfWork (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:19198:20)\n    at workLoopSync (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:19137:13)\n    at renderRootSync (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:19116:15)\n    at recoverFromConcurrentError (https://99ce946a-a736-4a35-9bd8-072a8065207b.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=f153ae20:18736:28)",
-  "has_blank_screen": true
-}
+Understanding the problem
+This error occurs when a message listener in a browser extension or web page signals that it will send an asynchronous response by returning true, but the message channel is closed before the response is actually sent. This often happens when the page or extension context is destroyed (e.g., a tab is closed or the extension background page unloads) before the asynchronous operation initiated by the message listener completes and sends its response.
+
+Suggested fix
+Ensure that the asynchronous operation completes and sends a response before the context in which the message listener is running is destroyed. If the context is likely to be destroyed, consider handling the asynchronous operation in a persistent context (like a background script for extensions) and sending the response back to the original sender from there.
+
+If the asynchronous response is not strictly necessary and the error is benign (as suggested in [1]), you might consider not returning true from the listener if no asynchronous response will be sent.
+
+Summary
+The error "A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received" means that a message listener expected to send an asynchronous response, but the communication channel was closed prematurely. To fix this, ensure asynchronous operations complete and respond before the context closes, or avoid returning true if no asynchronous response is needed.
