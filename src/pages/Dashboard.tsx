@@ -14,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
-  const { notes, loading, createNote, updateNote, searchNotes } = useNotes();
+  const { notes, loading, createNote, updateNote, deleteNote, searchNotes } = useNotes();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
@@ -60,15 +60,11 @@ const Dashboard = () => {
     setSearchResults([]);
   };
 
-  const handleSearch = async (query: string) => {
-    if (query.trim()) {
-      setIsSearching(true);
-      const results = await searchNotes(query);
-      setSearchResults(results);
-    } else {
-      setIsSearching(false);
-      setSearchResults([]);
+  const handleDeleteNote = async (id: string) => {
+    if (selectedNote && selectedNote.id === id) {
+      setSelectedNote(null);
     }
+    await deleteNote(id);
   };
 
   const handleNLHToggle = () => {
@@ -127,7 +123,7 @@ const Dashboard = () => {
             selectedNote={selectedNote}
             onSelectNote={handleSelectNote}
             onCreateNote={handleCreateNote}
-            onSearch={handleSearch}
+            onDeleteNote={handleDeleteNote}
             loading={loading}
           />
         </div>
@@ -153,6 +149,7 @@ const Dashboard = () => {
                   onChange={setNoteContent}
                   nlhEnabled={selectedNote.nlh_enabled}
                   onNLHToggle={handleNLHToggle}
+                  notes={notes}
                 />
               </div>
             </>

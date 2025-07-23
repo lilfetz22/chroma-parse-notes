@@ -5,8 +5,19 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, FileText } from 'lucide-react';
+import { Plus, Search, FileText, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface NotesListProps {
   notes: Note[];
@@ -14,6 +25,7 @@ interface NotesListProps {
   onSelectNote: (note: Note) => void;
   onCreateNote: () => void;
   onSearch: (query: string) => void;
+  onDeleteNote: (id: string) => void;
   loading: boolean;
 }
 
@@ -23,6 +35,7 @@ export function NotesList({
   onSelectNote, 
   onCreateNote, 
   onSearch,
+  onDeleteNote,
   loading 
 }: NotesListProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,23 +112,47 @@ export function NotesList({
                 <CardContent className="p-3">
                   <div className="space-y-2">
                     <div className="flex items-start justify-between">
-                      <h3 className="font-medium line-clamp-1">
+                      <h3 className="font-medium line-clamp-1" onClick={() => onSelectNote(note)}>
                         {note.title || 'Untitled Note'}
                       </h3>
-                      {note.nlh_enabled && (
-                        <Badge variant="secondary" className="text-xs">
-                          NLH
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {note.nlh_enabled && (
+                          <Badge variant="secondary" className="text-xs">
+                            NLH
+                          </Badge>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete your
+                                note and remove your data from our servers.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => onDeleteNote(note.id)}>
+                                Continue
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                     
                     {note.content && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
                         {truncateContent(note.content)}
                       </p>
                     )}
                     
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
                       {formatDate(note.updated_at)}
                     </p>
                   </div>

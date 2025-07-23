@@ -114,11 +114,8 @@ export function useNotes() {
     }
 
     const { data, error } = await supabase
-      .from('notes')
-      .select('*')
+      .rpc('search_notes', { search_term: query })
       .eq('user_id', user.id)
-      .textSearch('title', query)
-      .or(`content.ilike.%${query}%`)
       .order('updated_at', { ascending: false });
 
     if (error) {

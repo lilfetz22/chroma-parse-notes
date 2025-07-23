@@ -17,22 +17,30 @@ import {
 import { NLHHighlighter } from './NLHHighlighter';
 import { useNLHSettings } from '@/hooks/useNLHSettings';
 
+import { Note } from '@/types/note';
+
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
   nlhEnabled: boolean;
   onNLHToggle: () => void;
+  notes: Note[];
 }
 
-export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
   const { user } = useAuth();
   const { settings } = useNLHSettings();
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const [selectedText, setSelectedText] = useState('');
   const [processedContent, setProcessedContent] = useState(content);
+  const [showNoteLinker, setShowNoteLinker] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
 
   // Debounced content processing
   useEffect(() => {
@@ -68,7 +76,24 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: R
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
+    updateFormatState();
   };
+
+  const updateFormatState = () => {
+    setIsBold(document.queryCommandState('bold'));
+    setIsItalic(document.queryCommandState('italic'));
+    setIsUnderline(document.queryCommandState('underline'));
+  };
+
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      updateFormatState();
+    };
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, []);
 
   const handleLinkClick = () => {
     const selection = window.getSelection();
@@ -85,8 +110,18 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: R
 
   const insertLink = () => {
     if (linkUrl && selectedText) {
-      const linkHtml = `<a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:text-primary/80">${selectedText}</a>`;
-      handleFormat('insertHTML', linkHtml);
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const link = document.createElement('a');
+        link.href = linkUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.className = 'text-primary underline hover:text-primary/80';
+        link.textContent = selectedText;
+        range.deleteContents();
+        range.insertNode(link);
+      }
       setShowLinkInput(false);
       setLinkUrl('');
       setSelectedText('');
@@ -129,19 +164,9 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: R
   };
 
   const handlePaste = async (e: React.ClipboardEvent) => {
-    const items = e.clipboardData.items;
-    
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item.type.indexOf('image') !== -1) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        if (file) {
-          await handleImageUpload(file);
-        }
-        return;
-      }
-    }
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,33 +183,70 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: R
       // Convert checkboxes
       newContent = newContent.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
       newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
+
+      if (newContent.slice(-2) === '[[') {
+        setShowNoteLinker(true);
+      }
       
       onChange(newContent);
     }
   };
+
+  const handleNoteLink = (note: Note) => {
+    if (editorRef.current) {
+      const link = document.createElement('a');
+      link.href = `/note/${note.id}`;
+      link.textContent = note.title;
+      link.className = 'text-primary underline hover:text-primary/80';
+
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(link);
+      }
+
+      setShowNoteLinker(false);
+    }
+  };
+
+  useEffect(() => {
+    if (editorRef.current && content !== editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = content;
+    }
+  }, [content]);
 
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
       <div className="flex items-center gap-2 p-3 border-b">
         <Button
-          variant="outline"
+          variant={isBold ? 'default' : 'outline'}
           size="sm"
-          onClick={() => handleFormat('bold')}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handleFormat('bold');
+          }}
         >
           <Bold className="h-4 w-4" />
         </Button>
         <Button
-          variant="outline"
+          variant={isItalic ? 'default' : 'outline'}
           size="sm"
-          onClick={() => handleFormat('italic')}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handleFormat('italic');
+          }}
         >
           <Italic className="h-4 w-4" />
         </Button>
         <Button
-          variant="outline"
+          variant={isUnderline ? 'default' : 'outline'}
           size="sm"
-          onClick={() => handleFormat('underline')}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handleFormat('underline');
+          }}
         >
           <Underline className="h-4 w-4" />
         </Button>
@@ -239,8 +301,30 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: R
         </div>
       )}
 
+      {/* Note Linker */}
+      {showNoteLinker && (
+        <div className="absolute z-10 bg-card border rounded-md shadow-lg">
+          <div className="p-2">
+            <Input placeholder="Search notes..." />
+          </div>
+          <ScrollArea className="h-40">
+            <div className="p-2 space-y-1">
+              {notes.map((note) => (
+                <div
+                  key={note.id}
+                  className="p-2 rounded-md hover:bg-accent cursor-pointer"
+                  onClick={() => handleNoteLink(note)}
+                >
+                  {note.title}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
       {/* Editor */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-y-auto">
         <div
           ref={editorRef}
           contentEditable
@@ -248,9 +332,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle }: R
           style={{ minHeight: '100%' }}
           onInput={handleContentChange}
           onPaste={handlePaste}
-          dangerouslySetInnerHTML={{ 
-            __html: nlhEnabled ? processedContent : content 
-          }}
         />
       </div>
 
