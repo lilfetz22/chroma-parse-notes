@@ -68,10 +68,21 @@ const Dashboard = () => {
   };
 
   const handleNLHToggle = () => {
+    console.log('🔄 Dashboard: NLH toggle clicked');
     if (selectedNote) {
       const newNLHEnabled = !selectedNote.nlh_enabled;
+      console.log('🎯 Dashboard: Toggling NLH for note:', {
+        noteId: selectedNote.id,
+        noteTitle: selectedNote.title,
+        currentNLHEnabled: selectedNote.nlh_enabled,
+        newNLHEnabled
+      });
+      
       updateNote(selectedNote.id, { nlh_enabled: newNLHEnabled });
       setSelectedNote({ ...selectedNote, nlh_enabled: newNLHEnabled });
+      console.log('✅ Dashboard: NLH toggle completed');
+    } else {
+      console.log('❌ Dashboard: No note selected for NLH toggle');
     }
   };
 
