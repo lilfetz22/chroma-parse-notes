@@ -17,6 +17,25 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
     contentPreview: content.substring(0, 100)
   });
 
+  // Test compromise.js functionality
+  useEffect(() => {
+    if (content.trim()) {
+      try {
+        console.log('🧪 TEST: Testing compromise.js with content:', content.substring(0, 50));
+        const testDoc = nlp('The quick brown fox jumps over the lazy dog.');
+        const testNouns = testDoc.nouns().out('array');
+        const testVerbs = testDoc.verbs().out('array');
+        console.log('🧪 TEST: Compromise.js test results:', {
+          testNouns,
+          testVerbs,
+          compromiseWorking: testNouns.length > 0 && testVerbs.length > 0
+        });
+      } catch (error) {
+        console.error('🧪 TEST: Compromise.js test failed:', error);
+      }
+    }
+  }, [content]);
+
   const processedContent = useMemo(() => {
     console.log('🔄 NLH Processing started:', { 
       enabled, 

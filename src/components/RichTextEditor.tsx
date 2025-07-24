@@ -362,6 +362,33 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
           <Palette className="h-4 w-4" />
           {nlhEnabled ? 'NLH On' : 'NLH Off'}
         </Button>
+        
+        {/* Test button for debugging */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            console.log('🧪 TEST: Manual NLH trigger clicked');
+            console.log('🧪 TEST: Current content:', content);
+            console.log('🧪 TEST: NLH enabled:', nlhEnabled);
+            console.log('🧪 TEST: Settings:', settings);
+            
+            // Manually trigger NLH processing
+            if (nlhEnabled && settings.globalEnabled) {
+              console.log('🧪 TEST: Triggering manual NLH processing');
+              // Force a re-render by updating content
+              if (editorRef.current) {
+                const currentContent = editorRef.current.innerHTML;
+                console.log('🧪 TEST: Current editor content:', currentContent);
+                onChange(currentContent);
+              }
+            } else {
+              console.log('🧪 TEST: NLH is disabled, cannot process');
+            }
+          }}
+        >
+          Test NLH
+        </Button>
       </div>
 
       {/* Link Input */}

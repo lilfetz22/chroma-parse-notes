@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLH Test</title>
+    <script src="https://unpkg.com/compromise@14.14.4/builds/compromise.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-area {
+            width: 100%;
+            min-height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .output-area {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>NLH (Natural Language Highlighting) Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Input</h2>
+        <textarea id="testInput" class="input-area" placeholder="Enter text to test NLH processing...">
+The quick brown fox jumps over the lazy dog. John Smith went to New York City on January 15th, 2024. He bought 5 apples and 3 oranges for $12.50. The beautiful red car drove quickly down the street.
+        </textarea>
+    </div>
+
+    <div class="test-section">
+        <h2>Controls</h2>
+        <button onclick="testCompromise()">Test Compromise.js</button>
+        <button onclick="testNLH()">Test NLH Processing</button>
+        <button onclick="clearOutput()">Clear Output</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Output</h2>
+        <div id="output" class="output-area"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Processed HTML</h2>
+        <div id="processedHtml" class="output-area"></div>
+    </div>
+
+    <script>
+        // NLH Settings (matching our React app)
+        const nlhSettings = {
+            globalEnabled: true,
+            partOfSpeech: {
+                noun: { enabled: true, color: '#22c55e' },
+                verb: { enabled: true, color: '#eab308' },
+                adverb: { enabled: true, color: '#f97316' },
+                adjective: { enabled: true, color: '#3b82f6' },
+                number: { enabled: true, color: '#ef4444' },
+                properNoun: { enabled: true, color: '#8b5cf6' },
+            },
+        };
+
+        function log(message) {
+            const output = document.getElementById('output');
+            output.textContent += message + '\n';
+            console.log(message);
+        }
+
+        function clearOutput() {
+            document.getElementById('output').textContent = '';
+            document.getElementById('processedHtml').textContent = '';
+        }
+
+        function testCompromise() {
+            log('🧪 Testing Compromise.js...');
+            
+            try {
+                const testText = 'The quick brown fox jumps over the lazy dog.';
+                const doc = nlp(testText);
+                
+                const nouns = doc.nouns().out('array');
+                const verbs = doc.verbs().out('array');
+                const adjectives = doc.adjectives().out('array');
+                const adverbs = doc.adverbs().out('array');
+                const properNouns = doc.match('#ProperNoun').out('array');
+                
+                log('✅ Compromise.js is working!');
+                log(`Found ${nouns.length} nouns: ${nouns.join(', ')}`);
+                log(`Found ${verbs.length} verbs: ${verbs.join(', ')}`);
+                log(`Found ${adjectives.length} adjectives: ${adjectives.join(', ')}`);
+                log(`Found ${adverbs.length} adverbs: ${adverbs.join(', ')}`);
+                log(`Found ${properNouns.length} proper nouns: ${properNouns.join(', ')}`);
+                
+            } catch (error) {
+                log(`❌ Compromise.js test failed: ${error.message}`);
+            }
+        }
+
+        function testNLH() {
+            log('🎨 Testing NLH Processing...');
+            
+            const content = document.getElementById('testInput').value;
+            if (!content.trim()) {
+                log('❌ No content to process');
+                return;
+            }
+
+            try {
+                log(`Processing content: "${content.substring(0, 50)}..."`);
+                
+                const doc = nlp(content);
+                let processedText = content;
+
+                // Process different parts of speech
+                const posMap = [
+                    { type: 'properNoun', method: 'match', setting: nlhSettings.partOfSpeech.properNoun },
+                    { type: 'noun', method: 'nouns', setting: nlhSettings.partOfSpeech.noun },
+                    { type: 'verb', method: 'verbs', setting: nlhSettings.partOfSpeech.verb },
+                    { type: 'adjective', method: 'adjectives', setting: nlhSettings.partOfSpeech.adjective },
+                    { type: 'adverb', method: 'adverbs', setting: nlhSettings.partOfSpeech.adverb },
+                ];
+
+                // Process each part of speech
+                posMap.forEach(({ type, method, setting }) => {
+                    if (setting.enabled) {
+                        log(`🔤 Processing ${type}s...`);
+                        
+                        let terms = [];
+                        if (type === 'properNoun') {
+                            const properNouns = doc.match('#ProperNoun');
+                            terms = properNouns.out('array');
+                        } else {
+                            terms = doc[method]().out('array');
+                        }
+                        
+                        log(`Found ${terms.length} ${type}s: ${terms.join(', ')}`);
+                        
+                        terms.forEach((term) => {
+                            const text = typeof term === 'string' ? term : term.text();
+                            if (text && text.trim()) {
+                                const escapedText = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                const regex = new RegExp(`\\b${escapedText}\\b`, 'gi');
+                                
+                                processedText = processedText.replace(regex, (match) => {
+                                    log(`🎨 Highlighting "${match}" as ${type} with color ${setting.color}`);
+                                    return `<span style="color: ${setting.color};">${match}</span>`;
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // Handle numbers
+                if (nlhSettings.partOfSpeech.number.enabled) {
+                    log('🔢 Processing numbers...');
+                    const numberRegex = /\b\d+(?:\.\d+)?\b/g;
+                    processedText = processedText.replace(numberRegex, (match) => {
+                        log(`🎨 Highlighting number "${match}" with color ${nlhSettings.partOfSpeech.number.color}`);
+                        return `<span style="color: ${nlhSettings.partOfSpeech.number.color};">${match}</span>`;
+                    });
+                }
+
+                log('✅ NLH Processing completed!');
+                log(`Original length: ${content.length}, Processed length: ${processedText.length}`);
+                
+                // Display the processed HTML
+                document.getElementById('processedHtml').innerHTML = processedText;
+                
+            } catch (error) {
+                log(`❌ NLH processing failed: ${error.message}`);
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            log('🚀 NLH Test Page Loaded');
+            log('Click "Test Compromise.js" to verify the library is working');
+            log('Click "Test NLH Processing" to test the highlighting logic');
+        });
+    </script>
+</body>
+</html> 
