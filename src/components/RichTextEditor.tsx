@@ -47,71 +47,75 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
   // Apply processed content to editor
   useEffect(() => {
-    console.log('🔄 RichTextEditor: Checking if processed content should be applied:', {
+    console.log('🔄 RichTextEditor: Should apply processed content?', {
       hasEditorRef: !!editorRef.current,
-      processedContentDifferent: processedContent !== content,
+      processedDifferent: processedContent !== content,
       isProcessingNLH,
-      processedContentLength: processedContent.length,
-      contentLength: content.length
+      nlhEnabled,
+      globalEnabled: settings.globalEnabled
     });
 
-    if (editorRef.current && processedContent !== content && !isProcessingNLH) {
-      console.log('🎯 RichTextEditor: Applying processed content to editor');
+    if (editorRef.current && processedContent !== content && !isProcessingNLH && nlhEnabled && settings.globalEnabled) {
+      console.log('🎯 RichTextEditor: Applying NLH processed content to editor');
+      console.log('📝 Before innerHTML:', editorRef.current.innerHTML.substring(0, 200));
+      console.log('🎨 Applying content:', processedContent.substring(0, 200));
       
-      const currentSelection = window.getSelection();
-      const currentRange = currentSelection?.rangeCount ? currentSelection.getRangeAt(0) : null;
+      // Store current cursor position
+      const selection = window.getSelection();
+      let cursorPosition = 0;
       
-      // Store cursor position
-      let cursorOffset = 0;
-      if (currentRange && editorRef.current.contains(currentRange.startContainer)) {
-        cursorOffset = currentRange.startOffset;
-        console.log('📍 RichTextEditor: Storing cursor position:', cursorOffset);
+      if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
+        // Get text offset position
+        const range = selection.getRangeAt(0);
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(editorRef.current);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        cursorPosition = preCaretRange.toString().length;
+        console.log('📍 Storing cursor position:', cursorPosition);
       }
       
-      console.log('📝 RichTextEditor: Setting innerHTML to processed content');
-      console.log('🎨 RichTextEditor: Processed content preview:', processedContent.substring(0, 300));
+      // Apply the processed content
       editorRef.current.innerHTML = processedContent;
+      console.log('✅ Applied processed content, new innerHTML:', editorRef.current.innerHTML.substring(0, 200));
       
-      // Restore cursor position if possible
-      if (currentSelection && currentRange) {
+      // Restore cursor position
+      if (selection && cursorPosition > 0) {
         try {
-          console.log('📍 RichTextEditor: Attempting to restore cursor position');
-          const newRange = document.createRange();
-          const textNodes = [];
           const walker = document.createTreeWalker(
             editorRef.current,
             NodeFilter.SHOW_TEXT,
             null
           );
           
+          let currentPos = 0;
           let node;
+          let targetNode = null;
+          let targetOffset = 0;
+          
           while (node = walker.nextNode()) {
-            textNodes.push(node);
+            const nodeLength = node.textContent?.length || 0;
+            if (currentPos + nodeLength >= cursorPosition) {
+              targetNode = node;
+              targetOffset = cursorPosition - currentPos;
+              break;
+            }
+            currentPos += nodeLength;
           }
           
-          console.log('📍 RichTextEditor: Found text nodes:', textNodes.length);
-          
-          if (textNodes.length > 0) {
-            const targetNode = textNodes[0];
-            const offset = Math.min(cursorOffset, targetNode.textContent?.length || 0);
-            newRange.setStart(targetNode, offset);
-            newRange.setEnd(targetNode, offset);
-            currentSelection.removeAllRanges();
-            currentSelection.addRange(newRange);
-            console.log('✅ RichTextEditor: Cursor position restored');
+          if (targetNode) {
+            const range = document.createRange();
+            range.setStart(targetNode, Math.min(targetOffset, targetNode.textContent?.length || 0));
+            range.setEnd(targetNode, Math.min(targetOffset, targetNode.textContent?.length || 0));
+            selection.removeAllRanges();
+            selection.addRange(range);
+            console.log('✅ Cursor position restored');
           }
         } catch (error) {
-          console.error('❌ RichTextEditor: Error restoring cursor position:', error);
+          console.error('❌ Error restoring cursor:', error);
         }
       }
-    } else {
-      console.log('⏭️ RichTextEditor: Skipping content application:', {
-        reason: !editorRef.current ? 'no editor ref' : 
-                processedContent === content ? 'no changes' : 
-                isProcessingNLH ? 'processing NLH' : 'unknown'
-      });
     }
-  }, [processedContent, content, isProcessingNLH]);
+  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter:', {
@@ -261,22 +265,21 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
   const handleContentChange = () => {
     if (editorRef.current && !isProcessingNLH) {
-      console.log('✏️ RichTextEditor: Content changed by user');
+      console.log('✏️ RichTextEditor: User is editing content');
       let newContent = editorRef.current.innerHTML;
       
-      // Strip out existing NLH spans to get clean text for processing
-      const cleanContent = newContent.replace(/<span style="color: [^"]*;">(.*?)<\/span>/g, '$1');
-      console.log('🧹 RichTextEditor: Cleaned content for onChange:', cleanContent.substring(0, 100));
+      // Don't strip spans if NLH is enabled - let the raw content be processed by NLH
+      console.log('📤 RichTextEditor: Sending raw content to onChange:', newContent.substring(0, 100));
       
-      // Convert checkboxes
-      let processedContent = cleanContent.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
-      processedContent = processedContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
+      // Convert checkboxes but preserve other HTML
+      newContent = newContent.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
+      newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
 
-      if (processedContent.slice(-2) === '[[') {
+      if (newContent.slice(-2) === '[[') {
         setShowNoteLinker(true);
       }
       
-      onChange(processedContent);
+      onChange(newContent);
     }
   };
 
