@@ -75,8 +75,31 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       }
       
       // Apply the processed content
+      const beforeHTML = editorRef.current.innerHTML;
       editorRef.current.innerHTML = processedContent;
-      console.log('✅ Applied processed content, new innerHTML:', editorRef.current.innerHTML.substring(0, 200));
+      const afterHTML = editorRef.current.innerHTML;
+      
+      console.log('🔍 DETAILED CONTENT APPLICATION:');
+      console.log('📝 Before innerHTML:', beforeHTML.substring(0, 200));
+      console.log('🎨 Setting innerHTML to:', processedContent.substring(0, 200));
+      console.log('✅ After innerHTML:', afterHTML.substring(0, 200));
+      console.log('🎯 Content actually changed:', beforeHTML !== afterHTML);
+      console.log('🎨 Spans preserved:', afterHTML.includes('<span style="color:'));
+      
+      // Check computed styles of any span elements
+      const spanElements = editorRef.current.querySelectorAll('span[style*="color:"]');
+      console.log('🎨 Found colored span elements:', spanElements.length);
+      spanElements.forEach((span, index) => {
+        if (index < 3) { // Log first 3 spans
+          const computedStyle = window.getComputedStyle(span);
+          console.log(`🎨 Span ${index + 1}:`, {
+            innerHTML: span.innerHTML,
+            styleAttribute: span.getAttribute('style'),
+            computedColor: computedStyle.color,
+            isVisible: computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden'
+          });
+        }
+      });
       
       // Restore cursor position
       if (selection && cursorPosition > 0) {
@@ -118,12 +141,22 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
 
   const handleProcessedContent = useCallback((processed: string) => {
-    console.log('📥 RichTextEditor: Received processed content from NLHHighlighter:', {
-      processedLength: processed.length,
+    console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
+    console.log('📊 Content comparison:', {
       originalLength: content.length,
+      processedLength: processed.length,
       hasChanges: processed !== content,
-      processedPreview: processed.substring(0, 100)
+      originalPreview: content.substring(0, 150),
+      processedPreview: processed.substring(0, 150),
+      hasColorSpans: processed.includes('<span style="color:'),
+      spanCount: (processed.match(/<span style="color:/g) || []).length
     });
+    
+    if (processed.includes('<span style="color:')) {
+      console.log('🎨 FOUND COLOR SPANS! Sample spans:', 
+        processed.match(/<span style="color: [^"]*;">[^<]*<\/span>/g)?.slice(0, 3)
+      );
+    }
     
     setIsProcessingNLH(true);
     setProcessedContent(processed);
@@ -266,19 +299,19 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const handleContentChange = () => {
     if (editorRef.current && !isProcessingNLH) {
       console.log('✏️ RichTextEditor: User is editing content');
-      let newContent = editorRef.current.innerHTML;
+      const currentHTML = editorRef.current.innerHTML;
+      console.log('🔍 Current editor HTML:', currentHTML.substring(0, 200));
+      console.log('🎨 Still has colored spans:', currentHTML.includes('<span style="color:'));
       
-      // Don't strip spans if NLH is enabled - let the raw content be processed by NLH
-      console.log('📤 RichTextEditor: Sending raw content to onChange:', newContent.substring(0, 100));
-      
-      // Convert checkboxes but preserve other HTML
-      newContent = newContent.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
+      // Convert checkboxes but preserve other HTML including color spans
+      let newContent = currentHTML.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
       newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
 
       if (newContent.slice(-2) === '[[') {
         setShowNoteLinker(true);
       }
       
+      console.log('📤 Sending to onChange:', newContent.substring(0, 200));
       onChange(newContent);
     }
   };
@@ -458,10 +491,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         <div
           ref={editorRef}
           contentEditable
-          className="w-full h-full p-4 outline-none prose prose-sm max-w-none text-black"
+          className="w-full h-full p-4 outline-none prose prose-sm max-w-none"
           style={{ 
             minHeight: '100%',
-            color: 'black'
+            color: 'inherit' // Don't force black color that might override spans
           }}
           onInput={handleContentChange}
           onPaste={handlePaste}
