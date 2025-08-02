@@ -51,8 +51,25 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
     }
 
     try {
-      console.log('📝 Creating NLP document from content');
-      const doc = nlp(content);
+      console.log('📝 Raw content analysis:', {
+        isHTML: content.includes('<'),
+        hasDiv: content.includes('<div'),
+        hasSpan: content.includes('<span'),
+        contentStart: content.substring(0, 200)
+      });
+
+      // Extract plain text from HTML if needed
+      let textToAnalyze = content;
+      if (content.includes('<')) {
+        console.log('🧹 Content appears to be HTML, extracting text...');
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        textToAnalyze = tempDiv.textContent || tempDiv.innerText || content;
+        console.log('📝 Extracted text for analysis:', textToAnalyze.substring(0, 200));
+      }
+
+      console.log('📝 Creating NLP document from extracted text');
+      const doc = nlp(textToAnalyze);
       let processedText = content;
 
       console.log('🎨 Processing parts of speech with settings:', settings.partOfSpeech);
