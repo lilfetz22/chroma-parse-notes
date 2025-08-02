@@ -169,7 +169,7 @@ export function SettingsDialog() {
                     with{' '}
                     <span 
                       style={{ 
-                        color: settings.partOfSpeech.number.enabled ? settings.partofSpeech.number.color : 'inherit',
+                        color: settings.partOfSpeech.number.enabled ? settings.partOfSpeech.number.color : 'inherit',
                         fontWeight: settings.partOfSpeech.number.enabled ? '500' : 'normal'
                       }}
                     >
