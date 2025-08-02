@@ -131,92 +131,71 @@ export function SettingsDialog() {
                 See how your highlighting settings will look
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="leading-relaxed">
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.adjective.enabled ? settings.partOfSpeech.adjective.color : 'transparent',
-                      color: settings.partOfSpeech.adjective.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.adjective.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.adjective.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    Beautiful
-                  </span>{' '}
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.noun.enabled ? settings.partOfSpeech.noun.color : 'transparent',
-                      color: settings.partOfSpeech.noun.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.noun.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.noun.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    notes
-                  </span>{' '}
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.verb.enabled ? settings.partOfSpeech.verb.color : 'transparent',
-                      color: settings.partOfSpeech.verb.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.verb.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.verb.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    written
-                  </span>{' '}
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.adverb.enabled ? settings.partOfSpeech.adverb.color : 'transparent',
-                      color: settings.partOfSpeech.adverb.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.adverb.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.adverb.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    quickly
-                  </span>{' '}
-                  with{' '}
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.number.enabled ? settings.partOfSpeech.number.color : 'transparent',
-                      color: settings.partOfSpeech.number.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.number.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.number.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    5
-                  </span>{' '}
-                  different{' '}
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.noun.enabled ? settings.partOfSpeech.noun.color : 'transparent',
-                      color: settings.partOfSpeech.noun.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.noun.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.noun.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    colors
-                  </span>{' '}
-                  in{' '}
-                  <span 
-                    style={{ 
-                      backgroundColor: settings.partOfSpeech.properNoun.enabled ? settings.partOfSpeech.properNoun.color : 'transparent',
-                      color: settings.partOfSpeech.properNoun.enabled ? 'white' : 'inherit',
-                      padding: settings.partOfSpeech.properNoun.enabled ? '1px 3px' : '0',
-                      borderRadius: '3px',
-                      fontWeight: settings.partOfSpeech.properNoun.enabled ? '500' : 'normal'
-                    }}
-                  >
-                    Chroma Notes
-                  </span>.
-                </p>
-              </div>
-            </CardContent>
+              <CardContent>
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="leading-relaxed">
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.adjective.enabled ? settings.partOfSpeech.adjective.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.adjective.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      Beautiful
+                    </span>{' '}
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.noun.enabled ? settings.partOfSpeech.noun.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.noun.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      notes
+                    </span>{' '}
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.verb.enabled ? settings.partOfSpeech.verb.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.verb.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      written
+                    </span>{' '}
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.adverb.enabled ? settings.partOfSpeech.adverb.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.adverb.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      quickly
+                    </span>{' '}
+                    with{' '}
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.number.enabled ? settings.partofSpeech.number.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.number.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      5
+                    </span>{' '}
+                    different{' '}
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.noun.enabled ? settings.partOfSpeech.noun.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.noun.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      colors
+                    </span>{' '}
+                    in{' '}
+                    <span 
+                      style={{ 
+                        color: settings.partOfSpeech.properNoun.enabled ? settings.partOfSpeech.properNoun.color : 'inherit',
+                        fontWeight: settings.partOfSpeech.properNoun.enabled ? '500' : 'normal'
+                      }}
+                    >
+                      Chroma Notes
+                    </span>.
+                  </p>
+                </div>
+              </CardContent>
           </Card>
         </div>
       </DialogContent>

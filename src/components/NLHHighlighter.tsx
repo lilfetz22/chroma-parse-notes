@@ -36,161 +36,70 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
     }
   }, [content]);
 
-  const processedContent = useMemo(() => {
-    console.log('🔄 NLH Processing started:', { 
-      enabled, 
-      globalEnabled: settings.globalEnabled, 
-      contentTrimmed: content.trim().length > 0 
-    });
+// In NLHHighlighter.tsx
 
+const processedContent = useMemo(() => {
     if (!enabled || !settings.globalEnabled || !content.trim()) {
-      console.log('❌ NLH Processing skipped:', { 
-        reason: !enabled ? 'disabled' : !settings.globalEnabled ? 'global disabled' : 'no content' 
-      });
       return content;
     }
 
     try {
-      console.log('📝 Raw content analysis:', {
-        isHTML: content.includes('<'),
-        hasDiv: content.includes('<div'),
-        hasSpan: content.includes('<span'),
-        contentStart: content.substring(0, 200)
-      });
-
-      // Extract plain text from HTML if needed
-      let textToAnalyze = content;
-      if (content.includes('<')) {
-        console.log('🧹 Content appears to be HTML, extracting text...');
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = content;
-        textToAnalyze = tempDiv.textContent || tempDiv.innerText || content;
-        console.log('📝 Extracted text for analysis:', textToAnalyze.substring(0, 200));
-      }
-
-      console.log('📝 Creating NLP document from extracted text');
+      // 1. Get clean text for analysis from the HTML content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+      const textToAnalyze = tempDiv.textContent || '';
       const doc = nlp(textToAnalyze);
-      let processedText = content;
 
-      console.log('🎨 Processing parts of speech with settings:', settings.partOfSpeech);
-
-      // Process different parts of speech in order of specificity
-      const posMap = [
-        { type: 'properNoun', method: 'match', setting: settings.partOfSpeech.properNoun },
-        { type: 'noun', method: 'nouns', setting: settings.partOfSpeech.noun },
-        { type: 'verb', method: 'verbs', setting: settings.partOfSpeech.verb },
-        { type: 'adjective', method: 'adjectives', setting: settings.partOfSpeech.adjective },
-        { type: 'adverb', method: 'adverbs', setting: settings.partOfSpeech.adverb },
+      // 2. Create a map of all unique words and their assigned color
+      const colorMap = new Map<string, string>();
+      const posConfig = [
+        { setting: settings.partOfSpeech.properNoun, terms: doc.match('#ProperNoun').out('array') },
+        { setting: settings.partOfSpeech.verb, terms: doc.verbs().out('array') },
+        { setting: settings.partOfSpeech.adverb, terms: doc.adverbs().out('array') },
+        { setting: settings.partOfSpeech.adjective, terms: doc.adjectives().out('array') },
+        { setting: settings.partOfSpeech.noun, terms: doc.nouns().out('array') },
+        { setting: settings.partOfSpeech.number, terms: textToAnalyze.match(/\b\d+(\.\d+)?\b/g) || [] }
       ];
 
-      // Process each part of speech
-      posMap.forEach(({ type, method, setting }) => {
-        console.log(`🔤 Processing ${type}:`, { enabled: setting.enabled, color: setting.color });
-        
+      posConfig.forEach(({ setting, terms }) => {
         if (setting.enabled) {
-          let terms: any[] = [];
-          
-          if (type === 'properNoun') {
-            // Handle proper nouns (capitalized words) with compromise
-            console.log('🏛️ Finding proper nouns...');
-            const properNouns = doc.match('#ProperNoun');
-            terms = properNouns.out('array');
-            console.log('🏛️ Found proper nouns:', terms);
-          } else {
-            console.log(`📚 Finding ${type}s using method: ${method}`);
-            terms = (doc as any)[method]().out('array');
-            console.log(`📚 Found ${type}s:`, terms);
-          }
-          
-          terms.forEach((term: any) => {
-            const text = typeof term === 'string' ? term : term.text();
-            console.log(`🎯 Processing term "${text}" for ${type}`);
-            
-            if (text && text.trim()) {
-              // Escape regex special characters
-              const escapedText = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const regex = new RegExp(`\\b${escapedText}\\b`, 'gi');
-              
-              console.log(`🔍 Looking for "${text}" with regex: ${regex}`);
-              
-              // Only replace if the text hasn't been processed yet
-              const beforeReplacement = processedText;
-              processedText = processedText.replace(regex, (match) => {
-                console.log(`✅ Found match "${match}" for ${type}, applying color ${setting.color}`);
-                
-                // Check if this match is already inside a span (avoid double-processing)
-                const indexOfMatch = processedText.indexOf(match);
-                if (indexOfMatch === -1) {
-                  console.log(`⚠️ Skipping "${match}" - not found in current text`);
-                  return match;
-                }
-                
-                const beforeMatch = processedText.substring(0, indexOfMatch);
-                const afterMatch = processedText.substring(indexOfMatch + match.length);
-                
-                // Simple check to avoid double-processing
-                if (beforeMatch.lastIndexOf('<span style="color:') > beforeMatch.lastIndexOf('</span>')) {
-                  console.log(`⚠️ Skipping "${match}" - already inside a span`);
-                  return match;
-                }
-                
-                const replacement = `<span style="color: ${setting.color};">${match}</span>`;
-                console.log(`🎨 Replacing "${match}" with:`, replacement);
-                return replacement;
-              });
-              
-              if (beforeReplacement !== processedText) {
-                console.log(`✅ Successfully processed "${text}" for ${type}`);
-              } else {
-                console.log(`❌ No matches found for "${text}" in content`);
-              }
+          terms.forEach(term => {
+            if (!colorMap.has(term)) {
+              colorMap.set(term, setting.color);
             }
           });
         }
       });
-
-      // Handle numbers separately
-      if (settings.partOfSpeech.number.enabled) {
-        console.log('🔢 Processing numbers with color:', settings.partOfSpeech.number.color);
-        const numberRegex = /\b\d+(?:\.\d+)?\b/g;
-        const beforeNumberReplacement = processedText;
-        
-        processedText = processedText.replace(numberRegex, (match) => {
-          console.log(`🔢 Found number "${match}"`);
-          
-          // Check if this number is already inside a span
-          const beforeMatch = processedText.substring(0, processedText.indexOf(match));
-          const afterMatch = processedText.substring(processedText.indexOf(match) + match.length);
-          
-          if (beforeMatch.includes('<span style="color:') && afterMatch.includes('</span>')) {
-            console.log(`⚠️ Skipping number "${match}" - already processed`);
-            return match;
-          }
-          
-          const replacement = `<span style="color: ${settings.partOfSpeech.number.color};">${match}</span>`;
-          console.log(`🎨 Replacing number "${match}" with:`, replacement);
-          return replacement;
-        });
-        
-        if (beforeNumberReplacement !== processedText) {
-          console.log('✅ Successfully processed numbers');
-        }
+      
+      if (colorMap.size === 0) {
+        return content; // No words to highlight
       }
 
-      console.log('🎉 NLH Processing completed');
-      console.log('📊 Content comparison:', {
-        originalLength: content.length,
-        processedLength: processedText.length,
-        hasChanges: content !== processedText,
-        processedPreview: processedText.substring(0, 200)
-      });
+      // 3. Build a single Regex from all the words to be colored
+      const allTerms = Array.from(colorMap.keys());
+      const escapedTerms = allTerms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      escapedTerms.sort((a, b) => b.length - a.length); // Match longer phrases first
+      const regex = new RegExp(`\\b(${escapedTerms.join('|')})\\b`, 'g');
 
+      // 4. Replace words in the original content, applying the correct font color style
+      // This is a simplified approach, but should be much more robust.
+      // A more advanced solution would traverse the DOM tree.
+      let processedText = content.replace(regex, (match) => {
+        // Avoid replacing text within an existing HTML tag
+        if (match.includes('<') || match.includes('>')) return match;
+        
+        const color = colorMap.get(match);
+        // **This is the corrected style for font color**
+        return `<span style="color: ${color}; font-weight: 500;">${match}</span>`;
+      });
+      
       return processedText;
+
     } catch (error) {
       console.error('💥 NLH processing error:', error);
       return content;
     }
-  }, [content, enabled, settings]);
+}, [content, enabled, settings]);
 
   useEffect(() => {
     console.log('📤 Sending processed content to parent:', {
