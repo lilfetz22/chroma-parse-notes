@@ -101,13 +101,19 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
               processedText = processedText.replace(regex, (match) => {
                 console.log(`✅ Found match "${match}" for ${type}, applying color ${setting.color}`);
                 
-                // Check if this match is already inside a span
-                const beforeMatch = processedText.substring(0, processedText.indexOf(match));
-                const afterMatch = processedText.substring(processedText.indexOf(match) + match.length);
+                // Check if this match is already inside a span (avoid double-processing)
+                const indexOfMatch = processedText.indexOf(match);
+                if (indexOfMatch === -1) {
+                  console.log(`⚠️ Skipping "${match}" - not found in current text`);
+                  return match;
+                }
+                
+                const beforeMatch = processedText.substring(0, indexOfMatch);
+                const afterMatch = processedText.substring(indexOfMatch + match.length);
                 
                 // Simple check to avoid double-processing
-                if (beforeMatch.includes('<span style="color:') && afterMatch.includes('</span>')) {
-                  console.log(`⚠️ Skipping "${match}" - already processed`);
+                if (beforeMatch.lastIndexOf('<span style="color:') > beforeMatch.lastIndexOf('</span>')) {
+                  console.log(`⚠️ Skipping "${match}" - already inside a span`);
                   return match;
                 }
                 

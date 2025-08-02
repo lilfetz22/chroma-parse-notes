@@ -108,14 +108,16 @@ export function useNotes() {
     }
   };
 
-  const searchNotes = async (query: string) => {
+  const searchNotes = async (query: string): Promise<Note[]> => {
     if (!user || !query.trim()) {
       return notes;
     }
 
     const { data, error } = await supabase
-      .rpc('search_notes', { search_term: query })
+      .from('notes')
+      .select('*')
       .eq('user_id', user.id)
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
       .order('updated_at', { ascending: false });
 
     if (error) {

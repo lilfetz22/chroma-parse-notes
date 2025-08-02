@@ -135,6 +135,7 @@ const Dashboard = () => {
             onSelectNote={handleSelectNote}
             onCreateNote={handleCreateNote}
             onDeleteNote={handleDeleteNote}
+            onSearch={searchNotes}
             loading={loading}
           />
         </div>

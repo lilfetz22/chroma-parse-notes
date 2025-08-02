@@ -69,6 +69,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       }
       
       console.log('📝 RichTextEditor: Setting innerHTML to processed content');
+      console.log('🎨 RichTextEditor: Processed content preview:', processedContent.substring(0, 300));
       editorRef.current.innerHTML = processedContent;
       
       // Restore cursor position if possible
@@ -260,17 +261,22 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
   const handleContentChange = () => {
     if (editorRef.current && !isProcessingNLH) {
+      console.log('✏️ RichTextEditor: Content changed by user');
       let newContent = editorRef.current.innerHTML;
       
+      // Strip out existing NLH spans to get clean text for processing
+      const cleanContent = newContent.replace(/<span style="color: [^"]*;">(.*?)<\/span>/g, '$1');
+      console.log('🧹 RichTextEditor: Cleaned content for onChange:', cleanContent.substring(0, 100));
+      
       // Convert checkboxes
-      newContent = newContent.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
-      newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
+      let processedContent = cleanContent.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
+      processedContent = processedContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
 
-      if (newContent.slice(-2) === '[[') {
+      if (processedContent.slice(-2) === '[[') {
         setShowNoteLinker(true);
       }
       
-      onChange(newContent);
+      onChange(processedContent);
     }
   };
 
@@ -294,7 +300,16 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   };
 
   useEffect(() => {
+    console.log('🔄 RichTextEditor: Content sync check:', {
+      hasEditorRef: !!editorRef.current,
+      contentChanged: content !== (editorRef.current?.innerHTML || ''),
+      isProcessingNLH,
+      contentLength: content.length,
+      editorLength: editorRef.current?.innerHTML?.length || 0
+    });
+    
     if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH) {
+      console.log('📝 RichTextEditor: Syncing content to editor (content prop changed)');
       editorRef.current.innerHTML = content;
     }
   }, [content, isProcessingNLH]);
