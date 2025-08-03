@@ -128,35 +128,81 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       // Restore cursor position with improved logic
       if (selection && cursorInfo.position > 0) {
         try {
-          // Method 1: Find cursor position by matching text content
-          const textBeforeCursor = cursorInfo.textBeforeCursor;
+          // Method 1: Find the end of the current line where user was typing
           const allText = editorRef.current.textContent || '';
+          const textBeforeCursor = cursorInfo.textBeforeCursor;
           
-          // Find the position in the new text that matches where we were
+          // Find the line where the cursor was positioned
+          const lines = textBeforeCursor.split('\n');
+          const currentLineText = lines[lines.length - 1]; // Get the last line (current line)
+          
+          console.log('🎯 Line-based cursor restoration:', {
+            currentLineText: currentLineText.substring(0, 50),
+            totalLines: lines.length,
+            textBeforeCursorLength: textBeforeCursor.length
+          });
+          
+          // Find this line in the new content
+          const newLines = allText.split('\n');
           let targetPosition = 0;
-          if (textBeforeCursor && allText.includes(textBeforeCursor)) {
-            // Find the last occurrence of the text before cursor
-            const lastIndex = allText.lastIndexOf(textBeforeCursor);
-            targetPosition = lastIndex + textBeforeCursor.length;
-          } else {
-            // Fallback: use the original position if text matching fails
-            targetPosition = Math.min(cursorInfo.position, allText.length);
+          
+          // Find the matching line in the new content
+          for (let i = 0; i < newLines.length; i++) {
+            const newLine = newLines[i];
+            // Check if this line contains the text from the current line
+            if (newLine.includes(currentLineText) || currentLineText.includes(newLine)) {
+              // Found the matching line, calculate position within the line
+              let lineStartPos = 0;
+              for (let j = 0; j < i; j++) {
+                lineStartPos += newLines[j].length + 1; // +1 for newline
+              }
+              
+              // Calculate where in the line the cursor should be
+              // If we have surrounding text info, use it to find the exact position
+              if (cursorInfo.textAfterCursor) {
+                // Find the position where the text after cursor starts in the new line
+                const afterCursorText = cursorInfo.textAfterCursor.split('\n')[0]; // First line of text after cursor
+                if (afterCursorText && newLine.includes(afterCursorText)) {
+                  const afterCursorIndex = newLine.indexOf(afterCursorText);
+                  targetPosition = lineStartPos + afterCursorIndex;
+                  console.log('🎯 Found exact position using text after cursor, position:', targetPosition);
+                } else {
+                  // Fallback: position at end of line
+                  targetPosition = lineStartPos + newLine.length;
+                  console.log('🎯 Found matching line, positioning at end, position:', targetPosition);
+                }
+              } else {
+                // No text after cursor, position at end of line
+                targetPosition = lineStartPos + newLine.length;
+                console.log('🎯 Found matching line, positioning at end, position:', targetPosition);
+              }
+              break;
+            }
           }
           
-          // Alternative method: Use surrounding text context for better accuracy
-          if (cursorInfo.surroundingText && allText.includes(cursorInfo.surroundingText)) {
-            const surroundingIndex = allText.indexOf(cursorInfo.surroundingText);
-            if (surroundingIndex !== -1) {
-              // Calculate position within the surrounding text
-              const relativePosition = cursorInfo.textBeforeCursor.length;
-              targetPosition = surroundingIndex + relativePosition;
-              console.log('🎯 Using surrounding text method for cursor restoration');
+          // If we couldn't find the exact line, fallback to end of text
+          if (targetPosition === 0) {
+            targetPosition = allText.length;
+            console.log('🎯 Fallback: positioning cursor at end of text');
+          }
+          
+          // Alternative method: Find exact typing position by text pattern
+          // Look for the last few characters the user was typing
+          const lastFewChars = currentLineText.slice(-10); // Last 10 characters
+          if (lastFewChars && allText.includes(lastFewChars)) {
+            const lastOccurrence = allText.lastIndexOf(lastFewChars);
+            const newTargetPosition = lastOccurrence + lastFewChars.length;
+            
+            // Use this position if it's more reasonable (not too far back)
+            if (newTargetPosition > targetPosition - 50) {
+              targetPosition = newTargetPosition;
+              console.log('🎯 Using exact text pattern method, position:', targetPosition);
             }
           }
           
           console.log('🎯 Cursor restoration:', {
             originalPosition: cursorInfo.position,
-            textBeforeCursor: textBeforeCursor.substring(0, 50),
+            currentLineText: currentLineText.substring(0, 50),
             allTextLength: allText.length,
             targetPosition,
             allTextPreview: allText.substring(0, 100)
