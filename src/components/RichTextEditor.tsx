@@ -46,6 +46,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
+  const nlhTimeoutRef = useRef<number | null>(null);
 
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -63,29 +64,29 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
     if (editorRef.current && processedContent !== content && !isProcessingNLH && nlhEnabled && settings.globalEnabled) {
       console.log('🎯 RichTextEditor: Applying NLH processed content to editor');
-      console.log('📝 Before innerHTML:', editorRef.current.innerHTML.substring(0, 200));
-      console.log('🎨 Applying content:', processedContent.substring(0, 200));
       
-      // Store current cursor position
+      // Store current cursor position more accurately
       const selection = window.getSelection();
       let cursorPosition = 0;
+      let cursorNode = null;
+      let cursorOffset = 0;
       
       if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
-        // Get text offset position
         const range = selection.getRangeAt(0);
+        cursorNode = range.startContainer;
+        cursorOffset = range.startOffset;
+        
+        // Calculate text offset position
         const preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(editorRef.current);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
         cursorPosition = preCaretRange.toString().length;
-        console.log('📍 Storing cursor position:', cursorPosition);
+        console.log('📍 Storing cursor position:', cursorPosition, 'node:', cursorNode, 'offset:', cursorOffset);
       }
       
       // Apply the processed content
       const beforeHTML = editorRef.current.innerHTML;
       editorRef.current.innerHTML = processedContent;
-      
-      // *** FIX: DON'T CALL onChange HERE - this creates the circular loop ***
-      // onChange(processedContent); // REMOVED THIS LINE
       
       const afterHTML = editorRef.current.innerHTML;
       
@@ -96,24 +97,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       console.log('🎯 Content actually changed:', beforeHTML !== afterHTML);
       console.log('🎨 Spans preserved:', afterHTML.includes('<span style="color:'));
       
-      // Check computed styles of any span elements
-      const spanElements = editorRef.current.querySelectorAll('span[style*="color:"]');
-      console.log('🎨 Found colored span elements:', spanElements.length);
-      spanElements.forEach((span, index) => {
-        if (index < 3) { // Log first 3 spans
-          const computedStyle = window.getComputedStyle(span);
-          console.log(`🎨 Span ${index + 1}:`, {
-            innerHTML: span.innerHTML,
-            styleAttribute: span.getAttribute('style'),
-            computedColor: computedStyle.color,
-            isVisible: computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden'
-          });
-        }
-      });
-      
-      // Restore cursor position
+      // Restore cursor position with better logic
       if (selection && cursorPosition > 0) {
         try {
+          // Use a more robust cursor restoration method
           const walker = document.createTreeWalker(
             editorRef.current,
             NodeFilter.SHOW_TEXT,
@@ -137,11 +124,24 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
           
           if (targetNode) {
             const range = document.createRange();
-            range.setStart(targetNode, Math.min(targetOffset, targetNode.textContent?.length || 0));
-            range.setEnd(targetNode, Math.min(targetOffset, targetNode.textContent?.length || 0));
+            const maxOffset = targetNode.textContent?.length || 0;
+            const safeOffset = Math.min(targetOffset, maxOffset);
+            range.setStart(targetNode, safeOffset);
+            range.setEnd(targetNode, safeOffset);
             selection.removeAllRanges();
             selection.addRange(range);
-            console.log('✅ Cursor position restored');
+            console.log('✅ Cursor position restored to:', safeOffset);
+          } else {
+            // Fallback: place cursor at the end
+            const lastTextNode = editorRef.current.lastChild;
+            if (lastTextNode && lastTextNode.nodeType === Node.TEXT_NODE) {
+              const range = document.createRange();
+              range.setStart(lastTextNode, lastTextNode.textContent?.length || 0);
+              range.setEnd(lastTextNode, lastTextNode.textContent?.length || 0);
+              selection.removeAllRanges();
+              selection.addRange(range);
+              console.log('✅ Cursor position restored to end');
+            }
           }
         } catch (error) {
           console.error('❌ Error restoring cursor:', error);
@@ -168,8 +168,13 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       );
     }
     
+    // Clear any existing timeout
+    if (nlhTimeoutRef.current) {
+      clearTimeout(nlhTimeoutRef.current);
+    }
+    
     // Add a small debounce to prevent rapid successive processing
-    const timeoutId = setTimeout(() => {
+    nlhTimeoutRef.current = setTimeout(() => {
       setIsProcessingNLH(true);
       setProcessedContent(processed);
       // Small delay to ensure the content is applied before allowing further processing
@@ -178,8 +183,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         setIsProcessingNLH(false);
       }, 100); // Increased from 50ms to 100ms for better stability
     }, 150); // Add 150ms debounce
-    
-    return () => clearTimeout(timeoutId);
   }, [content]);
 
   const insertText = (text: string) => {
@@ -326,8 +329,16 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         setShowNoteLinker(true);
       }
       
-      console.log('📤 Sending to onChange:', newContent.substring(0, 200));
-      onChange(newContent);
+      // Only call onChange if the content has actually changed significantly
+      const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
+      const normalizedCurrent = content.replace(/\s+/g, ' ').trim();
+      
+      if (normalizedNew !== normalizedCurrent) {
+        console.log('📤 Sending to onChange:', newContent.substring(0, 200));
+        onChange(newContent);
+      } else {
+        console.log('⏸️ RichTextEditor: Skipping onChange - content unchanged');
+      }
     } else if (isProcessingNLH) {
       console.log('⏸️ RichTextEditor: Skipping content change during NLH processing');
     }
@@ -361,9 +372,69 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       editorLength: editorRef.current?.innerHTML?.length || 0
     });
     
+    // Only sync content if it's actually different and we're not processing NLH
     if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH) {
-      console.log('📝 RichTextEditor: Syncing content to editor (content prop changed)');
-      editorRef.current.innerHTML = content;
+      // Check if the difference is significant (not just whitespace or minor differences)
+      const editorContent = editorRef.current.innerHTML;
+      const normalizedContent = content.replace(/\s+/g, ' ').trim();
+      const normalizedEditor = editorContent.replace(/\s+/g, ' ').trim();
+      
+      if (normalizedContent !== normalizedEditor) {
+        console.log('📝 RichTextEditor: Syncing content to editor (content prop changed)');
+        
+        // Store cursor position before updating
+        const selection = window.getSelection();
+        let cursorPosition = 0;
+        
+        if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
+          const range = selection.getRangeAt(0);
+          const preCaretRange = range.cloneRange();
+          preCaretRange.selectNodeContents(editorRef.current);
+          preCaretRange.setEnd(range.endContainer, range.endOffset);
+          cursorPosition = preCaretRange.toString().length;
+        }
+        
+        // Update the content
+        editorRef.current.innerHTML = content;
+        
+        // Restore cursor position
+        if (selection && cursorPosition > 0) {
+          try {
+            const walker = document.createTreeWalker(
+              editorRef.current,
+              NodeFilter.SHOW_TEXT,
+              null
+            );
+            
+            let currentPos = 0;
+            let node;
+            let targetNode = null;
+            let targetOffset = 0;
+            
+            while (node = walker.nextNode()) {
+              const nodeLength = node.textContent?.length || 0;
+              if (currentPos + nodeLength >= cursorPosition) {
+                targetNode = node;
+                targetOffset = cursorPosition - currentPos;
+                break;
+              }
+              currentPos += nodeLength;
+            }
+            
+            if (targetNode) {
+              const range = document.createRange();
+              const maxOffset = targetNode.textContent?.length || 0;
+              const safeOffset = Math.min(targetOffset, maxOffset);
+              range.setStart(targetNode, safeOffset);
+              range.setEnd(targetNode, safeOffset);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          } catch (error) {
+            console.error('❌ Error restoring cursor during content sync:', error);
+          }
+        }
+      }
     }
   }, [content, isProcessingNLH]);
 
