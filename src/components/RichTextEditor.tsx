@@ -43,11 +43,13 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const [processedContent, setProcessedContent] = useState(content);
   const [showNoteLinker, setShowNoteLinker] = useState(false);
   const [isProcessingNLH, setIsProcessingNLH] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
   const nlhTimeoutRef = useRef<number | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
+  const typingTimeoutRef = useRef<number | null>(null);
 
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -59,30 +61,38 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       hasEditorRef: !!editorRef.current,
       processedDifferent: processedContent !== content,
       isProcessingNLH,
+      isUserTyping,
       nlhEnabled,
       globalEnabled: settings.globalEnabled
     });
 
-    if (editorRef.current && processedContent !== content && !isProcessingNLH && nlhEnabled && settings.globalEnabled) {
+    if (editorRef.current && processedContent !== content && !isProcessingNLH && !isUserTyping && nlhEnabled && settings.globalEnabled) {
       console.log('🎯 RichTextEditor: Applying NLH processed content to editor');
       
-      // Store current cursor position more accurately
+      // Store current cursor position with more detailed information
       const selection = window.getSelection();
-      let cursorPosition = 0;
-      let cursorNode = null;
-      let cursorOffset = 0;
+      let cursorInfo = {
+        position: 0,
+        node: null as Node | null,
+        offset: 0,
+        textBeforeCursor: ''
+      };
       
       if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0);
-        cursorNode = range.startContainer;
-        cursorOffset = range.startOffset;
+        cursorInfo.node = range.startContainer;
+        cursorInfo.offset = range.startOffset;
         
         // Calculate text offset position
         const preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(editorRef.current);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
-        cursorPosition = preCaretRange.toString().length;
-        console.log('📍 Storing cursor position:', cursorPosition, 'node:', cursorNode, 'offset:', cursorOffset);
+        cursorInfo.position = preCaretRange.toString().length;
+        
+        // Store text before cursor for better restoration
+        cursorInfo.textBeforeCursor = preCaretRange.toString();
+        
+        console.log('📍 Storing cursor position:', cursorInfo.position, 'node:', cursorInfo.node, 'offset:', cursorInfo.offset);
       }
       
       // Apply the processed content
@@ -101,10 +111,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       console.log('🎯 Content actually changed:', beforeHTML !== afterHTML);
       console.log('🎨 Spans preserved:', afterHTML.includes('<span style="color:'));
       
-      // Restore cursor position with better logic
-      if (selection && cursorPosition > 0) {
+      // Restore cursor position with improved logic
+      if (selection && cursorInfo.position > 0) {
         try {
-          // Use a more robust cursor restoration method
+          // Method 1: Try to find the exact text position
           const walker = document.createTreeWalker(
             editorRef.current,
             NodeFilter.SHOW_TEXT,
@@ -118,9 +128,9 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
           
           while (node = walker.nextNode()) {
             const nodeLength = node.textContent?.length || 0;
-            if (currentPos + nodeLength >= cursorPosition) {
+            if (currentPos + nodeLength >= cursorInfo.position) {
               targetNode = node;
-              targetOffset = cursorPosition - currentPos;
+              targetOffset = cursorInfo.position - currentPos;
               break;
             }
             currentPos += nodeLength;
@@ -136,23 +146,38 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
             selection.addRange(range);
             console.log('✅ Cursor position restored to:', safeOffset);
           } else {
-            // Fallback: place cursor at the end
-            const lastTextNode = editorRef.current.lastChild;
-            if (lastTextNode && lastTextNode.nodeType === Node.TEXT_NODE) {
+            // Method 2: Fallback - find by text content
+            const textNodes = [];
+            const walker2 = document.createTreeWalker(
+              editorRef.current,
+              NodeFilter.SHOW_TEXT,
+              null
+            );
+            
+            while (node = walker2.nextNode()) {
+              textNodes.push(node);
+            }
+            
+            // Find the last text node and place cursor at the end
+            if (textNodes.length > 0) {
+              const lastNode = textNodes[textNodes.length - 1];
               const range = document.createRange();
-              range.setStart(lastTextNode, lastTextNode.textContent?.length || 0);
-              range.setEnd(lastTextNode, lastTextNode.textContent?.length || 0);
+              const nodeLength = lastNode.textContent?.length || 0;
+              range.setStart(lastNode, nodeLength);
+              range.setEnd(lastNode, nodeLength);
               selection.removeAllRanges();
               selection.addRange(range);
-              console.log('✅ Cursor position restored to end');
+              console.log('✅ Cursor position restored to end of last text node');
             }
           }
         } catch (error) {
           console.error('❌ Error restoring cursor:', error);
         }
       }
+    } else if (isUserTyping) {
+      console.log('⏸️ RichTextEditor: Skipping NLH processing - user is typing');
     }
-  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
+  }, [processedContent, content, isProcessingNLH, isUserTyping, nlhEnabled, settings.globalEnabled]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
@@ -177,16 +202,17 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       clearTimeout(nlhTimeoutRef.current);
     }
     
-    // Add a small debounce to prevent rapid successive processing
+    // Wait for user to finish typing (1 second pause) before applying NLH
     nlhTimeoutRef.current = setTimeout(() => {
+      console.log('⏰ RichTextEditor: Applying NLH after typing pause');
       setIsProcessingNLH(true);
       setProcessedContent(processed);
       // Small delay to ensure the content is applied before allowing further processing
       setTimeout(() => {
         console.log('⏰ RichTextEditor: NLH processing timeout completed');
         setIsProcessingNLH(false);
-      }, 100); // Increased from 50ms to 100ms for better stability
-    }, 150); // Add 150ms debounce
+      }, 100);
+    }, 1000); // 1 second pause for typing
   }, [content]);
 
   const insertText = (text: string) => {
@@ -325,6 +351,20 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       console.log('🔍 Current editor HTML:', currentHTML.substring(0, 200));
       console.log('🎨 Still has colored spans:', currentHTML.includes('<span style="color:'));
       
+      // Set user as typing
+      setIsUserTyping(true);
+      
+      // Clear existing typing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      
+      // Set timeout to mark user as finished typing
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsUserTyping(false);
+        console.log('⏸️ RichTextEditor: User finished typing');
+      }, 500); // 500ms to mark as finished typing
+      
       // Convert checkboxes but preserve other HTML including color spans
       let newContent = currentHTML.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
       newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
@@ -454,6 +494,9 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       }
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
       }
     };
   }, []);
