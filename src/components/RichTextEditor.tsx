@@ -83,6 +83,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       // Apply the processed content
       const beforeHTML = editorRef.current.innerHTML;
       editorRef.current.innerHTML = processedContent;
+      
+      // *** FIX: UPDATE THE PARENT'S STATE ***
+      onChange(processedContent);
+      
       const afterHTML = editorRef.current.innerHTML;
       
       console.log('🔍 DETAILED CONTENT APPLICATION:');
@@ -144,7 +148,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         }
       }
     }
-  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
+  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled, onChange]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
