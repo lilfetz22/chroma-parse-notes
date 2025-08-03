@@ -88,6 +88,9 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       const beforeHTML = editorRef.current.innerHTML;
       editorRef.current.innerHTML = processedContent;
       
+      // Update parent state with processed content so it persists
+      onChange(processedContent);
+      
       const afterHTML = editorRef.current.innerHTML;
       
       console.log('🔍 DETAILED CONTENT APPLICATION:');
@@ -148,7 +151,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         }
       }
     }
-  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
+  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled, onChange]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
@@ -369,11 +372,13 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       contentChanged: content !== (editorRef.current?.innerHTML || ''),
       isProcessingNLH,
       contentLength: content.length,
-      editorLength: editorRef.current?.innerHTML?.length || 0
+      editorLength: editorRef.current?.innerHTML?.length || 0,
+      nlhEnabled,
+      globalEnabled: settings.globalEnabled
     });
     
-    // Only sync content if it's actually different and we're not processing NLH
-    if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH) {
+    // Don't sync content if NLH is enabled and processing, or if we're in the middle of NLH processing
+    if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH && !(nlhEnabled && settings.globalEnabled)) {
       // Check if the difference is significant (not just whitespace or minor differences)
       const editorContent = editorRef.current.innerHTML;
       const normalizedContent = content.replace(/\s+/g, ' ').trim();
@@ -435,8 +440,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
           }
         }
       }
+    } else if (nlhEnabled && settings.globalEnabled) {
+      console.log('⏸️ RichTextEditor: Skipping content sync - NLH is enabled and processing');
     }
-  }, [content, isProcessingNLH]);
+  }, [content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
 
   return (
     <div className="flex flex-col h-full">
