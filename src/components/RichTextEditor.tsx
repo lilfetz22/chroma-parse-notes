@@ -29,6 +29,12 @@ interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
+  console.log('📨 RichTextEditor: Received props:', {
+    contentLength: content.length,
+    nlhEnabled,
+    typeof: typeof nlhEnabled,
+    onNLHToggle: !!onNLHToggle
+  });
   const { user } = useAuth();
   const { settings } = useNLHSettings();
   const [showLinkInput, setShowLinkInput] = useState(false);

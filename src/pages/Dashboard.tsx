@@ -178,7 +178,15 @@ const Dashboard = () => {
                 <RichTextEditor
                   content={noteContent}
                   onChange={setNoteContent}
-                  nlhEnabled={selectedNote.nlh_enabled}
+                  nlhEnabled={(() => {
+                    console.log('🎯 Dashboard: Passing to RichTextEditor:', {
+                      selectedNoteId: selectedNote.id,
+                      selectedNoteTitle: selectedNote.title,
+                      nlhEnabledValue: selectedNote.nlh_enabled,
+                      typeof: typeof selectedNote.nlh_enabled
+                    });
+                    return selectedNote.nlh_enabled;
+                  })()}
                   onNLHToggle={handleNLHToggle}
                   notes={notes}
                 />
