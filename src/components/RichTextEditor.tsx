@@ -84,8 +84,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       const beforeHTML = editorRef.current.innerHTML;
       editorRef.current.innerHTML = processedContent;
       
-      // *** FIX: UPDATE THE PARENT'S STATE ***
-      onChange(processedContent);
+      // *** FIX: DON'T CALL onChange HERE - this creates the circular loop ***
+      // onChange(processedContent); // REMOVED THIS LINE
       
       const afterHTML = editorRef.current.innerHTML;
       
@@ -148,7 +148,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         }
       }
     }
-  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled, onChange]);
+  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
@@ -168,13 +168,18 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       );
     }
     
-    setIsProcessingNLH(true);
-    setProcessedContent(processed);
-    // Small delay to ensure the content is applied before allowing further processing
-    setTimeout(() => {
-      console.log('⏰ RichTextEditor: NLH processing timeout completed');
-      setIsProcessingNLH(false);
-    }, 50);
+    // Add a small debounce to prevent rapid successive processing
+    const timeoutId = setTimeout(() => {
+      setIsProcessingNLH(true);
+      setProcessedContent(processed);
+      // Small delay to ensure the content is applied before allowing further processing
+      setTimeout(() => {
+        console.log('⏰ RichTextEditor: NLH processing timeout completed');
+        setIsProcessingNLH(false);
+      }, 100); // Increased from 50ms to 100ms for better stability
+    }, 150); // Add 150ms debounce
+    
+    return () => clearTimeout(timeoutId);
   }, [content]);
 
   const insertText = (text: string) => {
@@ -323,6 +328,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       
       console.log('📤 Sending to onChange:', newContent.substring(0, 200));
       onChange(newContent);
+    } else if (isProcessingNLH) {
+      console.log('⏸️ RichTextEditor: Skipping content change during NLH processing');
     }
   };
 
