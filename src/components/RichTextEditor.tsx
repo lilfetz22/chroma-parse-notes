@@ -75,7 +75,9 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         position: 0,
         node: null as Node | null,
         offset: 0,
-        textBeforeCursor: ''
+        textBeforeCursor: '',
+        textAfterCursor: '',
+        surroundingText: ''
       };
       
       if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
@@ -92,7 +94,19 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         // Store text before cursor for better restoration
         cursorInfo.textBeforeCursor = preCaretRange.toString();
         
+        // Store text after cursor for context
+        const postCaretRange = range.cloneRange();
+        postCaretRange.setStart(range.endContainer, range.endOffset);
+        postCaretRange.selectNodeContents(editorRef.current);
+        postCaretRange.setEnd(editorRef.current, editorRef.current.childNodes.length);
+        cursorInfo.textAfterCursor = postCaretRange.toString();
+        
+        // Store surrounding text (before + after) for better matching
+        cursorInfo.surroundingText = cursorInfo.textBeforeCursor + cursorInfo.textAfterCursor;
+        
         console.log('📍 Storing cursor position:', cursorInfo.position, 'node:', cursorInfo.node, 'offset:', cursorInfo.offset);
+        console.log('📍 Text before cursor:', cursorInfo.textBeforeCursor.substring(0, 50));
+        console.log('📍 Text after cursor:', cursorInfo.textAfterCursor.substring(0, 50));
       }
       
       // Apply the processed content
@@ -114,7 +128,41 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       // Restore cursor position with improved logic
       if (selection && cursorInfo.position > 0) {
         try {
-          // Method 1: Try to find the exact text position
+          // Method 1: Find cursor position by matching text content
+          const textBeforeCursor = cursorInfo.textBeforeCursor;
+          const allText = editorRef.current.textContent || '';
+          
+          // Find the position in the new text that matches where we were
+          let targetPosition = 0;
+          if (textBeforeCursor && allText.includes(textBeforeCursor)) {
+            // Find the last occurrence of the text before cursor
+            const lastIndex = allText.lastIndexOf(textBeforeCursor);
+            targetPosition = lastIndex + textBeforeCursor.length;
+          } else {
+            // Fallback: use the original position if text matching fails
+            targetPosition = Math.min(cursorInfo.position, allText.length);
+          }
+          
+          // Alternative method: Use surrounding text context for better accuracy
+          if (cursorInfo.surroundingText && allText.includes(cursorInfo.surroundingText)) {
+            const surroundingIndex = allText.indexOf(cursorInfo.surroundingText);
+            if (surroundingIndex !== -1) {
+              // Calculate position within the surrounding text
+              const relativePosition = cursorInfo.textBeforeCursor.length;
+              targetPosition = surroundingIndex + relativePosition;
+              console.log('🎯 Using surrounding text method for cursor restoration');
+            }
+          }
+          
+          console.log('🎯 Cursor restoration:', {
+            originalPosition: cursorInfo.position,
+            textBeforeCursor: textBeforeCursor.substring(0, 50),
+            allTextLength: allText.length,
+            targetPosition,
+            allTextPreview: allText.substring(0, 100)
+          });
+          
+          // Find the text node and offset for the target position
           const walker = document.createTreeWalker(
             editorRef.current,
             NodeFilter.SHOW_TEXT,
@@ -128,9 +176,9 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
           
           while (node = walker.nextNode()) {
             const nodeLength = node.textContent?.length || 0;
-            if (currentPos + nodeLength >= cursorInfo.position) {
+            if (currentPos + nodeLength >= targetPosition) {
               targetNode = node;
-              targetOffset = cursorInfo.position - currentPos;
+              targetOffset = targetPosition - currentPos;
               break;
             }
             currentPos += nodeLength;
@@ -144,7 +192,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
             range.setEnd(targetNode, safeOffset);
             selection.removeAllRanges();
             selection.addRange(range);
-            console.log('✅ Cursor position restored to:', safeOffset);
+            console.log('✅ Cursor position restored to:', safeOffset, 'in node:', targetNode.textContent?.substring(0, 20));
           } else {
             // Method 2: Fallback - find by text content
             const textNodes = [];
