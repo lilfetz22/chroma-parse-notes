@@ -43,6 +43,21 @@ const Dashboard = () => {
     }
   }, [selectedNote]);
 
+  // Keep selectedNote in sync with notes array updates
+  useEffect(() => {
+    if (selectedNote) {
+      const updatedNote = notes.find(note => note.id === selectedNote.id);
+      if (updatedNote && updatedNote.nlh_enabled !== selectedNote.nlh_enabled) {
+        console.log('🔄 Dashboard: Syncing selectedNote with notes array:', {
+          noteId: selectedNote.id,
+          oldNLHEnabled: selectedNote.nlh_enabled,
+          newNLHEnabled: updatedNote.nlh_enabled
+        });
+        setSelectedNote(updatedNote);
+      }
+    }
+  }, [notes, selectedNote]);
+
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
@@ -67,7 +82,7 @@ const Dashboard = () => {
     await deleteNote(id);
   };
 
-  const handleNLHToggle = () => {
+  const handleNLHToggle = async () => {
     console.log('🔄 Dashboard: NLH toggle clicked');
     if (selectedNote) {
       const newNLHEnabled = !selectedNote.nlh_enabled;
@@ -78,9 +93,13 @@ const Dashboard = () => {
         newNLHEnabled
       });
       
-      updateNote(selectedNote.id, { nlh_enabled: newNLHEnabled });
+      // Update local state immediately for instant feedback
       setSelectedNote({ ...selectedNote, nlh_enabled: newNLHEnabled });
-      console.log('✅ Dashboard: NLH toggle completed');
+      console.log('✅ Dashboard: Local selectedNote state updated');
+      
+      // Update in database
+      await updateNote(selectedNote.id, { nlh_enabled: newNLHEnabled });
+      console.log('✅ Dashboard: Database update completed');
     } else {
       console.log('❌ Dashboard: No note selected for NLH toggle');
     }
