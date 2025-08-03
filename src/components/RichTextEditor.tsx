@@ -47,6 +47,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const fileInputRef = useRef<HTMLInputElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
   const nlhTimeoutRef = useRef<number | null>(null);
+  const saveTimeoutRef = useRef<number | null>(null);
 
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -88,8 +89,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       const beforeHTML = editorRef.current.innerHTML;
       editorRef.current.innerHTML = processedContent;
       
-      // Update parent state with processed content so it persists
-      onChange(processedContent);
+      // DON'T call onChange here - this causes the disappearing letters issue
+      // onChange(processedContent); // REMOVED THIS LINE
       
       const afterHTML = editorRef.current.innerHTML;
       
@@ -151,7 +152,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         }
       }
     }
-  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled, onChange]);
+  }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
@@ -332,16 +333,16 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         setShowNoteLinker(true);
       }
       
-      // Only call onChange if the content has actually changed significantly
-      const normalizedNew = newContent.replace(/\s+/g, ' ').trim();
-      const normalizedCurrent = content.replace(/\s+/g, ' ').trim();
+      // Clear any existing save timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
       
-      if (normalizedNew !== normalizedCurrent) {
+      // Debounced save to parent state
+      saveTimeoutRef.current = setTimeout(() => {
         console.log('📤 Sending to onChange:', newContent.substring(0, 200));
         onChange(newContent);
-      } else {
-        console.log('⏸️ RichTextEditor: Skipping onChange - content unchanged');
-      }
+      }, 300); // 300ms debounce for saving
     } else if (isProcessingNLH) {
       console.log('⏸️ RichTextEditor: Skipping content change during NLH processing');
     }
@@ -444,6 +445,18 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       console.log('⏸️ RichTextEditor: Skipping content sync - NLH is enabled and processing');
     }
   }, [content, isProcessingNLH, nlhEnabled, settings.globalEnabled]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (nlhTimeoutRef.current) {
+        clearTimeout(nlhTimeoutRef.current);
+      }
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
