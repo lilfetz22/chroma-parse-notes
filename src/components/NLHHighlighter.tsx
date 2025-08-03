@@ -44,13 +44,22 @@ const processedContent = useMemo(() => {
     }
 
     try {
-      // 1. Get clean text for analysis from the HTML content
+      // ----------------- THE FIX IS HERE -----------------
+      // 1. Clean the content: Remove all previous NLH spans to prevent nesting.
+      // This regex specifically targets the spans created by this component.
+      const spanRegex = /<span style="color: (.*?); font-weight: 500;">(.*?)<\/span>/g;
+      const cleanedContent = content.replace(spanRegex, '$2'); // $2 keeps the inner text
+
+      // 2. Get clean text for analysis from the now-cleaned HTML
       const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = content;
+      tempDiv.innerHTML = cleanedContent;
       const textToAnalyze = tempDiv.textContent || '';
+      
+      if (!textToAnalyze) return cleanedContent; // Nothing to analyze
+
       const doc = nlp(textToAnalyze);
 
-      // 2. Create a map of all unique words and their assigned color
+      // 3. Create a map of all unique words and their assigned color
       const colorMap = new Map<string, string>();
       const posConfig = [
         { setting: settings.partOfSpeech.properNoun, terms: doc.match('#ProperNoun').out('array') },
@@ -62,7 +71,7 @@ const processedContent = useMemo(() => {
       ];
 
       posConfig.forEach(({ setting, terms }) => {
-        if (setting.enabled) {
+        if (setting.enabled && terms) {
           terms.forEach(term => {
             if (!colorMap.has(term)) {
               colorMap.set(term, setting.color);
@@ -72,24 +81,19 @@ const processedContent = useMemo(() => {
       });
       
       if (colorMap.size === 0) {
-        return content; // No words to highlight
+        return cleanedContent; // Return the cleaned content if no words to highlight
       }
 
-      // 3. Build a single Regex from all the words to be colored
+      // 4. Build a single Regex from all the words to be colored
       const allTerms = Array.from(colorMap.keys());
       const escapedTerms = allTerms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-      escapedTerms.sort((a, b) => b.length - a.length); // Match longer phrases first
+      escapedTerms.sort((a, b) => b.length - a.length);
+      if (escapedTerms.length === 0) return cleanedContent;
       const regex = new RegExp(`\\b(${escapedTerms.join('|')})\\b`, 'g');
 
-      // 4. Replace words in the original content, applying the correct font color style
-      // This is a simplified approach, but should be much more robust.
-      // A more advanced solution would traverse the DOM tree.
-      let processedText = content.replace(regex, (match) => {
-        // Avoid replacing text within an existing HTML tag
-        if (match.includes('<') || match.includes('>')) return match;
-        
+      // 5. Replace words in the CLEANED content string.
+      let processedText = cleanedContent.replace(regex, (match) => {
         const color = colorMap.get(match);
-        // **This is the corrected style for font color**
         return `<span style="color: ${color}; font-weight: 500;">${match}</span>`;
       });
       
@@ -97,7 +101,7 @@ const processedContent = useMemo(() => {
 
     } catch (error) {
       console.error('💥 NLH processing error:', error);
-      return content;
+      return content; // Return original content on error
     }
 }, [content, enabled, settings]);
 
