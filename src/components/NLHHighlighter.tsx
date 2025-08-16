@@ -6,7 +6,7 @@ interface NLHHighlighterProps {
   content: string;
   enabled: boolean;
   settings: NLHSettings;
-  onProcessedContent: (content: string) => void;
+  onProcessedContent: (content: string) => void; 
 }
 
 export function NLHHighlighter({ content, enabled, settings, onProcessedContent }: NLHHighlighterProps) {
@@ -111,8 +111,14 @@ const processedContent = useMemo(() => {
       hasChanges: processedContent !== content,
       processedPreview: processedContent.substring(0, 100)
     });
-    onProcessedContent(processedContent);
-  }, [processedContent, onProcessedContent]);
+    
+    // Calculate cursor position at the end of the content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = processedContent;
+    const cursorOffset = tempDiv.textContent?.length || 0;
+    
+    onProcessedContent(processedContent); 
+}, [processedContent, onProcessedContent]);
 
   return null;
 }

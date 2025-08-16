@@ -20,6 +20,47 @@ import { useNLHSettings } from '@/hooks/useNLHSettings';
 
 import { Note } from '@/types/note';
 
+// Gets the character offset of the cursor within a container
+function getCursorPosition(parent: Node) {
+  const selection = window.getSelection();
+  let charCount = -1;
+  if (selection?.focusNode) {
+    const range = selection.getRangeAt(0);
+    const preCaretRange = range.cloneRange();
+    preCaretRange.selectNodeContents(parent);
+    preCaretRange.setEnd(range.endContainer, range.endOffset);
+    charCount = preCaretRange.toString().length;
+  }
+  return charCount;
+}
+
+// Sets the cursor position in a container at a specific character offset
+function setCursorPosition(parent: Node, position: number) {
+  const selection = window.getSelection();
+  const range = document.createRange();
+  let charCount = 0;
+  
+  const walker = document.createTreeWalker(parent, NodeFilter.SHOW_TEXT, null);
+  let node;
+  while ((node = walker.nextNode()) && charCount < position) {
+    const nodeLength = node.textContent!.length;
+    if (charCount + nodeLength >= position) {
+      range.setStart(node, position - charCount);
+      charCount = position;
+      break;
+    }
+    charCount += nodeLength;
+  }
+
+  if (charCount === 0) {
+      range.setStart(parent, 0);
+  }
+
+  range.collapse(true);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+}
+
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -27,7 +68,6 @@ interface RichTextEditorProps {
   onNLHToggle: () => void;
   notes: Note[];
 }
-
 export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
   console.log('📨 RichTextEditor: Received props:', {
     contentLength: content.length,
@@ -51,123 +91,32 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
 
-  // Apply processed content to editor
-  useEffect(() => {
-    console.log('🔄 RichTextEditor: Should apply processed content?', {
-      hasEditorRef: !!editorRef.current,
-      processedDifferent: processedContent !== content,
-      isProcessingNLH,
-      nlhEnabled,
-      globalEnabled: settings.globalEnabled
-    });
+  // --- START OF INTEGRATED CHANGES ---
 
+  // 1. Ref to store cursor position across re-renders
+  const cursorPositionRef = useRef<number | null>(null);
+
+  // 2. Effect to apply highlighted content and restore cursor
+  useEffect(() => {
     if (editorRef.current && processedContent !== content && !isProcessingNLH && nlhEnabled && settings.globalEnabled) {
       console.log('🎯 RichTextEditor: Applying NLH processed content to editor');
-      console.log('📝 Before innerHTML:', editorRef.current.innerHTML.substring(0, 200));
-      console.log('🎨 Applying content:', processedContent.substring(0, 200));
       
-      // Store current cursor position
-      const selection = window.getSelection();
-      let cursorPosition = 0;
-      
-      if (selection && selection.rangeCount > 0 && editorRef.current.contains(selection.anchorNode)) {
-        // Get text offset position
-        const range = selection.getRangeAt(0);
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(editorRef.current);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        cursorPosition = preCaretRange.toString().length;
-        console.log('📍 Storing cursor position:', cursorPosition);
-      }
-      
-      // Apply the processed content
-      const beforeHTML = editorRef.current.innerHTML;
+      // Apply the new highlighted content
       editorRef.current.innerHTML = processedContent;
       
-      // *** FIX: UPDATE THE PARENT'S STATE ***
+      // Update the parent component's state
       onChange(processedContent);
       
-      const afterHTML = editorRef.current.innerHTML;
-      
-      console.log('🔍 DETAILED CONTENT APPLICATION:');
-      console.log('📝 Before innerHTML:', beforeHTML.substring(0, 200));
-      console.log('🎨 Setting innerHTML to:', processedContent.substring(0, 200));
-      console.log('✅ After innerHTML:', afterHTML.substring(0, 200));
-      console.log('🎯 Content actually changed:', beforeHTML !== afterHTML);
-      console.log('🎨 Spans preserved:', afterHTML.includes('<span style="color:'));
-      
-      // Check computed styles of any span elements
-      const spanElements = editorRef.current.querySelectorAll('span[style*="color:"]');
-      console.log('🎨 Found colored span elements:', spanElements.length);
-      spanElements.forEach((span, index) => {
-        if (index < 3) { // Log first 3 spans
-          const computedStyle = window.getComputedStyle(span);
-          console.log(`🎨 Span ${index + 1}:`, {
-            innerHTML: span.innerHTML,
-            styleAttribute: span.getAttribute('style'),
-            computedColor: computedStyle.color,
-            isVisible: computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden'
-          });
-        }
-      });
-      
-      // Restore cursor position
-      if (selection && cursorPosition > 0) {
-        try {
-          const walker = document.createTreeWalker(
-            editorRef.current,
-            NodeFilter.SHOW_TEXT,
-            null
-          );
-          
-          let currentPos = 0;
-          let node;
-          let targetNode = null;
-          let targetOffset = 0;
-          
-          while (node = walker.nextNode()) {
-            const nodeLength = node.textContent?.length || 0;
-            if (currentPos + nodeLength >= cursorPosition) {
-              targetNode = node;
-              targetOffset = cursorPosition - currentPos;
-              break;
-            }
-            currentPos += nodeLength;
-          }
-          
-          if (targetNode) {
-            const range = document.createRange();
-            range.setStart(targetNode, Math.min(targetOffset, targetNode.textContent?.length || 0));
-            range.setEnd(targetNode, Math.min(targetOffset, targetNode.textContent?.length || 0));
-            selection.removeAllRanges();
-            selection.addRange(range);
-            console.log('✅ Cursor position restored');
-          }
-        } catch (error) {
-          console.error('❌ Error restoring cursor:', error);
-        }
+      // Restore the cursor position to where it was before the update
+      if (cursorPositionRef.current !== null) {
+        console.log('✅ Restoring cursor to position:', cursorPositionRef.current);
+        setCursorPosition(editorRef.current, cursorPositionRef.current);
       }
     }
   }, [processedContent, content, isProcessingNLH, nlhEnabled, settings.globalEnabled, onChange]);
 
   const handleProcessedContent = useCallback((processed: string) => {
     console.log('📥 RichTextEditor: Received processed content from NLHHighlighter');
-    console.log('📊 Content comparison:', {
-      originalLength: content.length,
-      processedLength: processed.length,
-      hasChanges: processed !== content,
-      originalPreview: content.substring(0, 150),
-      processedPreview: processed.substring(0, 150),
-      hasColorSpans: processed.includes('<span style="color:'),
-      spanCount: (processed.match(/<span style="color:/g) || []).length
-    });
-    
-    if (processed.includes('<span style="color:')) {
-      console.log('🎨 FOUND COLOR SPANS! Sample spans:', 
-        processed.match(/<span style="color: [^"]*;">[^<]*<\/span>/g)?.slice(0, 3)
-      );
-    }
-    
     setIsProcessingNLH(true);
     setProcessedContent(processed);
     // Small delay to ensure the content is applied before allowing further processing
@@ -175,7 +124,48 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       console.log('⏰ RichTextEditor: NLH processing timeout completed');
       setIsProcessingNLH(false);
     }, 50);
-  }, [content]);
+  }, []);
+
+  // 3. Handler that saves cursor position BEFORE triggering content update
+  const handleContentChange = () => {
+    if (editorRef.current && !isProcessingNLH) {
+      // Save cursor position BEFORE updating the state
+      cursorPositionRef.current = getCursorPosition(editorRef.current);
+      console.log('📍 Saving cursor position:', cursorPositionRef.current);
+
+      const currentHTML = editorRef.current.innerHTML;
+      
+      // Preserve original logic for checkboxes and note linking
+      let newContent = currentHTML.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
+      newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
+
+      if (newContent.slice(-2) === '[[') {
+        setShowNoteLinker(true);
+      }
+      
+      // Update parent state, which triggers the highlighting process
+      onChange(newContent);
+    }
+  };
+
+  // 4. Effect to sync external content changes (e.g., switching notes) without losing cursor position
+  useEffect(() => {
+    if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH) {
+      console.log('📝 RichTextEditor: Syncing external content to editor');
+      
+      // Save cursor before changing content
+      const position = getCursorPosition(editorRef.current);
+      
+      editorRef.current.innerHTML = content;
+      
+      // Restore cursor after changing content
+      if (position > -1) {
+        setCursorPosition(editorRef.current, position);
+      }
+    }
+  }, [content, isProcessingNLH]);
+
+  // --- END OF INTEGRATED CHANGES ---
 
   const insertText = (text: string) => {
     const selection = window.getSelection();
@@ -220,7 +210,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     if (selection && selection.toString().trim()) {
       setSelectedText(selection.toString().trim());
       setShowLinkInput(true);
-      // Focus the input after a brief delay to ensure the UI is updated
       setTimeout(() => {
         linkInputRef.current?.focus();
       }, 100);
@@ -247,7 +236,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         range.deleteContents();
         range.insertNode(link);
         
-        // Update the content
         if (editorRef.current) {
           onChange(editorRef.current.innerHTML);
         }
@@ -306,26 +294,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     }
   };
 
-  const handleContentChange = () => {
-    if (editorRef.current && !isProcessingNLH) {
-      console.log('✏️ RichTextEditor: User is editing content');
-      const currentHTML = editorRef.current.innerHTML;
-      console.log('🔍 Current editor HTML:', currentHTML.substring(0, 200));
-      console.log('🎨 Still has colored spans:', currentHTML.includes('<span style="color:'));
-      
-      // Convert checkboxes but preserve other HTML including color spans
-      let newContent = currentHTML.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
-      newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
-
-      if (newContent.slice(-2) === '[[') {
-        setShowNoteLinker(true);
-      }
-      
-      console.log('📤 Sending to onChange:', newContent.substring(0, 200));
-      onChange(newContent);
-    }
-  };
-
   const handleNoteLink = (note: Note) => {
     if (editorRef.current) {
       const link = document.createElement('a');
@@ -344,21 +312,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       setShowNoteLinker(false);
     }
   };
-
-  useEffect(() => {
-    console.log('🔄 RichTextEditor: Content sync check:', {
-      hasEditorRef: !!editorRef.current,
-      contentChanged: content !== (editorRef.current?.innerHTML || ''),
-      isProcessingNLH,
-      contentLength: content.length,
-      editorLength: editorRef.current?.innerHTML?.length || 0
-    });
-    
-    if (editorRef.current && content !== editorRef.current.innerHTML && !isProcessingNLH) {
-      console.log('📝 RichTextEditor: Syncing content to editor (content prop changed)');
-      editorRef.current.innerHTML = content;
-    }
-  }, [content, isProcessingNLH]);
 
   return (
     <div className="flex flex-col h-full">
