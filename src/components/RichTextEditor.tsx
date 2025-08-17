@@ -91,7 +91,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<number | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -379,7 +379,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         enabled={nlhEnabled}
         settings={settings}
         onProcessedContent={handleProcessedContent}
-        isTyping={isTyping} 
       />
 
       {/* Hidden file input */}
