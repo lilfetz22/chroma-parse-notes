@@ -1,9 +1,3 @@
-Of course. Based on the V1 project specification and the conventions of AI-driven development configuration, here is the `GEMINI.md` file for Chroma Notes.
-
-***
-
-# GEMINI.md
-
 This file specifies the requirements for Version 1.0 of the **Chroma Notes** web application.
 
 # project

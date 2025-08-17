@@ -1,86 +1,107 @@
-# GEMINI.md
+### **Project Specification: Kanban Board Feature (V2)**
 
-This file specifies the requirements for Version 1.0 of the **Chroma Notes** web application.
+#### **1. Core Objective**
 
-# project
+You are to build a "Trello-style" Kanban board feature within the existing application. This feature allows users to organize tasks and notes visually. The implementation must support creating and managing columns, creating two distinct types of cards ("Simple" and "Linked"), and enabling full drag-and-drop functionality for both cards and columns.
 
--   **name**: Chroma Notes
--   **version**: 1.0
--   **description**: A web-based notes application with a unique real-time "Natural Language Highlighting" feature.
+#### **2. Core Technology Stack**
 
-# stack
+*   **Frontend Framework:** React
+*   **Backend & Database:** Supabase
+*   **Drag-and-Drop Library:** Use **`react-beautiful-dnd`**. This is a mandatory requirement.
+*   **UI Components:** Use the existing `shadcn/ui` component library for modals, buttons, inputs, etc., to maintain a consistent look and feel.
 
--   **frontend**: React
--   **backend**: Supabase
--   **language**: TypeScript
+#### **3. Database Schema (Supabase)**
 
-# authentication
+You must create three new tables to support this feature:
 
--   **provider**: Supabase Auth
--   **methods**:
-    -   Email/Password
+1.  **`boards`**
+    *   `id`: `uuid` (Primary Key, default: `uuid_generate_v4()`)
+    *   `user_id`: `uuid` (Foreign Key to `auth.users`, non-nullable)
+    *   `title`: `text` (default: `'My Board'`)
+    *   `created_at`: `timestamp with time zone` (default: `now()`)
+    *   *Note: For now, assume one board per user.*
 
-# database
+2.  **`columns`**
+    *   `id`: `uuid` (Primary Key, default: `uuid_generate_v4()`)
+    *   `board_id`: `uuid` (Foreign Key to `boards.id`, non-nullable)
+    *   `title`: `text` (non-nullable)
+    *   `position`: `integer` (non-nullable, for ordering)
+    *   `created_at`: `timestamp with time zone` (default: `now()`)
 
--   **provider**: Supabase DB (Postgres)
--   **schema**:
-    -   **table**: `notes`
-        -   `id`: UUID (Primary Key)
-        -   `user_id`: UUID (Foreign Key to `auth.users`)
-        -   `title`: TEXT
-        -   `content`: JSONB (To store rich-text editor content, e.g., from TipTap/Editor.js)
-        -   `nlh_enabled`: BOOLEAN (Per-note override for highlighting)
-        -   `created_at`: TIMESTAMPZ
-        -   `updated_at`: TIMESTAMPZ
-    -   **table**: `user_settings`
-        -   `user_id`: UUID (Primary Key, Foreign Key to `auth.users`)
-        -   `nlh_global_enabled`: BOOLEAN (Default: `true`)
-        -   `nlh_highlight_noun`: BOOLEAN (Default: `true`)
-        -   `nlh_highlight_verb`: BOOLEAN (Default: `true`)
-        -   `nlh_highlight_adverb`: BOOLEAN (Default: `true`)
-        -   `nlh_highlight_adjective`: BOOLEAN (Default: `true`)
-        -   `nlh_highlight_number`: BOOLEAN (Default: `true`)
-        -   `nlh_highlight_proper_noun`: BOOLEAN (Default: `true`)
-        -   `nlh_color_noun`: TEXT (Default: `'#28a745'`)
-        -   `nlh_color_verb`: TEXT (Default: `'#ffc107'`)
-        -   `nlh_color_adverb`: TEXT (Default: `'#fd7e14'`)
-        -   `nlh_color_adjective`: TEXT (Default: `'#007bff'`)
-        -   `nlh_color_number`: TEXT (Default: `'#dc3545'`)
-        -   `nlh_color_proper_noun`: TEXT (Default: `'#6f42c1'`)
+3.  **`cards`**
+    *   `id`: `uuid` (Primary Key, default: `uuid_generate_v4()`)
+    *   `column_id`: `uuid` (Foreign Key to `columns.id`, non-nullable)
+    *   `position`: `integer` (non-nullable, for ordering within a column)
+    *   **`card_type`**: `text` (non-nullable, either `'simple'` or `'linked'`)
+    *   **`title`**: `text` (non-nullable, for Simple cards; for Linked cards, this can be a denormalized copy of the note title)
+    *   **`content`**: `jsonb` (nullable, for the rich text of Simple cards)
+    *   **`note_id`**: `uuid` (nullable, Foreign Key to the existing `notes` table. This is **required** when `card_type` is `'linked'`)
+    *   `created_at`: `timestamp with time zone` (default: `now()`)
 
-# features
+#### **4. Component Breakdown**
 
--   **User Authentication**:
-    -   Implement a signup page with email and password fields.
-    -   Implement a login page with email and password fields.
-    -   Users should remain logged in across sessions.
-    -   Provide a global logout button.
+Create the following new React components:
 
--   **Main Layout**:
-    -   Create a two-pane UI.
-    -   The left pane must list all notes by title, sorted by `updated_at` descending.
-    -   Clicking a note in the left pane opens it for editing in the right pane.
-    -   A "New Note" button should exist, which creates a new note record and loads it in the editor.
+1.  **`KanbanBoardView.tsx` (The Main Page/Container)**
+    *   **Responsibility:** The primary view for the Kanban board.
+    *   **Props:** None.
+    *   **Logic:**
+        *   Fetches the user's board, all its columns, and all its cards from Supabase on mount. Data should be ordered by the `position` fields.
+        *   Manages the state for the entire board (columns and cards).
+        *   Contains the `DragDropContext` from `react-beautiful-dnd`.
+        *   Implements the `onDragEnd` logic for both card and column reordering.
+        *   Renders a list of `Column` components.
+        *   Renders a button to "Add new column".
 
--   **Rich-Text Editor**:
-    -   Use a WYSIWYG editor (e.g., TipTap).
-    -   The editor must support interactive checklists.
-    -   The editor must allow highlighting text and embedding a hyperlink.
-    -   The editor must support image embedding via both clipboard paste and a file upload button.
-    -   All image uploads must be stored in Supabase Storage.
-    -   All note changes must be autosaved to the database.
+2.  **`Column.tsx`**
+    *   **Responsibility:** Renders a single column and the cards within it.
+    *   **Props:** `column: ColumnType`, `cards: CardType[]`, `index: number`.
+    *   **Logic:**
+        *   Wrapped in a `Draggable` component to allow column reordering.
+        *   Contains a `Droppable` area for cards.
+        *   Renders an editable title that can be updated (e.g., on blur or by clicking an edit icon).
+        *   Includes a dropdown menu for column actions: "Rename" and "Delete Column".
+        *   Renders a list of `Card` components, ordered by `position`.
+        *   Includes a button at the bottom to "Add a card".
 
--   **Natural Language Highlighting (NLH)**:
-    -   **Engine**: Use the `compromise.js` library exclusively on the client-side.
-    -   **Activation**: Highlighting should be applied automatically as the user types, using a debounce of ~500ms to ensure performance.
-    -   **Settings Panel**: Create a dedicated settings modal or page for all NLH controls.
-        -   **Toggles**: The panel must contain on/off toggles for:
-            -   Global NLH (affects all notes unless overridden).
-            -   Each part of speech: Noun, Verb, Adverb, Adjective, Number, Proper Noun.
-        -   **Color Pickers**: Next to each part-of-speech toggle, include a color input that allows the user to change its highlight color.
-    -   **Per-Note Toggle**: The editor UI must include an on/off switch to enable/disable NLH for the current note, overriding the global setting.
+3.  **`Card.tsx`**
+    *   **Responsibility:** Renders a single card.
+    *   **Props:** `card: CardType`, `index: number`.
+    *   **Logic:**
+        *   Wrapped in a `Draggable` component.
+        *   **Conditional Rendering based on `card.card_type`:**
+            *   If `'linked'`: Display the card's title and a short, truncated preview of the linked note's content. On click, it must navigate the user to the full note page (e.g., `/notes/${card.note_id}`).
+            *   If `'simple'`: Display the card's title. On click, it should open a modal (`CardDetailModal.tsx`) showing the full `content` in a rich-text editor view.
 
--   **Search**:
-    -   Implement a single, global search bar.
-    -   The search must perform a full-text query across the `title` and `content` of all the user's notes.
-    -   Display search results in a clear list. Clicking a result should navigate to that note.
+4.  **`CreateCardModal.tsx`**
+    *   **Responsibility:** UI for creating a new card.
+    *   **Props:** `columnId: string`, `onCardCreated: (newCard) => void`.
+    *   **Logic:**
+        *   A form that allows the user to select the card type (`Simple` or `Linked`) via a dropdown or radio buttons.
+        *   **If `Simple` is selected:** Show a text input for the `title`. A full rich-text editor for the `content` can be included here or in the `CardDetailModal`.
+        *   **If `Linked` is selected:** Show a search input that allows the user to search through their existing notes by title. Display results in a list. Clicking a note from the list selects it for linking.
+        *   On submit, it creates a new record in the `cards` table in Supabase and calls `onCardCreated` to update the board's state.
+
+#### **5. Feature Implementation Details**
+
+1.  **Data Fetching:**
+    *   Create a Supabase RPC function `get_board_details` that fetches the board, its columns (ordered by `position`), and all associated cards (ordered by `position`) in a single network request to optimize loading.
+
+2.  **Drag-and-Drop Logic (`onDragEnd` in `KanbanBoardView.tsx`):**
+    *   Handle three distinct cases in the `onDragEnd` callback:
+        1.  **Card reordered in the same column:** Update the `position` of all affected cards in that column.
+        2.  **Card moved to a different column:** Update the card's `column_id` and the `position` of all affected cards in both the source and destination columns.
+        3.  **Column reordered:** Update the `position` of all affected columns in the `boards` table.
+    *   **Implementation:** Use optimistic updates in the React state for a smooth UI, followed by an asynchronous call to a Supabase function to persist the changes.
+
+3.  **Card Creation Flow:**
+    *   The "Add a card" button in `Column.tsx` should open the `CreateCardModal.tsx`, passing the current `column.id`.
+    *   The note search functionality within the modal must query the `notes` table based on user input.
+
+4.  **Column Management:**
+    *   **Creation:** Add a new column record to Supabase with the correct `board_id` and the next available `position`.
+    *   **Renaming:** Allow inline editing of the column title. On change, update the `title` field for that column in Supabase.
+    *   **Deletion:** When deleting a column, Supabase should be configured with a cascading delete to automatically remove all cards within that column.
+
+This specification provides a complete blueprint for building the Kanban board feature. Adherence to this spec will result in the desired functionality.
