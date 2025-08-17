@@ -1,0 +1,226 @@
+import React, { useState } from 'react';
+import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import { useKanbanBoard } from '@/hooks/useKanbanBoard';
+import { Column } from './Column';
+import { CreateCardModal } from './CreateCardModal';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, Loader2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+
+export function KanbanBoardView() {
+  const {
+    boardData,
+    loading,
+    createColumn,
+    updateColumnTitle,
+    deleteColumn,
+    createCard,
+    deleteCard,
+    updatePositions,
+    updateColumnPositions
+  } = useKanbanBoard();
+
+  const [showCreateCard, setShowCreateCard] = useState(false);
+  const [selectedColumnId, setSelectedColumnId] = useState<string>('');
+  const [showCreateColumn, setShowCreateColumn] = useState(false);
+  const [newColumnTitle, setNewColumnTitle] = useState('');
+
+  const handleAddCard = (columnId: string) => {
+    setSelectedColumnId(columnId);
+    setShowCreateCard(true);
+  };
+
+  const handleCreateColumn = async () => {
+    if (!newColumnTitle.trim()) return;
+    
+    await createColumn(newColumnTitle.trim());
+    setNewColumnTitle('');
+    setShowCreateColumn(false);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleCreateColumn();
+    } else if (e.key === 'Escape') {
+      setShowCreateColumn(false);
+      setNewColumnTitle('');
+    }
+  };
+
+  const handleDragEnd = async (result: DropResult) => {
+    const { destination, source, type } = result;
+
+    if (!destination || !boardData) return;
+
+    // Handle column reordering
+    if (type === 'column') {
+      if (destination.index === source.index) return;
+
+      const newColumns = Array.from(boardData.columns);
+      const [movedColumn] = newColumns.splice(source.index, 1);
+      newColumns.splice(destination.index, 0, movedColumn);
+
+      // Update positions
+      const columnUpdates = newColumns.map((column, index) => ({
+        id: column.id,
+        position: index
+      }));
+
+      await updateColumnPositions(columnUpdates);
+      return;
+    }
+
+    // Handle card reordering/moving
+    if (type === 'card') {
+      const sourceColumn = boardData.columns.find(col => col.id === source.droppableId);
+      const destColumn = boardData.columns.find(col => col.id === destination.droppableId);
+      
+      if (!sourceColumn || !destColumn) return;
+
+      const sourceCards = boardData.cards.filter(card => card.column_id === source.droppableId);
+      const destCards = boardData.cards.filter(card => card.column_id === destination.droppableId);
+
+      // Same column reordering
+      if (source.droppableId === destination.droppableId) {
+        if (destination.index === source.index) return;
+
+        const newCards = Array.from(sourceCards);
+        const [movedCard] = newCards.splice(source.index, 1);
+        newCards.splice(destination.index, 0, movedCard);
+
+        const updates = newCards.map((card, index) => ({
+          id: card.id,
+          position: index
+        }));
+
+        await updatePositions(updates);
+      } else {
+        // Moving to different column
+        const movedCard = sourceCards[source.index];
+        
+        // Update source column positions
+        const newSourceCards = sourceCards.filter((_, index) => index !== source.index);
+        const sourceUpdates = newSourceCards.map((card, index) => ({
+          id: card.id,
+          position: index
+        }));
+
+        // Update destination column positions
+        const newDestCards = Array.from(destCards);
+        newDestCards.splice(destination.index, 0, movedCard);
+        const destUpdates = newDestCards.map((card, index) => ({
+          id: card.id,
+          position: index,
+          column_id: destination.droppableId
+        }));
+
+        await updatePositions([...sourceUpdates, ...destUpdates]);
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!boardData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Failed to load board data</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">{boardData.board.title}</h1>
+      </div>
+
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="board" type="column" direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex gap-4 overflow-x-auto pb-4"
+            >
+              {boardData.columns.map((column, index) => {
+                const columnCards = boardData.cards.filter(card => card.column_id === column.id);
+                return (
+                  <Column
+                    key={column.id}
+                    column={column}
+                    cards={columnCards}
+                    index={index}
+                    onUpdateTitle={updateColumnTitle}
+                    onDeleteColumn={deleteColumn}
+                    onAddCard={handleAddCard}
+                    onDeleteCard={deleteCard}
+                  />
+                );
+              })}
+              {provided.placeholder}
+
+              {/* Add Column Button/Input */}
+              <div className="w-80 flex-shrink-0">
+                {showCreateColumn ? (
+                  <Card>
+                    <CardContent className="p-3">
+                      <Input
+                        value={newColumnTitle}
+                        onChange={(e) => setNewColumnTitle(e.target.value)}
+                        onBlur={handleCreateColumn}
+                        onKeyDown={handleKeyPress}
+                        placeholder="Enter column title..."
+                        className="mb-2"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleCreateColumn}>
+                          Add Column
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost" 
+                          onClick={() => {
+                            setShowCreateColumn(false);
+                            setNewColumnTitle('');
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    className="w-full h-12 border-2 border-dashed border-muted-foreground/25 text-muted-foreground hover:border-muted-foreground/50"
+                    onClick={() => setShowCreateColumn(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Column
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      <CreateCardModal
+        isOpen={showCreateCard}
+        onClose={() => setShowCreateCard(false)}
+        columnId={selectedColumnId}
+        onCardCreated={(columnId, cardData) => createCard(columnId, cardData)}
+      />
+    </div>
+  );
+}

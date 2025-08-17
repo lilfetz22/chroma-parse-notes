@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotes } from '@/hooks/useNotes';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,12 @@ import { NotesList } from '@/components/NotesList';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { Note } from '@/types/note';
-import { LogOut, FileText } from 'lucide-react';
+import { LogOut, FileText, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
   const { notes, loading, createNote, updateNote, deleteNote, searchNotes } = useNotes();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -57,6 +59,19 @@ const Dashboard = () => {
       }
     }
   }, [notes, selectedNote]);
+
+  // Handle navigation from Kanban board to specific note
+  useEffect(() => {
+    const state = location.state as { selectedNoteId?: string };
+    if (state?.selectedNoteId && notes.length > 0) {
+      const note = notes.find(n => n.id === state.selectedNoteId);
+      if (note) {
+        setSelectedNote(note);
+        // Clear the state to prevent reselection on refresh
+        navigate('/', { replace: true });
+      }
+    }
+  }, [notes, location.state, navigate]);
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -128,6 +143,14 @@ const Dashboard = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/board')}
+          >
+            <Kanban className="h-4 w-4 mr-1" />
+            Kanban Board
+          </Button>
           <SettingsDialog />
           <Separator orientation="vertical" className="h-6" />
           <span className="text-sm text-muted-foreground">
