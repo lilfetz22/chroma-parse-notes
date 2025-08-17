@@ -20,7 +20,8 @@ interface CreateCardModalProps {
     card_type: CardType;
     title: string;
     content?: any;
-    note_id?: string;
+  note_id?: string;
+  summary?: string | null;
   }) => void;
 }
 
@@ -28,6 +29,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
   const [cardType, setCardType] = useState<CardType>('simple');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [summary, setSummary] = useState('');
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -69,7 +71,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
         card_type: cardType,
         title: title.trim(),
         ...(cardType === 'simple' ? { content: content.trim() } : {}),
-        ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id } : {})
+  ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id, summary: summary.trim() || null } : {})
       };
 
       await onCardCreated(columnId, cardData);
@@ -84,6 +86,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
   const handleClose = () => {
     setTitle('');
     setContent('');
+  setSummary('');
     setSelectedNote(null);
     setSearchQuery('');
     setCardType('simple');
@@ -92,7 +95,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
 
   const handleNoteSelect = (note: Note) => {
     setSelectedNote(note);
-    setTitle(note.title);
+  setTitle(note.title);
+  setSummary('');
   };
 
   return (
@@ -209,6 +213,32 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
                     </div>
                   </CardContent>
                 </Card>
+              )}
+              {selectedNote && (
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="linked-title">Card Title</Label>
+                    <Input
+                      id="linked-title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter a title for this linked card..."
+                      className="mt-1"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="linked-summary">Summary (optional)</Label>
+                    <Textarea
+                      id="linked-summary"
+                      value={summary}
+                      onChange={(e) => setSummary(e.target.value)}
+                      placeholder="Add a short summary for this card..."
+                      rows={3}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
               )}
             </div>
           )}

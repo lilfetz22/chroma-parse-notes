@@ -125,7 +125,8 @@ export function useKanbanBoard() {
     card_type: 'simple' | 'linked';
     title: string;
     content?: any;
-    note_id?: string;
+  note_id?: string;
+  summary?: string | null;
   }) => {
     if (!boardData) return;
 
@@ -184,6 +185,30 @@ export function useKanbanBoard() {
         title: "Error",
         description: "Failed to delete card."
       });
+    }
+  };
+
+  // Update card (title/summary/content)
+  const updateCard = async (cardId: string, updates: Partial<Card>) => {
+    try {
+      const { data, error } = await supabase
+        .from('cards')
+        .update(updates)
+        .eq('id', cardId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setBoardData(prev => prev ? {
+        ...prev,
+        cards: prev.cards.map(c => c.id === cardId ? data as Card : c)
+      } : null);
+
+      toast({ title: 'Card updated' });
+    } catch (error) {
+      console.error('Error updating card:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update card.' });
     }
   };
 
@@ -292,6 +317,7 @@ export function useKanbanBoard() {
     deleteColumn,
     createCard,
     deleteCard,
+  updateCard,
     updatePositions,
     updateColumnPositions
   };

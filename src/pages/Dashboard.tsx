@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { NotesList } from '@/components/NotesList';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { SettingsDialog } from '@/components/SettingsDialog';
+import { AppHeader } from '@/components/AppHeader';
 import { Note } from '@/types/note';
 import { LogOut, FileText, Kanban } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
@@ -135,37 +136,7 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b bg-card">
-        <div className="flex items-center gap-3">
-          <FileText className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold">Chroma Notes</h1>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/board')}
-          >
-            <Kanban className="h-4 w-4 mr-1" />
-            Kanban Board
-          </Button>
-          <SettingsDialog />
-          <Separator orientation="vertical" className="h-6" />
-          <span className="text-sm text-muted-foreground">
-            {user.email}
-          </span>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4 mr-1" />
-            Sign Out
-          </Button>
-        </div>
-      </header>
+  <AppHeader />
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

@@ -11,15 +11,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { EditLinkedCardModal } from './EditLinkedCardModal';
+import { Edit3 } from 'lucide-react';
 
 interface CardProps {
   card: CardType;
   index: number;
   onDelete: (cardId: string) => void;
+  onUpdate?: (cardId: string, updates: Partial<CardType>) => void;
 }
 
-export function Card({ card, index, onDelete }: CardProps) {
+export function Card({ card, index, onDelete, onUpdate }: CardProps) {
   const navigate = useNavigate();
+  const [editing, setEditing] = useState(false);
+  const [currentCard, setCurrentCard] = useState<CardType | null>(card);
 
   const handleCardClick = () => {
     if (card.card_type === 'linked' && card.note_id) {
@@ -31,9 +37,14 @@ export function Card({ card, index, onDelete }: CardProps) {
   const getContentPreview = () => {
     if (card.card_type === 'linked') {
       return (
-        <div className="text-sm text-muted-foreground flex items-center gap-1">
-          <ExternalLink className="w-3 h-3" />
-          Linked Note
+        <div className="text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <ExternalLink className="w-3 h-3" />
+            <span className="text-xs">Linked Note</span>
+          </div>
+          {card.summary ? (
+            <div className="text-sm text-muted-foreground line-clamp-3">{card.summary}</div>
+          ) : null}
         </div>
       );
     }
@@ -55,6 +66,7 @@ export function Card({ card, index, onDelete }: CardProps) {
   };
 
   return (
+    <>
     <Draggable draggableId={card.id} index={index}>
       {(provided, snapshot) => (
         <UICard
@@ -69,8 +81,11 @@ export function Card({ card, index, onDelete }: CardProps) {
           <CardContent className="p-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm line-clamp-2 mb-1">
+                <h4 className="font-medium text-sm line-clamp-2 mb-1 flex items-center gap-2">
                   {card.title}
+                  {card.card_type === 'linked' && (
+                    <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                  )}
                 </h4>
                 {getContentPreview()}
               </div>
@@ -86,6 +101,17 @@ export function Card({ card, index, onDelete }: CardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border shadow-md">
+                  {card.card_type === 'linked' && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditing(true);
+                      }}
+                    >
+                      <Edit3 className="w-3 h-3 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -103,5 +129,20 @@ export function Card({ card, index, onDelete }: CardProps) {
         </UICard>
       )}
     </Draggable>
+      {editing && currentCard && (
+      <EditLinkedCardModal
+        isOpen={editing}
+        onClose={() => setEditing(false)}
+        card={currentCard}
+        onSaved={(updated) => {
+          setCurrentCard(updated);
+          setEditing(false);
+          if (typeof onUpdate === 'function') {
+            onUpdate(updated.id, { title: updated.title, summary: updated.summary });
+          }
+        }}
+      />
+    )}
+    </>
   );
 }

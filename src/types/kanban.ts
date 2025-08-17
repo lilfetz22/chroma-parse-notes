@@ -22,6 +22,7 @@ export interface Card {
   title: string;
   content?: any; // JSONB content for simple cards
   note_id?: string; // For linked cards
+  summary?: string | null; // optional summary for linked cards
   created_at: string;
 }
 

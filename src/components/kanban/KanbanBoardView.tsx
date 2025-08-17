@@ -18,8 +18,9 @@ export function KanbanBoardView() {
     deleteColumn,
     createCard,
     deleteCard,
-    updatePositions,
-    updateColumnPositions
+  updateCard,
+  updatePositions,
+  updateColumnPositions
   } = useKanbanBoard();
 
   const [showCreateCard, setShowCreateCard] = useState(false);
@@ -163,6 +164,7 @@ export function KanbanBoardView() {
                     onDeleteColumn={deleteColumn}
                     onAddCard={handleAddCard}
                     onDeleteCard={deleteCard}
+                    onUpdateCard={updateCard}
                   />
                 );
               })}

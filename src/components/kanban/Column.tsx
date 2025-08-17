@@ -21,6 +21,7 @@ interface ColumnProps {
   onDeleteColumn: (columnId: string) => void;
   onAddCard: (columnId: string) => void;
   onDeleteCard: (cardId: string) => void;
+  onUpdateCard?: (cardId: string, updates: Partial<CardType>) => void;
 }
 
 export function Column({ 
@@ -122,6 +123,7 @@ export function Column({
                           card={card} 
                           index={index} 
                           onDelete={onDeleteCard}
+                          onUpdate={onUpdateCard}
                         />
                       </div>
                     ))}
