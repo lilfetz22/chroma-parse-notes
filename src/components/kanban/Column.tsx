@@ -31,7 +31,8 @@ export function Column({
   onUpdateTitle, 
   onDeleteColumn, 
   onAddCard,
-  onDeleteCard 
+  onDeleteCard,
+  onUpdateCard
 }: ColumnProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);

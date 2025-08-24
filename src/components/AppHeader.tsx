@@ -3,6 +3,7 @@ import { FileText, Kanban, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SettingsDialog } from '@/components/SettingsDialog';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -30,6 +31,7 @@ export function AppHeader() {
           Kanban Board
         </Button>
         <SettingsDialog />
+        <ThemeToggle />
         <Separator orientation="vertical" className="h-6" />
         <span className="text-sm text-muted-foreground">{user?.email}</span>
         <Button variant="outline" size="sm" onClick={handleSignOut}>
