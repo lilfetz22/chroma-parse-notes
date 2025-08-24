@@ -5,12 +5,13 @@ import { Separator } from '@/components/ui/separator';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
 export function AppHeader() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -28,10 +29,18 @@ export function AppHeader() {
       </div>
       <div className="flex items-center gap-2">
         <ProjectSwitcher />
-        <Button variant="outline" size="sm" onClick={() => navigate('/board')}>
-          <Kanban className="h-4 w-4 mr-1" />
-          Kanban Board
-        </Button>
+        {/* Show Notes button when on the Kanban board, otherwise show Kanban button */}
+        {location.pathname.startsWith('/board') ? (
+          <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+            <FileText className="h-4 w-4 mr-1" />
+            Notes
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" onClick={() => navigate('/board')}>
+            <Kanban className="h-4 w-4 mr-1" />
+            Kanban Board
+          </Button>
+        )}
         <SettingsDialog />
         <ThemeToggle />
         <Separator orientation="vertical" className="h-6" />
