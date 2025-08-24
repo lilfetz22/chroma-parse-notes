@@ -182,8 +182,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         link.href = linkUrl;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
-        link.className = 'text-black underline hover:text-black/80';
-        link.style.color = 'black';
+  link.className = 'underline';
         link.textContent = selectedText;
         range.deleteContents();
         range.insertNode(link);
@@ -266,8 +265,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       const link = document.createElement('a');
       link.href = `/note/${note.id}`;
       link.textContent = note.title;
-      link.className = 'text-black underline hover:text-black/80';
-      link.style.color = 'black';
+  link.className = 'underline';
 
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
