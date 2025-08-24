@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useProject } from '@/hooks/useProject';
+import { useNotes } from '@/hooks/useNotes';
 import { Note } from '@/types/note';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, FileText, Trash2 } from 'lucide-react';
+import { Plus, Search, FileText, Trash2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -23,7 +25,7 @@ interface NotesListProps {
   notes: Note[];
   selectedNote: Note | null;
   onSelectNote: (note: Note) => void;
-  onCreateNote: () => void;
+  onCreateNote: () => Promise<Note | null>;
   onSearch: (query: string) => void;
   onDeleteNote: (id: string) => void;
   loading: boolean;
@@ -38,12 +40,27 @@ export function NotesList({
   onDeleteNote,
   loading 
 }: NotesListProps) {
+  const { activeProject } = useProject();
+  const { updateNote } = useNotes();
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleCreateNote = async () => {
+    const newNote = await onCreateNote();
+    if (newNote && activeProject) {
+      // Automatically assign the note to the active project
+      await updateNote(newNote.id, { project_id: activeProject.id });
+    }
+  };
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     onSearch(query);
   };
+
+  // Filter notes by active project
+  const filteredNotes = activeProject 
+    ? notes.filter(note => note.project_id === activeProject.id)
+    : notes.filter(note => !note.project_id); // Show unassigned notes when no project is selected
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -67,8 +84,10 @@ export function NotesList({
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">Notes</h2>
-          <Button onClick={onCreateNote} size="sm">
+          <h2 className="text-lg font-semibold">
+            {activeProject ? `Notes - ${activeProject.title}` : 'Notes (Unassigned)'}
+          </h2>
+          <Button onClick={handleCreateNote} size="sm">
             <Plus className="h-4 w-4 mr-1" />
             New
           </Button>
@@ -93,14 +112,19 @@ export function NotesList({
             <div className="text-center text-muted-foreground py-8">
               Loading notes...
             </div>
-          ) : notes.length === 0 ? (
+          ) : filteredNotes.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No notes yet</p>
+              <p>
+                {activeProject 
+                  ? `No notes in "${activeProject.title}" project yet.` 
+                  : 'No unassigned notes yet.'
+                }
+              </p>
               <p className="text-sm">Create your first note to get started</p>
             </div>
           ) : (
-            notes.map((note) => (
+            filteredNotes.map((note) => (
               <Card
                 key={note.id}
                 className={cn(

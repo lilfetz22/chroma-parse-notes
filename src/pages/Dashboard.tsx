@@ -78,11 +78,12 @@ const Dashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const handleCreateNote = async () => {
+  const handleCreateNote = async (): Promise<Note | null> => {
     const newNote = await createNote();
     if (newNote) {
       setSelectedNote(newNote);
     }
+    return newNote;
   };
 
   const handleSelectNote = (note: Note) => {

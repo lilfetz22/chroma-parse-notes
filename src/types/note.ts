@@ -4,6 +4,7 @@ export interface Note {
   title: string;
   content: string;
   nlh_enabled: boolean;
+  project_id?: string | null;
   created_at: string;
   updated_at: string;
 }

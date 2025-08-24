@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ProjectSwitcher } from '@/components/ProjectSwitcher';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -26,6 +27,7 @@ export function AppHeader() {
         <h1 className="text-xl font-bold">Chroma Notes</h1>
       </div>
       <div className="flex items-center gap-2">
+        <ProjectSwitcher />
         <Button variant="outline" size="sm" onClick={() => navigate('/board')}>
           <Kanban className="h-4 w-4 mr-1" />
           Kanban Board

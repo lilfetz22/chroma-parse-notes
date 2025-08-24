@@ -1,36 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useProject } from '@/hooks/useProject';
 import { toast } from '@/hooks/use-toast';
 import { BoardData, Column, Card } from '@/types/kanban';
 
 export function useKanbanBoard() {
   const { user } = useAuth();
+  const { activeProject } = useProject();
   const [boardData, setBoardData] = useState<BoardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load board data
-  const loadBoardData = async () => {
-    if (!user) return;
-
+  const loadBoardData = useCallback(async () => {
+    if (!user || !activeProject) {
+      setLoading(false);
+      setBoardData(null);
+      return;
+    }
+    
+    setLoading(true);
     try {
-      setLoading(true);
-      const { data, error } = await supabase.rpc('get_board_details');
-      
+      const { data, error } = await supabase
+        .rpc('get_board_details', { project_id_param: activeProject.id });
+
       if (error) throw error;
       
       setBoardData(data as unknown as BoardData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading board data:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to load board data."
+        variant: 'destructive',
+        title: 'Error loading board',
+        description: error.message,
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, activeProject]);
 
   // Create a new column
   const createColumn = async (title: string) => {
@@ -303,10 +309,8 @@ export function useKanbanBoard() {
   };
 
   useEffect(() => {
-    if (user) {
-      loadBoardData();
-    }
-  }, [user]);
+    loadBoardData();
+  }, [loadBoardData]);
 
   return {
     boardData,

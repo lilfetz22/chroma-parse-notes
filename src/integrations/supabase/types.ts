@@ -18,18 +18,21 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          project_id: string | null
           title: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          project_id?: string | null
           title?: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          project_id?: string | null
           title?: string
           user_id?: string
         }
@@ -121,6 +124,7 @@ export type Database = {
           created_at: string
           id: string
           nlh_enabled: boolean
+          project_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -130,6 +134,7 @@ export type Database = {
           created_at?: string
           id?: string
           nlh_enabled?: boolean
+          project_id?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -139,8 +144,33 @@ export type Database = {
           created_at?: string
           id?: string
           nlh_enabled?: boolean
+          project_id?: string | null
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -151,7 +181,7 @@ export type Database = {
     }
     Functions: {
       get_board_details: {
-        Args: { board_id_param?: string }
+        Args: { project_id_param?: string }
         Returns: Json
       }
     }
