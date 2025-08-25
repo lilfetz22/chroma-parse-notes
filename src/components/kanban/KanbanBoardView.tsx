@@ -6,8 +6,10 @@ import { CreateCardModal } from './CreateCardModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ScheduleTaskModal } from './ScheduleTaskModal';
+import { useScheduledTasks } from '@/hooks/useScheduledTasks';
 
 export function KanbanBoardView() {
   const {
@@ -27,6 +29,9 @@ export function KanbanBoardView() {
   const [selectedColumnId, setSelectedColumnId] = useState<string>('');
   const [showCreateColumn, setShowCreateColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+
+  const { createScheduledTask } = useScheduledTasks();
 
   const handleAddCard = (columnId: string) => {
     setSelectedColumnId(columnId);
@@ -142,6 +147,13 @@ export function KanbanBoardView() {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{boardData.board.title}</h1>
+        <Button
+          onClick={() => setShowScheduleModal(true)}
+          className="flex items-center gap-2"
+        >
+          <Clock className="w-4 h-4" />
+          Schedule Task
+        </Button>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
@@ -222,6 +234,13 @@ export function KanbanBoardView() {
         onClose={() => setShowCreateCard(false)}
         columnId={selectedColumnId}
         onCardCreated={(columnId, cardData) => createCard(columnId, cardData)}
+      />
+
+      <ScheduleTaskModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        columns={boardData.columns}
+        onTaskScheduled={createScheduledTask}
       />
     </div>
   );

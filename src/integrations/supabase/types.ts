@@ -47,6 +47,7 @@ export type Database = {
           id: string
           note_id: string | null
           position: number
+          summary: string | null
           title: string
         }
         Insert: {
@@ -57,6 +58,7 @@ export type Database = {
           id?: string
           note_id?: string | null
           position: number
+          summary?: string | null
           title: string
         }
         Update: {
@@ -67,6 +69,7 @@ export type Database = {
           id?: string
           note_id?: string | null
           position?: number
+          summary?: string | null
           title?: string
         }
         Relationships: [
@@ -175,6 +178,45 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_tasks: {
+        Row: {
+          created_at: string
+          day_of_week: number | null
+          id: string
+          next_occurrence_date: string
+          project_id: string
+          recurrence_type: string
+          summary: string | null
+          target_column_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week?: number | null
+          id?: string
+          next_occurrence_date: string
+          project_id: string
+          recurrence_type: string
+          summary?: string | null
+          target_column_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number | null
+          id?: string
+          next_occurrence_date?: string
+          project_id?: string
+          recurrence_type?: string
+          summary?: string | null
+          target_column_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -183,6 +225,10 @@ export type Database = {
       get_board_details: {
         Args: { project_id_param?: string }
         Returns: Json
+      }
+      process_scheduled_tasks: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {
