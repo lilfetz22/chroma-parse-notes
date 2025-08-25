@@ -23,6 +23,8 @@ export interface Card {
   content?: any; // JSONB content for simple cards
   note_id?: string; // For linked cards
   summary?: string | null; // optional summary for linked cards
+  scheduled_at?: string | null; // ISO timestamp when card should appear in To-Do
+  recurrence?: string | null; // optional cron-like or human recurrence rule (e.g., 'daily', 'weekly')
   created_at: string;
 }
 

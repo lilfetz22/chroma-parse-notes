@@ -133,6 +133,8 @@ export function useKanbanBoard() {
     content?: any;
   note_id?: string;
   summary?: string | null;
+  scheduled_at?: string | null;
+  recurrence?: string | null;
   }) => {
     if (!boardData) return;
 

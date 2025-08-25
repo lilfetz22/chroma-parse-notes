@@ -30,6 +30,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [summary, setSummary] = useState('');
+  const [scheduledAt, setScheduledAt] = useState<string | null>(null);
+  const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -71,7 +73,9 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
         card_type: cardType,
         title: title.trim(),
         ...(cardType === 'simple' ? { content: content.trim() } : {}),
-  ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id, summary: summary.trim() || null } : {})
+  ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id, summary: summary.trim() || null } : {}),
+  ...(scheduledAt ? { scheduled_at: scheduledAt } : {}),
+  ...(recurrenceRule ? { recurrence: recurrenceRule } : {})
       };
 
       await onCardCreated(columnId, cardData);
@@ -90,6 +94,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     setSelectedNote(null);
     setSearchQuery('');
     setCardType('simple');
+    setScheduledAt(null);
+    setRecurrenceRule(null);
     onClose();
   };
 
@@ -240,6 +246,30 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
                   </div>
                 </div>
               )}
+              {/* Scheduling */}
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="scheduled-at">Schedule (optional)</Label>
+                  <Input
+                    id="scheduled-at"
+                    type="datetime-local"
+                    value={scheduledAt || ''}
+                    onChange={(e) => setScheduledAt(e.target.value || null)}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="recurrence">Recurrence (optional)</Label>
+                  <Input
+                    id="recurrence"
+                    placeholder="e.g. daily, weekly"
+                    value={recurrenceRule || ''}
+                    onChange={(e) => setRecurrenceRule(e.target.value || null)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
             </div>
           )}
 

@@ -87,7 +87,13 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
                     <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   )}
                 </h4>
-                {getContentPreview()}
+                  {getContentPreview()}
+                  {card.scheduled_at && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Scheduled: {new Date(card.scheduled_at).toLocaleString()}
+                      {card.recurrence ? ` • ${card.recurrence}` : ''}
+                    </div>
+                  )}
               </div>
               
               <DropdownMenu>
