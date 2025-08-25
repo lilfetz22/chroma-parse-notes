@@ -1,10 +1,14 @@
--- Add scheduling columns to cards table
+-- Add scheduling and state columns to cards table
 ALTER TABLE public.cards
 ADD COLUMN IF NOT EXISTS scheduled_at timestamp with time zone NULL,
-ADD COLUMN IF NOT EXISTS recurrence text NULL;
+ADD COLUMN IF NOT EXISTS recurrence text NULL,
+ADD COLUMN IF NOT EXISTS activated_at timestamp with time zone NULL,
+ADD COLUMN IF NOT EXISTS completed_at timestamp with time zone NULL;
 
--- Add index to help queries for scheduled cards
+-- Add indexes to help queries for scheduled and state columns
 CREATE INDEX IF NOT EXISTS idx_cards_scheduled_at ON public.cards(scheduled_at);
+CREATE INDEX IF NOT EXISTS idx_cards_activated_at ON public.cards(activated_at);
+CREATE INDEX IF NOT EXISTS idx_cards_completed_at ON public.cards(completed_at);
 
 -- Recreate get_board_details to respect scheduled_at (only include cards with no schedule or scheduled_at <= now())
 DROP FUNCTION IF EXISTS public.get_board_details(uuid);
@@ -92,6 +96,8 @@ BEGIN
           'summary', cards.summary,
           'scheduled_at', cards.scheduled_at,
           'recurrence', cards.recurrence,
+          'activated_at', cards.activated_at,
+          'completed_at', cards.completed_at,
           'created_at', cards.created_at
         ) ORDER BY cards.position
       ) as cards

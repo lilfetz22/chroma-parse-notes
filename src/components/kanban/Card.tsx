@@ -94,6 +94,16 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
                       {card.recurrence ? ` • ${card.recurrence}` : ''}
                     </div>
                   )}
+                  {card.activated_at && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Created On: {new Date(card.activated_at).toLocaleDateString()}
+                    </div>
+                  )}
+                  {card.completed_at && (
+                    <div className="text-xs text-destructive mt-1">
+                      Completed: {new Date(card.completed_at).toLocaleDateString()}
+                    </div>
+                  )}
               </div>
               
               <DropdownMenu>

@@ -25,7 +25,29 @@ export function useKanbanBoard() {
 
       if (error) throw error;
       
-      setBoardData(data as unknown as BoardData);
+      const board = data as unknown as BoardData;
+
+      // For any card that has scheduled_at <= now() but no activated_at, set activated_at to now()
+      const nowIso = new Date().toISOString();
+      const cardsNeedingActivation = (board.cards || []).filter((c: any) => c.scheduled_at && !c.activated_at);
+      if (cardsNeedingActivation.length > 0) {
+        try {
+          for (const c of cardsNeedingActivation) {
+            await supabase
+              .from('cards')
+              .update({ activated_at: nowIso })
+              .eq('id', c.id);
+          }
+          // Refresh the board once after updating activations
+          const { data: refreshed } = await supabase.rpc('get_board_details', { project_id_param: activeProject.id });
+          setBoardData(refreshed as unknown as BoardData);
+        } catch (e) {
+          console.error('Error activating scheduled cards:', e);
+          setBoardData(board);
+        }
+      } else {
+        setBoardData(board);
+      }
     } catch (error: any) {
       console.error('Error loading board data:', error);
       toast({
@@ -246,10 +268,54 @@ export function useKanbanBoard() {
       });
 
       // Update in database
+      // helper to compute next scheduled date based on recurrence
+      const computeNextScheduled = (recurrence: string | null | undefined, fromIso: string) => {
+        if (!recurrence) return null;
+        const from = new Date(fromIso);
+        let next = new Date(from);
+        switch (recurrence) {
+          case 'daily':
+            next.setDate(next.getDate() + 1);
+            break;
+          case 'weekdays':
+            // advance until weekday Mon-Fri
+            do { next.setDate(next.getDate() + 1); } while (next.getDay() === 0 || next.getDay() === 6);
+            break;
+          case 'weekly':
+            next.setDate(next.getDate() + 7);
+            break;
+          case 'biweekly':
+            next.setDate(next.getDate() + 14);
+            break;
+          case 'monthly':
+            // increment month, keep date where possible
+            const month = next.getMonth();
+            next.setMonth(month + 1);
+            break;
+          default:
+            return null;
+        }
+        return next.toISOString();
+      };
+
       for (const update of updates) {
         const updateData: any = { position: update.position };
         if (update.column_id) {
           updateData.column_id = update.column_id;
+        }
+
+        // If the card is moved into the "Done" column, set completed_at; if moved out, clear completed_at
+        if (update.column_id && boardData) {
+          const doneColumn = boardData.columns.find(col => col.title.toLowerCase() === 'done');
+          if (doneColumn && update.column_id === doneColumn.id) {
+            updateData.completed_at = new Date().toISOString();
+          } else {
+            // If moving out of Done, clear completed_at
+            const cardBefore = boardData.cards.find(c => c.id === update.id);
+            if (cardBefore && cardBefore.column_id === doneColumn?.id) {
+              updateData.completed_at = null;
+            }
+          }
         }
 
         const { error } = await supabase
@@ -258,6 +324,23 @@ export function useKanbanBoard() {
           .eq('id', update.id);
 
         if (error) throw error;
+
+        // If we just marked it completed and the card has a recurrence, schedule the next occurrence
+        if (updateData.completed_at && boardData) {
+          const cardBefore = boardData.cards.find(c => c.id === update.id);
+          const recurrence = cardBefore?.recurrence;
+          if (recurrence) {
+            const nextScheduled = computeNextScheduled(recurrence, updateData.completed_at);
+            if (nextScheduled) {
+              const { error: recurErr } = await supabase
+                .from('cards')
+                .update({ scheduled_at: nextScheduled, activated_at: null, completed_at: null })
+                .eq('id', update.id);
+
+              if (recurErr) console.error('Error scheduling next recurrence:', recurErr);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Error updating positions:', error);

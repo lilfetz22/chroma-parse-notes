@@ -260,14 +260,20 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
                 </div>
 
                 <div>
-                  <Label htmlFor="recurrence">Recurrence (optional)</Label>
-                  <Input
+                  <Label htmlFor="recurrence">Recurrence</Label>
+                  <select
                     id="recurrence"
-                    placeholder="e.g. daily, weekly"
-                    value={recurrenceRule || ''}
-                    onChange={(e) => setRecurrenceRule(e.target.value || null)}
-                    className="mt-1"
-                  />
+                    value={recurrenceRule || 'none'}
+                    onChange={(e) => setRecurrenceRule(e.target.value === 'none' ? null : e.target.value)}
+                    className="mt-1 block w-full rounded border bg-background px-3 py-2"
+                  >
+                    <option value="none">None</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekdays">Weekdays (Mon–Fri)</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="biweekly">Biweekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
                 </div>
               </div>
             </div>

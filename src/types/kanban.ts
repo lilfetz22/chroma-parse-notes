@@ -24,7 +24,9 @@ export interface Card {
   note_id?: string; // For linked cards
   summary?: string | null; // optional summary for linked cards
   scheduled_at?: string | null; // ISO timestamp when card should appear in To-Do
-  recurrence?: string | null; // optional cron-like or human recurrence rule (e.g., 'daily', 'weekly')
+  recurrence?: string | null; // recurrence rule: 'none' | 'daily' | 'weekdays' | 'weekly' | 'biweekly' | 'monthly'
+  activated_at?: string | null; // when the card actually appeared on the board
+  completed_at?: string | null; // when the card was moved to Done
   created_at: string;
 }
 
