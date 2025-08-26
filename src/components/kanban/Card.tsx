@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { EditLinkedCardModal } from './EditLinkedCardModal';
+import { EditCardModal } from '../EditCardModal';
 import { Edit3 } from 'lucide-react';
 
 interface CardProps {
@@ -78,32 +78,34 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
           }`}
           onClick={handleCardClick}
         >
-          <CardContent className="p-3">
+          <CardContent className="p-3 select-auto">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm line-clamp-2 mb-1 flex items-center gap-2">
+              <div className="flex-1 min-w-0 select-text">
+                <h4 className="font-medium text-sm line-clamp-2 mb-1 flex items-center gap-2 select-text">
                   {card.title}
                   {card.card_type === 'linked' && (
                     <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   )}
                 </h4>
+                <div className="select-text">
                   {getContentPreview()}
-                  {card.scheduled_at && (
-                    <div className="text-xs text-muted-foreground mt-2">
-                      Scheduled: {new Date(card.scheduled_at).toLocaleString()}
-                      {card.recurrence ? ` • ${card.recurrence}` : ''}
-                    </div>
-                  )}
-                  {card.activated_at && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Created On: {new Date(card.activated_at).toLocaleDateString()}
-                    </div>
-                  )}
-                  {card.completed_at && (
-                    <div className="text-xs text-destructive mt-1">
-                      Completed: {new Date(card.completed_at).toLocaleDateString()}
-                    </div>
-                  )}
+                </div>
+                {card.scheduled_at && (
+                  <div className="text-xs text-muted-foreground mt-2 select-text">
+                    Scheduled: {new Date(card.scheduled_at).toLocaleString()}
+                    {card.recurrence ? ` • ${card.recurrence}` : ''}
+                  </div>
+                )}
+                {card.activated_at && (
+                  <div className="text-xs text-muted-foreground mt-1 select-text">
+                    Created On: {new Date(card.activated_at).toLocaleDateString()}
+                  </div>
+                )}
+                {card.completed_at && (
+                  <div className="text-xs text-destructive mt-1 select-text">
+                    Completed: {new Date(card.completed_at).toLocaleDateString()}
+                  </div>
+                )}
               </div>
               
               <DropdownMenu>
@@ -117,17 +119,15 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border shadow-md">
-                  {card.card_type === 'linked' && (
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditing(true);
-                      }}
-                    >
-                      <Edit3 className="w-3 h-3 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditing(true);
+                    }}
+                  >
+                    <Edit3 className="w-3 h-3 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -146,19 +146,19 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
       )}
     </Draggable>
       {editing && currentCard && (
-      <EditLinkedCardModal
-        isOpen={editing}
-        onClose={() => setEditing(false)}
-        card={currentCard}
-        onSaved={(updated) => {
-          setCurrentCard(updated);
-          setEditing(false);
-          if (typeof onUpdate === 'function') {
-            onUpdate(updated.id, { title: updated.title, summary: updated.summary });
-          }
-        }}
-      />
-    )}
+        <EditCardModal
+          isOpen={editing}
+          onClose={() => setEditing(false)}
+          card={currentCard}
+          onSave={(cardId, updates) => {
+            setCurrentCard(prev => prev ? { ...prev, ...updates } : null);
+            setEditing(false);
+            if (typeof onUpdate === 'function') {
+              onUpdate(cardId, updates);
+            }
+          }}
+        />
+      )}
     </>
   );
 }

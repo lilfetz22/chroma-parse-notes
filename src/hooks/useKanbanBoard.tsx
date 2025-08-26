@@ -27,27 +27,7 @@ export function useKanbanBoard() {
       
       const board = data as unknown as BoardData;
 
-      // For any card that has scheduled_at <= now() but no activated_at, set activated_at to now()
-      const nowIso = new Date().toISOString();
-      const cardsNeedingActivation = (board.cards || []).filter((c: any) => c.scheduled_at && !c.activated_at);
-      if (cardsNeedingActivation.length > 0) {
-        try {
-          for (const c of cardsNeedingActivation) {
-            await supabase
-              .from('cards')
-              .update({ activated_at: nowIso })
-              .eq('id', c.id);
-          }
-          // Refresh the board once after updating activations
-          const { data: refreshed } = await supabase.rpc('get_board_details', { project_id_param: activeProject.id });
-          setBoardData(refreshed as unknown as BoardData);
-        } catch (e) {
-          console.error('Error activating scheduled cards:', e);
-          setBoardData(board);
-        }
-      } else {
-        setBoardData(board);
-      }
+      setBoardData(board);
     } catch (error: any) {
       console.error('Error loading board data:', error);
       toast({
@@ -325,22 +305,7 @@ export function useKanbanBoard() {
 
         if (error) throw error;
 
-        // If we just marked it completed and the card has a recurrence, schedule the next occurrence
-        if (updateData.completed_at && boardData) {
-          const cardBefore = boardData.cards.find(c => c.id === update.id);
-          const recurrence = cardBefore?.recurrence;
-          if (recurrence) {
-            const nextScheduled = computeNextScheduled(recurrence, updateData.completed_at);
-            if (nextScheduled) {
-              const { error: recurErr } = await supabase
-                .from('cards')
-                .update({ scheduled_at: nextScheduled, activated_at: null, completed_at: null })
-                .eq('id', update.id);
-
-              if (recurErr) console.error('Error scheduling next recurrence:', recurErr);
-            }
-          }
-        }
+        // Note: Recurrence logic handled by scheduled_tasks table now
       }
     } catch (error) {
       console.error('Error updating positions:', error);

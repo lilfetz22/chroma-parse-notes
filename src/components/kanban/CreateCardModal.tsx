@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format, addDays, nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,9 @@ import { Search, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Note } from '@/types/note';
 import { CardType } from '@/types/kanban';
+import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
+import { CreateScheduledTaskData, RecurrenceType } from '@/types/scheduled-task';
+import { useScheduledTasks } from '@/hooks/useScheduledTasks';
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -30,12 +34,18 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [summary, setSummary] = useState('');
-  const [scheduledAt, setScheduledAt] = useState<string | null>(null);
-  const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { createScheduledTask } = useScheduledTasks();
+  
+  const [scheduleData, setScheduleData] = useState<ScheduleData>({
+    isScheduled: false,
+    recurrenceType: 'once' as RecurrenceType,
+    selectedDate: undefined,
+    dayOfWeek: undefined,
+  });
 
   // Load user's notes for linking
   useEffect(() => {
@@ -69,13 +79,48 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     setIsLoading(true);
     
     try {
+      // If scheduling is enabled, create a scheduled task instead
+      if (scheduleData.isScheduled) {
+        let nextOccurrenceDate: string;
+        
+        if (scheduleData.recurrenceType === 'once') {
+          if (!scheduleData.selectedDate) return;
+          nextOccurrenceDate = format(scheduleData.selectedDate, 'yyyy-MM-dd');
+        } else if (scheduleData.recurrenceType === 'daily') {
+          nextOccurrenceDate = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+        } else if (scheduleData.recurrenceType === 'weekly') {
+          if (scheduleData.dayOfWeek === undefined) return;
+          const today = new Date();
+          const nextDayFunctions = [
+            nextSunday, nextMonday, nextTuesday, nextWednesday, 
+            nextThursday, nextFriday, nextSaturday
+          ];
+          const nextOccurrence = nextDayFunctions[scheduleData.dayOfWeek](today);
+          nextOccurrenceDate = format(nextOccurrence, 'yyyy-MM-dd');
+        } else {
+          return;
+        }
+
+        const scheduledTaskData: CreateScheduledTaskData = {
+          title: title.trim(),
+          summary: cardType === 'linked' ? summary.trim() || undefined : content.trim() || undefined,
+          target_column_id: columnId,
+          recurrence_type: scheduleData.recurrenceType,
+          day_of_week: scheduleData.recurrenceType === 'weekly' ? scheduleData.dayOfWeek : undefined,
+          next_occurrence_date: nextOccurrenceDate,
+        };
+
+        await createScheduledTask(scheduledTaskData);
+        handleClose();
+        return;
+      }
+
+      // Otherwise, create a regular card
       const cardData = {
         card_type: cardType,
         title: title.trim(),
         ...(cardType === 'simple' ? { content: content.trim() } : {}),
-  ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id, summary: summary.trim() || null } : {}),
-  ...(scheduledAt ? { scheduled_at: scheduledAt } : {}),
-  ...(recurrenceRule ? { recurrence: recurrenceRule } : {})
+        ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id, summary: summary.trim() || null } : {}),
       };
 
       await onCardCreated(columnId, cardData);
@@ -90,12 +135,16 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
   const handleClose = () => {
     setTitle('');
     setContent('');
-  setSummary('');
+    setSummary('');
     setSelectedNote(null);
     setSearchQuery('');
     setCardType('simple');
-    setScheduledAt(null);
-    setRecurrenceRule(null);
+    setScheduleData({
+      isScheduled: false,
+      recurrenceType: 'once',
+      selectedDate: undefined,
+      dayOfWeek: undefined,
+    });
     onClose();
   };
 
@@ -158,6 +207,14 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
                 />
               </div>
             </div>
+          )}
+
+          {/* Scheduling Options for Simple Cards */}
+          {cardType === 'simple' && (
+            <SchedulingOptions 
+              scheduleData={scheduleData} 
+              onScheduleChange={setScheduleData} 
+            />
           )}
 
           {/* Linked Card Form */}
@@ -246,36 +303,12 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
                   </div>
                 </div>
               )}
-              {/* Scheduling */}
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="scheduled-at">Schedule (optional)</Label>
-                  <Input
-                    id="scheduled-at"
-                    type="datetime-local"
-                    value={scheduledAt || ''}
-                    onChange={(e) => setScheduledAt(e.target.value || null)}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="recurrence">Recurrence</Label>
-                  <select
-                    id="recurrence"
-                    value={recurrenceRule || 'none'}
-                    onChange={(e) => setRecurrenceRule(e.target.value === 'none' ? null : e.target.value)}
-                    className="mt-1 block w-full rounded border bg-background px-3 py-2"
-                  >
-                    <option value="none">None</option>
-                    <option value="daily">Daily</option>
-                    <option value="weekdays">Weekdays (Mon–Fri)</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="biweekly">Biweekly</option>
-                    <option value="monthly">Monthly</option>
-                  </select>
-                </div>
-              </div>
+              
+              {/* Scheduling Options */}
+              <SchedulingOptions 
+                scheduleData={scheduleData} 
+                onScheduleChange={setScheduleData} 
+              />
             </div>
           )}
 
@@ -289,10 +322,12 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
               disabled={
                 !title.trim() || 
                 (cardType === 'linked' && !selectedNote) ||
+                (scheduleData.isScheduled && scheduleData.recurrenceType === 'once' && !scheduleData.selectedDate) ||
+                (scheduleData.isScheduled && scheduleData.recurrenceType === 'weekly' && scheduleData.dayOfWeek === undefined) ||
                 isLoading
               }
             >
-              {isLoading ? 'Creating...' : 'Create Card'}
+              {isLoading ? 'Creating...' : scheduleData.isScheduled ? 'Schedule Task' : 'Create Card'}
             </Button>
           </div>
         </div>

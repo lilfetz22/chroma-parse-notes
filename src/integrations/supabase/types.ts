@@ -40,35 +40,47 @@ export type Database = {
       }
       cards: {
         Row: {
+          activated_at: string | null
           card_type: Database["public"]["Enums"]["card_type"]
           column_id: string
+          completed_at: string | null
           content: Json | null
           created_at: string
           id: string
           note_id: string | null
           position: number
+          recurrence: string | null
+          scheduled_at: string | null
           summary: string | null
           title: string
         }
         Insert: {
+          activated_at?: string | null
           card_type: Database["public"]["Enums"]["card_type"]
           column_id: string
+          completed_at?: string | null
           content?: Json | null
           created_at?: string
           id?: string
           note_id?: string | null
           position: number
+          recurrence?: string | null
+          scheduled_at?: string | null
           summary?: string | null
           title: string
         }
         Update: {
+          activated_at?: string | null
           card_type?: Database["public"]["Enums"]["card_type"]
           column_id?: string
+          completed_at?: string | null
           content?: Json | null
           created_at?: string
           id?: string
           note_id?: string | null
           position?: number
+          recurrence?: string | null
+          scheduled_at?: string | null
           summary?: string | null
           title?: string
         }

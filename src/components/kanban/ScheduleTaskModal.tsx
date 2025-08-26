@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { format, addDays, nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday } from 'date-fns';
-import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -18,15 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
 import { CreateScheduledTaskData, RecurrenceType } from '@/types/scheduled-task';
 import { Column } from '@/types/kanban';
+import { format, addDays, nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday } from 'date-fns';
 
 interface ScheduleTaskModalProps {
   isOpen: boolean;
@@ -35,24 +29,18 @@ interface ScheduleTaskModalProps {
   onTaskScheduled: (taskData: CreateScheduledTaskData) => void;
 }
 
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-];
-
 export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }: ScheduleTaskModalProps) {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [targetColumnId, setTargetColumnId] = useState('');
-  const [recurrenceType, setRecurrenceType] = useState<RecurrenceType>('once');
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [dayOfWeek, setDayOfWeek] = useState<number>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [scheduleData, setScheduleData] = useState<ScheduleData>({
+    isScheduled: true,
+    recurrenceType: 'once' as RecurrenceType,
+    selectedDate: undefined,
+    dayOfWeek: undefined,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,21 +48,19 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
 
     let nextOccurrenceDate: string;
 
-    if (recurrenceType === 'once') {
-      if (!selectedDate) return;
-      nextOccurrenceDate = format(selectedDate, 'yyyy-MM-dd');
-    } else if (recurrenceType === 'daily') {
-      // Start tomorrow
+    if (scheduleData.recurrenceType === 'once') {
+      if (!scheduleData.selectedDate) return;
+      nextOccurrenceDate = format(scheduleData.selectedDate, 'yyyy-MM-dd');
+    } else if (scheduleData.recurrenceType === 'daily') {
       nextOccurrenceDate = format(addDays(new Date(), 1), 'yyyy-MM-dd');
-    } else if (recurrenceType === 'weekly') {
-      if (dayOfWeek === undefined) return;
-      // Calculate next occurrence of the selected day
+    } else if (scheduleData.recurrenceType === 'weekly') {
+      if (scheduleData.dayOfWeek === undefined) return;
       const today = new Date();
       const nextDayFunctions = [
         nextSunday, nextMonday, nextTuesday, nextWednesday, 
         nextThursday, nextFriday, nextSaturday
       ];
-      const nextOccurrence = nextDayFunctions[dayOfWeek](today);
+      const nextOccurrence = nextDayFunctions[scheduleData.dayOfWeek](today);
       nextOccurrenceDate = format(nextOccurrence, 'yyyy-MM-dd');
     } else {
       return;
@@ -86,8 +72,8 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       title: title.trim(),
       summary: summary.trim() || undefined,
       target_column_id: targetColumnId,
-      recurrence_type: recurrenceType,
-      day_of_week: recurrenceType === 'weekly' ? dayOfWeek : undefined,
+      recurrence_type: scheduleData.recurrenceType,
+      day_of_week: scheduleData.recurrenceType === 'weekly' ? scheduleData.dayOfWeek : undefined,
       next_occurrence_date: nextOccurrenceDate,
     };
 
@@ -97,9 +83,12 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     setTitle('');
     setSummary('');
     setTargetColumnId('');
-    setRecurrenceType('once');
-    setSelectedDate(undefined);
-    setDayOfWeek(undefined);
+    setScheduleData({
+      isScheduled: true,
+      recurrenceType: 'once',
+      selectedDate: undefined,
+      dayOfWeek: undefined,
+    });
     setIsSubmitting(false);
     onClose();
   };
@@ -159,73 +148,23 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="recurrence">Recurrence</Label>
-            <Select value={recurrenceType} onValueChange={(value: RecurrenceType) => setRecurrenceType(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="once">Once</SelectItem>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {recurrenceType === 'once' && (
-            <div className="space-y-2">
-              <Label>Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !selectedDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          )}
-
-          {recurrenceType === 'weekly' && (
-            <div className="space-y-2">
-              <Label htmlFor="dayOfWeek">Day of Week</Label>
-              <Select value={dayOfWeek?.toString()} onValueChange={(value) => setDayOfWeek(parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DAYS_OF_WEEK.map((day) => (
-                    <SelectItem key={day.value} value={day.value.toString()}>
-                      {day.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          <SchedulingOptions 
+            scheduleData={scheduleData} 
+            onScheduleChange={setScheduleData} 
+          />
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={
+                isSubmitting || 
+                (scheduleData.recurrenceType === 'once' && !scheduleData.selectedDate) ||
+                (scheduleData.recurrenceType === 'weekly' && scheduleData.dayOfWeek === undefined)
+              }
+            >
               {isSubmitting ? 'Scheduling...' : 'Schedule Task'}
             </Button>
           </div>
