@@ -82,7 +82,7 @@ export function NotesList({
   return (
     <div className="h-full flex flex-col bg-card border-r">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">
             {activeProject ? `Notes - ${activeProject.title}` : 'Notes (Unassigned)'}
@@ -106,86 +106,89 @@ export function NotesList({
       </div>
 
       {/* Notes List */}
-      <ScrollArea className="flex-1">
-        <div className="p-2 space-y-2">
-          {loading ? (
-            <div className="text-center text-muted-foreground py-8">
-              Loading notes...
-            </div>
-          ) : filteredNotes.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>
-                {activeProject 
-                  ? `No notes in "${activeProject.title}" project yet.` 
-                  : 'No unassigned notes yet.'
-                }
-              </p>
-              <p className="text-sm">Create your first note to get started</p>
-            </div>
-          ) : (
-            filteredNotes.map((note) => (
-              <Card
-                key={note.id}
-                className={cn(
-                  "cursor-pointer transition-colors hover:bg-accent",
-                  selectedNote?.id === note.id && "bg-accent border-primary"
-                )}
-                onClick={() => onSelectNote(note)}
-              >
-                <CardContent className="p-3">
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-medium line-clamp-1" onClick={() => onSelectNote(note)}>
-                        {note.title || 'Untitled Note'}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        {note.nlh_enabled && (
-                          <Badge variant="secondary" className="text-xs">
-                            NLH
-                          </Badge>
-                        )}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your
-                                note and remove your data from our servers.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => onDeleteNote(note.id)}>
-                                Continue
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full notes-list-scroll">
+          <div className="p-2 space-y-2">
+            {loading ? (
+              <div className="text-center text-muted-foreground py-8">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                <p>Loading notes...</p>
+              </div>
+            ) : filteredNotes.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>
+                  {activeProject 
+                    ? `No notes in "${activeProject.title}" project yet.` 
+                    : 'No unassigned notes yet.'
+                  }
+                </p>
+                <p className="text-sm">Create your first note to get started</p>
+              </div>
+            ) : (
+              filteredNotes.map((note) => (
+                <Card
+                  key={note.id}
+                  className={cn(
+                    "cursor-pointer transition-colors hover:bg-accent",
+                    selectedNote?.id === note.id && "bg-accent border-primary"
+                  )}
+                  onClick={() => onSelectNote(note)}
+                >
+                  <CardContent className="p-3">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-medium line-clamp-1 flex-1 mr-2" onClick={() => onSelectNote(note)}>
+                          {note.title || 'Untitled Note'}
+                        </h3>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {note.nlh_enabled && (
+                            <Badge variant="secondary" className="text-xs">
+                              NLH
+                            </Badge>
+                          )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => e.stopPropagation()}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete your
+                                  note and remove your data from our servers.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDeleteNote(note.id)}>
+                                  Continue
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
-                    </div>
-                    
-                    {note.content && (
-                      <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
-                        {truncateContent(note.content)}
+                      
+                      {note.content && (
+                        <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
+                          {truncateContent(note.content)}
+                        </p>
+                      )}
+                      
+                      <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
+                        {formatDate(note.updated_at)}
                       </p>
-                    )}
-                    
-                    <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
-                      {formatDate(note.updated_at)}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      </ScrollArea>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

@@ -137,12 +137,12 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-  <AppHeader />
+      <AppHeader />
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left Pane - Notes List */}
-        <div className="w-80 flex-shrink-0">
+        <div className="w-80 flex-shrink-0 flex flex-col">
           <NotesList
             notes={displayNotes}
             selectedNote={selectedNote}
@@ -155,11 +155,11 @@ const Dashboard = () => {
         </div>
 
         {/* Right Pane - Editor */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {selectedNote ? (
             <>
               {/* Note Header */}
-              <div className="p-4 border-b bg-card">
+              <div className="p-4 border-b bg-card flex-shrink-0">
                 <Input
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
@@ -169,7 +169,7 @@ const Dashboard = () => {
               </div>
 
               {/* Editor */}
-              <div className="flex-1">
+              <div className="flex-1 min-h-0">
                 <RichTextEditor
                   content={noteContent}
                   onChange={setNoteContent}
