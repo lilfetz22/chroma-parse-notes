@@ -44,7 +44,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     isScheduled: false,
     recurrenceType: 'once' as RecurrenceType,
     selectedDate: undefined,
-    dayOfWeek: undefined,
+    daysOfWeek: undefined,
   });
 
   // Load user's notes for linking
@@ -81,32 +81,15 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     try {
       // If scheduling is enabled, create a scheduled task instead
       if (scheduleData.isScheduled) {
-        let nextOccurrenceDate: string;
-        
-        if (scheduleData.recurrenceType === 'once') {
-          if (!scheduleData.selectedDate) return;
-          nextOccurrenceDate = format(scheduleData.selectedDate, 'yyyy-MM-dd');
-        } else if (scheduleData.recurrenceType === 'daily') {
-          nextOccurrenceDate = format(addDays(new Date(), 1), 'yyyy-MM-dd');
-        } else if (scheduleData.recurrenceType === 'weekly') {
-          if (scheduleData.dayOfWeek === undefined) return;
-          const today = new Date();
-          const nextDayFunctions = [
-            nextSunday, nextMonday, nextTuesday, nextWednesday, 
-            nextThursday, nextFriday, nextSaturday
-          ];
-          const nextOccurrence = nextDayFunctions[scheduleData.dayOfWeek](today);
-          nextOccurrenceDate = format(nextOccurrence, 'yyyy-MM-dd');
-        } else {
-          return;
-        }
+        const nextOccurrenceDate = calculateNextOccurrenceDate();
+        if (!nextOccurrenceDate) return;
 
         const scheduledTaskData: CreateScheduledTaskData = {
           title: title.trim(),
           summary: cardType === 'linked' ? summary.trim() || undefined : content.trim() || undefined,
           target_column_id: columnId,
           recurrence_type: scheduleData.recurrenceType,
-          day_of_week: scheduleData.recurrenceType === 'weekly' ? scheduleData.dayOfWeek : undefined,
+          days_of_week: scheduleData.daysOfWeek,
           next_occurrence_date: nextOccurrenceDate,
         };
 
@@ -132,6 +115,76 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     }
   };
 
+  /**
+   * Calculate the next occurrence date based on recurrence type and selected options
+   */
+  const calculateNextOccurrenceDate = (): string | null => {
+    const today = new Date();
+
+    switch (scheduleData.recurrenceType) {
+      case 'once':
+        return scheduleData.selectedDate ? format(scheduleData.selectedDate, 'yyyy-MM-dd') : null;
+        
+      case 'daily':
+        return format(addDays(today, 1), 'yyyy-MM-dd');
+        
+      case 'weekdays':
+        // Find next weekday (skip weekends)
+        let nextWeekday = addDays(today, 1);
+        while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6) {
+          nextWeekday = addDays(nextWeekday, 1);
+        }
+        return format(nextWeekday, 'yyyy-MM-dd');
+        
+      case 'weekly':
+        if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
+        const nextDayFunctions = [
+          nextSunday, nextMonday, nextTuesday, nextWednesday, 
+          nextThursday, nextFriday, nextSaturday
+        ];
+        const nextOccurrence = nextDayFunctions[scheduleData.daysOfWeek[0]](today);
+        return format(nextOccurrence, 'yyyy-MM-dd');
+        
+      case 'bi-weekly':
+        return format(addDays(today, 14), 'yyyy-MM-dd');
+        
+      case 'monthly':
+        // Add one month to today
+        const nextMonth = new Date(today);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        return format(nextMonth, 'yyyy-MM-dd');
+        
+      case 'custom_weekly':
+        if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
+        
+        // Find the next scheduled day from the selected days
+        const currentDayOfWeek = today.getDay();
+        let nextScheduledDay = null;
+        let daysUntilNext = 0;
+        
+        // First, look for the next day in the current week
+        for (const day of scheduleData.daysOfWeek) {
+          if (day > currentDayOfWeek) {
+            daysUntilNext = day - currentDayOfWeek;
+            nextScheduledDay = day;
+            break;
+          }
+        }
+        
+        // If no day found in current week, wrap to next week
+        if (nextScheduledDay === null) {
+          daysUntilNext = (7 - currentDayOfWeek) + scheduleData.daysOfWeek[0];
+          nextScheduledDay = scheduleData.daysOfWeek[0];
+        }
+        
+        const nextCustomWeekly = addDays(today, daysUntilNext);
+        return format(nextCustomWeekly, 'yyyy-MM-dd');
+        
+      default:
+        return null;
+    }
+  };
+
   const handleClose = () => {
     setTitle('');
     setContent('');
@@ -143,7 +196,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
       isScheduled: false,
       recurrenceType: 'once',
       selectedDate: undefined,
-      dayOfWeek: undefined,
+      daysOfWeek: undefined,
     });
     onClose();
   };
@@ -152,6 +205,29 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     setSelectedNote(note);
   setTitle(note.title);
   setSummary('');
+  };
+
+  /**
+   * Check if the form is valid based on the selected recurrence type
+   */
+  const isFormValid = (): boolean => {
+    if (!title.trim()) return false;
+    if (cardType === 'linked' && !selectedNote) return false;
+    
+    if (scheduleData.isScheduled) {
+      switch (scheduleData.recurrenceType) {
+        case 'once':
+          return scheduleData.selectedDate !== undefined;
+        case 'weekly':
+          return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length === 1;
+        case 'custom_weekly':
+          return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0;
+        default:
+          return true; // daily, weekdays, bi-weekly, monthly don't need additional validation
+      }
+    }
+    
+    return true;
   };
 
   return (
@@ -319,13 +395,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
             </Button>
             <Button 
               onClick={handleSubmit}
-              disabled={
-                !title.trim() || 
-                (cardType === 'linked' && !selectedNote) ||
-                (scheduleData.isScheduled && scheduleData.recurrenceType === 'once' && !scheduleData.selectedDate) ||
-                (scheduleData.isScheduled && scheduleData.recurrenceType === 'weekly' && scheduleData.dayOfWeek === undefined) ||
-                isLoading
-              }
+              disabled={!isFormValid() || isLoading}
             >
               {isLoading ? 'Creating...' : scheduleData.isScheduled ? 'Schedule Task' : 'Create Card'}
             </Button>

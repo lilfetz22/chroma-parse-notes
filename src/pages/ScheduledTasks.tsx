@@ -12,7 +12,10 @@ import { RecurrenceType } from '@/types/scheduled-task';
 
 const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-const getRecurrenceDisplay = (recurrenceType: RecurrenceType, dayOfWeek?: number | null, nextDate?: string) => {
+/**
+ * Get display information for recurrence types including the new advanced options
+ */
+const getRecurrenceDisplay = (recurrenceType: RecurrenceType, daysOfWeek?: number[] | null, nextDate?: string) => {
   switch (recurrenceType) {
     case 'once':
       return {
@@ -26,10 +29,46 @@ const getRecurrenceDisplay = (recurrenceType: RecurrenceType, dayOfWeek?: number
         description: 'Every day',
         variant: 'default' as const,
       };
+    case 'weekdays':
+      return {
+        label: 'Weekdays',
+        description: 'Monday to Friday',
+        variant: 'outline' as const,
+      };
     case 'weekly':
       return {
         label: 'Weekly',
-        description: dayOfWeek !== undefined && dayOfWeek !== null ? `Every ${DAYS_OF_WEEK[dayOfWeek]}` : 'Weekly',
+        description: daysOfWeek && daysOfWeek.length === 1 
+          ? `Every ${DAYS_OF_WEEK[daysOfWeek[0]]}` 
+          : 'Weekly',
+        variant: 'outline' as const,
+      };
+    case 'bi-weekly':
+      return {
+        label: 'Bi-weekly',
+        description: 'Every 2 weeks',
+        variant: 'outline' as const,
+      };
+    case 'monthly':
+      return {
+        label: 'Monthly',
+        description: 'Every month',
+        variant: 'outline' as const,
+      };
+    case 'custom_weekly':
+      if (daysOfWeek && daysOfWeek.length > 0) {
+        const dayNames = daysOfWeek
+          .map(day => DAYS_OF_WEEK[day])
+          .filter(Boolean);
+        return {
+          label: 'Custom Weekly',
+          description: `Every ${dayNames.join(' and ')}`,
+          variant: 'outline' as const,
+        };
+      }
+      return {
+        label: 'Custom Weekly',
+        description: 'Custom schedule',
         variant: 'outline' as const,
       };
     default:
@@ -87,7 +126,7 @@ export function ScheduledTasks() {
             {scheduledTasks.map((task) => {
               const recurrence = getRecurrenceDisplay(
                 task.recurrence_type,
-                task.day_of_week,
+                task.days_of_week,
                 task.next_occurrence_date
               );
 

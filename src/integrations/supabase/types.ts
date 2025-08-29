@@ -193,7 +193,7 @@ export type Database = {
       scheduled_tasks: {
         Row: {
           created_at: string
-          day_of_week: number | null
+          days_of_week: number[] | null
           id: string
           next_occurrence_date: string
           project_id: string
@@ -205,7 +205,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          day_of_week?: number | null
+          days_of_week?: number[] | null
           id?: string
           next_occurrence_date: string
           project_id: string
@@ -217,7 +217,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          day_of_week?: number | null
+          days_of_week?: number[] | null
           id?: string
           next_occurrence_date?: string
           project_id?: string

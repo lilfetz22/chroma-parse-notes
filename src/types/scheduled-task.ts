@@ -1,4 +1,4 @@
-export type RecurrenceType = 'once' | 'daily' | 'weekly';
+export type RecurrenceType = 'once' | 'daily' | 'weekdays' | 'weekly' | 'bi-weekly' | 'monthly' | 'custom_weekly';
 
 export interface ScheduledTask {
   id: string;
@@ -8,7 +8,7 @@ export interface ScheduledTask {
   summary?: string | null;
   target_column_id: string;
   recurrence_type: RecurrenceType;
-  day_of_week?: number | null; // 0=Sunday to 6=Saturday
+  days_of_week?: number[] | null; // Array of day numbers (0=Sunday to 6=Saturday)
   next_occurrence_date: string; // ISO date string
   created_at: string;
 }
@@ -18,6 +18,6 @@ export interface CreateScheduledTaskData {
   summary?: string;
   target_column_id: string;
   recurrence_type: RecurrenceType;
-  day_of_week?: number;
+  days_of_week?: number[];
   next_occurrence_date: string;
 }

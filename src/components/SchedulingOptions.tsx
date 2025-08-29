@@ -24,7 +24,7 @@ export interface ScheduleData {
   isScheduled: boolean;
   recurrenceType: RecurrenceType;
   selectedDate?: Date;
-  dayOfWeek?: number;
+  daysOfWeek?: number[];
 }
 
 interface SchedulingOptionsProps {
@@ -33,15 +33,19 @@ interface SchedulingOptionsProps {
 }
 
 const DAYS_OF_WEEK = [
-  { value: 0, label: 'Sunday' },
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
+  { value: 0, label: 'S', fullLabel: 'Sunday' },
+  { value: 1, label: 'M', fullLabel: 'Monday' },
+  { value: 2, label: 'T', fullLabel: 'Tuesday' },
+  { value: 3, label: 'W', fullLabel: 'Wednesday' },
+  { value: 4, label: 'T', fullLabel: 'Thursday' },
+  { value: 5, label: 'F', fullLabel: 'Friday' },
+  { value: 6, label: 'S', fullLabel: 'Saturday' },
 ];
 
+/**
+ * Enhanced scheduling options component supporting advanced recurrence patterns
+ * including weekdays, bi-weekly, monthly, and custom weekly schedules
+ */
 export function SchedulingOptions({ scheduleData, onScheduleChange }: SchedulingOptionsProps) {
   const handleScheduleToggle = (isScheduled: boolean) => {
     onScheduleChange({
@@ -51,11 +55,29 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
   };
 
   const handleRecurrenceChange = (recurrenceType: RecurrenceType) => {
-    onScheduleChange({
-      ...scheduleData,
+    // Reset related fields when changing recurrence type
+    const resetData: Partial<ScheduleData> = {
       recurrenceType,
       selectedDate: recurrenceType === 'once' ? scheduleData.selectedDate : undefined,
-      dayOfWeek: recurrenceType === 'weekly' ? scheduleData.dayOfWeek : undefined,
+      daysOfWeek: undefined,
+    };
+
+    // Set default days for certain recurrence types
+    if (recurrenceType === 'weekdays') {
+      resetData.daysOfWeek = [1, 2, 3, 4, 5]; // Monday to Friday
+    } else if (recurrenceType === 'weekly') {
+      resetData.daysOfWeek = scheduleData.daysOfWeek && scheduleData.daysOfWeek.length === 1 
+        ? scheduleData.daysOfWeek 
+        : [1]; // Default to Monday
+    } else if (recurrenceType === 'custom_weekly') {
+      resetData.daysOfWeek = scheduleData.daysOfWeek && scheduleData.daysOfWeek.length > 0 
+        ? scheduleData.daysOfWeek 
+        : [1, 4]; // Default to Monday and Thursday
+    }
+
+    onScheduleChange({
+      ...scheduleData,
+      ...resetData,
     });
   };
 
@@ -66,11 +88,45 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
     });
   };
 
-  const handleDayOfWeekChange = (dayOfWeek: number) => {
+  const handleDayOfWeekToggle = (dayValue: number) => {
+    const currentDays = scheduleData.daysOfWeek || [];
+    const newDays = currentDays.includes(dayValue)
+      ? currentDays.filter(day => day !== dayValue)
+      : [...currentDays, dayValue].sort((a, b) => a - b);
+
     onScheduleChange({
       ...scheduleData,
-      dayOfWeek,
+      daysOfWeek: newDays.length > 0 ? newDays : undefined,
     });
+  };
+
+  const getRecurrenceDescription = (): string => {
+    switch (scheduleData.recurrenceType) {
+      case 'once':
+        return 'One-time task';
+      case 'daily':
+        return 'Every day';
+      case 'weekdays':
+        return 'Every weekday (Monday-Friday)';
+      case 'weekly':
+        return scheduleData.daysOfWeek && scheduleData.daysOfWeek.length === 1
+          ? `Every ${DAYS_OF_WEEK.find(d => d.value === scheduleData.daysOfWeek![0])?.fullLabel}`
+          : 'Every week';
+      case 'bi-weekly':
+        return 'Every 2 weeks';
+      case 'monthly':
+        return 'Every month';
+      case 'custom_weekly':
+        if (scheduleData.daysOfWeek && scheduleData.daysOfWeek.length > 0) {
+          const dayNames = scheduleData.daysOfWeek
+            .map(day => DAYS_OF_WEEK.find(d => d.value === day)?.fullLabel)
+            .filter(Boolean);
+          return `Every ${dayNames.join(' and ')}`;
+        }
+        return 'Custom weekly schedule';
+      default:
+        return 'Select recurrence';
+    }
   };
 
   return (
@@ -95,11 +151,21 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
               <SelectContent>
                 <SelectItem value="once">Once</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekdays">Weekdays (Mon-Fri)</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="bi-weekly">Bi-weekly (every 2 weeks)</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="custom_weekly">Custom Weekly...</SelectItem>
               </SelectContent>
             </Select>
+            
+            {/* Show description of selected recurrence */}
+            <p className="text-sm text-muted-foreground">
+              {getRecurrenceDescription()}
+            </p>
           </div>
 
+          {/* Date picker for one-time tasks */}
           {scheduleData.recurrenceType === 'once' && (
             <div className="space-y-2">
               <Label>Date</Label>
@@ -130,21 +196,87 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
             </div>
           )}
 
-          {scheduleData.recurrenceType === 'weekly' && (
+          {/* Day selector for weekly and custom weekly */}
+          {(scheduleData.recurrenceType === 'weekly' || scheduleData.recurrenceType === 'custom_weekly') && (
             <div className="space-y-2">
-              <Label htmlFor="dayOfWeek">Day of Week</Label>
-              <Select value={scheduleData.dayOfWeek?.toString()} onValueChange={(value) => handleDayOfWeekChange(parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select day" />
-                </SelectTrigger>
-                <SelectContent>
+              <Label>
+                {scheduleData.recurrenceType === 'weekly' ? 'Day of Week' : 'Days of Week'}
+              </Label>
+              
+              {scheduleData.recurrenceType === 'weekly' ? (
+                // Single day selector for weekly
+                <Select 
+                  value={scheduleData.daysOfWeek?.[0]?.toString()} 
+                  onValueChange={(value) => handleDayOfWeekToggle(parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DAYS_OF_WEEK.map((day) => (
+                      <SelectItem key={day.value} value={day.value.toString()}>
+                        {day.fullLabel}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                // Multiple day selector for custom weekly
+                <div className="flex flex-wrap gap-2">
                   {DAYS_OF_WEEK.map((day) => (
-                    <SelectItem key={day.value} value={day.value.toString()}>
+                    <Button
+                      key={day.value}
+                      variant={scheduleData.daysOfWeek?.includes(day.value) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleDayOfWeekToggle(day.value)}
+                      className="w-10 h-10 p-0"
+                      title={day.fullLabel}
+                    >
                       {day.label}
-                    </SelectItem>
+                    </Button>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              )}
+              
+              {scheduleData.recurrenceType === 'custom_weekly' && scheduleData.daysOfWeek && scheduleData.daysOfWeek.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Selected: {scheduleData.daysOfWeek
+                    .map(day => DAYS_OF_WEEK.find(d => d.value === day)?.fullLabel)
+                    .filter(Boolean)
+                    .join(', ')}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Start date for recurring tasks */}
+          {scheduleData.recurrenceType !== 'once' && (
+            <div className="space-y-2">
+              <Label>Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !scheduleData.selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {scheduleData.selectedDate ? format(scheduleData.selectedDate, "PPP") : <span>Pick start date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={scheduleData.selectedDate}
+                    onSelect={handleDateSelect}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </div>

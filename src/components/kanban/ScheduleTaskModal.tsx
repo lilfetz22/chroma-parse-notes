@@ -39,32 +39,85 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     isScheduled: true,
     recurrenceType: 'once' as RecurrenceType,
     selectedDate: undefined,
-    dayOfWeek: undefined,
+    daysOfWeek: undefined,
   });
+
+  /**
+   * Calculate the next occurrence date based on recurrence type and selected options
+   */
+  const calculateNextOccurrenceDate = (): string | null => {
+    const today = new Date();
+
+    switch (scheduleData.recurrenceType) {
+      case 'once':
+        return scheduleData.selectedDate ? format(scheduleData.selectedDate, 'yyyy-MM-dd') : null;
+        
+      case 'daily':
+        return format(addDays(today, 1), 'yyyy-MM-dd');
+        
+      case 'weekdays':
+        // Find next weekday (skip weekends)
+        let nextWeekday = addDays(today, 1);
+        while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6) {
+          nextWeekday = addDays(nextWeekday, 1);
+        }
+        return format(nextWeekday, 'yyyy-MM-dd');
+        
+      case 'weekly':
+        if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
+        const nextDayFunctions = [
+          nextSunday, nextMonday, nextTuesday, nextWednesday, 
+          nextThursday, nextFriday, nextSaturday
+        ];
+        const nextOccurrence = nextDayFunctions[scheduleData.daysOfWeek[0]](today);
+        return format(nextOccurrence, 'yyyy-MM-dd');
+        
+      case 'bi-weekly':
+        return format(addDays(today, 14), 'yyyy-MM-dd');
+        
+      case 'monthly':
+        // Add one month to today
+        const nextMonth = new Date(today);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        return format(nextMonth, 'yyyy-MM-dd');
+        
+      case 'custom_weekly':
+        if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
+        
+        // Find the next scheduled day from the selected days
+        const currentDayOfWeek = today.getDay();
+        let nextScheduledDay = null;
+        let daysUntilNext = 0;
+        
+        // First, look for the next day in the current week
+        for (const day of scheduleData.daysOfWeek) {
+          if (day > currentDayOfWeek) {
+            daysUntilNext = day - currentDayOfWeek;
+            nextScheduledDay = day;
+            break;
+          }
+        }
+        
+        // If no day found in current week, wrap to next week
+        if (nextScheduledDay === null) {
+          daysUntilNext = (7 - currentDayOfWeek) + scheduleData.daysOfWeek[0];
+          nextScheduledDay = scheduleData.daysOfWeek[0];
+        }
+        
+        const nextCustomWeekly = addDays(today, daysUntilNext);
+        return format(nextCustomWeekly, 'yyyy-MM-dd');
+        
+      default:
+        return null;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !targetColumnId) return;
 
-    let nextOccurrenceDate: string;
-
-    if (scheduleData.recurrenceType === 'once') {
-      if (!scheduleData.selectedDate) return;
-      nextOccurrenceDate = format(scheduleData.selectedDate, 'yyyy-MM-dd');
-    } else if (scheduleData.recurrenceType === 'daily') {
-      nextOccurrenceDate = format(addDays(new Date(), 1), 'yyyy-MM-dd');
-    } else if (scheduleData.recurrenceType === 'weekly') {
-      if (scheduleData.dayOfWeek === undefined) return;
-      const today = new Date();
-      const nextDayFunctions = [
-        nextSunday, nextMonday, nextTuesday, nextWednesday, 
-        nextThursday, nextFriday, nextSaturday
-      ];
-      const nextOccurrence = nextDayFunctions[scheduleData.dayOfWeek](today);
-      nextOccurrenceDate = format(nextOccurrence, 'yyyy-MM-dd');
-    } else {
-      return;
-    }
+    const nextOccurrenceDate = calculateNextOccurrenceDate();
+    if (!nextOccurrenceDate) return;
 
     setIsSubmitting(true);
 
@@ -73,7 +126,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       summary: summary.trim() || undefined,
       target_column_id: targetColumnId,
       recurrence_type: scheduleData.recurrenceType,
-      day_of_week: scheduleData.recurrenceType === 'weekly' ? scheduleData.dayOfWeek : undefined,
+      days_of_week: scheduleData.daysOfWeek,
       next_occurrence_date: nextOccurrenceDate,
     };
 
@@ -87,7 +140,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       isScheduled: true,
       recurrenceType: 'once',
       selectedDate: undefined,
-      dayOfWeek: undefined,
+      daysOfWeek: undefined,
     });
     setIsSubmitting(false);
     onClose();
@@ -96,6 +149,24 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
   const handleClose = () => {
     if (!isSubmitting) {
       onClose();
+    }
+  };
+
+  /**
+   * Check if the form is valid based on the selected recurrence type
+   */
+  const isFormValid = (): boolean => {
+    if (!title.trim() || !targetColumnId) return false;
+    
+    switch (scheduleData.recurrenceType) {
+      case 'once':
+        return scheduleData.selectedDate !== undefined;
+      case 'weekly':
+        return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length === 1;
+      case 'custom_weekly':
+        return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0;
+      default:
+        return true; // daily, weekdays, bi-weekly, monthly don't need additional validation
     }
   };
 
@@ -159,11 +230,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
             </Button>
             <Button 
               type="submit" 
-              disabled={
-                isSubmitting || 
-                (scheduleData.recurrenceType === 'once' && !scheduleData.selectedDate) ||
-                (scheduleData.recurrenceType === 'weekly' && scheduleData.dayOfWeek === undefined)
-              }
+              disabled={isSubmitting || !isFormValid()}
             >
               {isSubmitting ? 'Scheduling...' : 'Schedule Task'}
             </Button>
