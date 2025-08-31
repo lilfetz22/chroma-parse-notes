@@ -6,15 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Note } from '@/types/note';
-import { CardType } from '@/types/kanban';
+import { CardType, Tag } from '@/types/kanban';
 import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
 import { CreateScheduledTaskData, RecurrenceType } from '@/types/scheduled-task';
 import { useScheduledTasks } from '@/hooks/useScheduledTasks';
+import { TagInput } from '@/components/TagInput';
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -24,8 +26,10 @@ interface CreateCardModalProps {
     card_type: CardType;
     title: string;
     content?: any;
-  note_id?: string;
-  summary?: string | null;
+    note_id?: string;
+    summary?: string | null;
+    priority?: number;
+    tag_ids?: string[];
   }) => void;
 }
 
@@ -34,6 +38,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [summary, setSummary] = useState('');
+  const [priority, setPriority] = useState<number>(0);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -91,6 +97,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
           recurrence_type: scheduleData.recurrenceType,
           days_of_week: scheduleData.daysOfWeek,
           next_occurrence_date: nextOccurrenceDate,
+          priority: priority,
+          tag_ids: selectedTags.map(tag => tag.id),
         };
 
         await createScheduledTask(scheduledTaskData);
@@ -102,6 +110,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
       const cardData = {
         card_type: cardType,
         title: title.trim(),
+        priority: priority,
+        tag_ids: selectedTags.map(tag => tag.id),
         ...(cardType === 'simple' ? { content: content.trim() } : {}),
         ...(cardType === 'linked' && selectedNote ? { note_id: selectedNote.id, summary: summary.trim() || null } : {}),
       };
@@ -189,6 +199,8 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     setTitle('');
     setContent('');
     setSummary('');
+    setPriority(0);
+    setSelectedTags([]);
     setSelectedNote(null);
     setSearchQuery('');
     setCardType('simple');
@@ -255,6 +267,34 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
                 <Label htmlFor="linked">Linked Note</Label>
               </div>
             </RadioGroup>
+          </div>
+
+          {/* Priority Selection */}
+          <div>
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={priority.toString()} onValueChange={(value) => setPriority(parseInt(value))}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Default</SelectItem>
+                <SelectItem value="1">Low</SelectItem>
+                <SelectItem value="2">Medium</SelectItem>
+                <SelectItem value="3">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tags Selection */}
+          <div>
+            <Label htmlFor="tags">Tags</Label>
+            <div className="mt-1">
+              <TagInput
+                selectedTags={selectedTags}
+                onTagsChange={setSelectedTags}
+                placeholder="Add tags..."
+              />
+            </div>
           </div>
 
           {/* Simple Card Form */}

@@ -9,13 +9,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/types/kanban';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, Tag } from '@/types/kanban';
+import { TagInput } from '@/components/TagInput';
 
 interface EditCardModalProps {
   isOpen: boolean;
   onClose: () => void;
   card: Card;
-  onSave: (cardId: string, updates: { title: string; summary?: string; content?: any }) => void;
+  onSave: (cardId: string, updates: { 
+    title: string; 
+    summary?: string; 
+    content?: any; 
+    priority?: number;
+    tag_ids?: string[];
+  }) => void;
 }
 
 export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalProps) {
@@ -26,6 +34,8 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
       ? (typeof card.content === 'string' ? card.content : JSON.stringify(card.content || ''))
       : ''
   );
+  const [priority, setPriority] = useState<number>(card.priority || 0);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(card.tags || []);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -37,6 +47,8 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
           ? (typeof card.content === 'string' ? card.content : JSON.stringify(card.content || ''))
           : ''
       );
+      setPriority(card.priority || 0);
+      setSelectedTags(card.tags || []);
     }
   }, [isOpen, card]);
 
@@ -45,7 +57,11 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
 
     setIsLoading(true);
     try {
-      const updates: any = { title: title.trim() };
+      const updates: any = { 
+        title: title.trim(),
+        priority: priority,
+        tag_ids: selectedTags.map(tag => tag.id)
+      };
       
       if (card.card_type === 'linked') {
         updates.summary = summary.trim() || null;
@@ -83,6 +99,32 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter card title..."
+            />
+          </div>
+
+          {/* Priority Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="edit-priority">Priority</Label>
+            <Select value={priority.toString()} onValueChange={(value) => setPriority(parseInt(value))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Default</SelectItem>
+                <SelectItem value="1">Low</SelectItem>
+                <SelectItem value="2">Medium</SelectItem>
+                <SelectItem value="3">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tags Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="edit-tags">Tags</Label>
+            <TagInput
+              selectedTags={selectedTags}
+              onTagsChange={setSelectedTags}
+              placeholder="Add tags..."
             />
           </div>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { Card as CardType } from '@/types/kanban';
 import { Card as UICard, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, ExternalLink, Trash2 } from 'lucide-react';
 import {
@@ -26,6 +27,15 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [currentCard, setCurrentCard] = useState<CardType | null>(card);
+
+  const getPriorityBorderClass = () => {
+    switch (card.priority) {
+      case 1: return 'border-l-4 border-l-blue-400'; // Low
+      case 2: return 'border-l-4 border-l-yellow-400'; // Medium
+      case 3: return 'border-l-4 border-l-red-500'; // High
+      default: return ''; // Default (no border)
+    }
+  };
 
   const handleCardClick = () => {
     if (card.card_type === 'linked' && card.note_id) {
@@ -75,7 +85,7 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
           {...provided.dragHandleProps}
           className={`mb-2 cursor-pointer transition-shadow hover:shadow-md ${
             snapshot.isDragging ? 'shadow-lg' : ''
-          }`}
+          } ${getPriorityBorderClass()}`}
           onClick={handleCardClick}
         >
           <CardContent className="p-3 select-auto">
@@ -90,6 +100,21 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
                 <div className="select-text">
                   {getContentPreview()}
                 </div>
+                
+                {/* Tags Display */}
+                {card.tags && card.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {card.tags.map(tag => (
+                      <Badge 
+                        key={tag.id} 
+                        variant="secondary" 
+                        className={`${tag.color} text-white text-xs px-1.5 py-0.5`}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
                 {card.scheduled_at && (
                   <div className="text-xs text-muted-foreground mt-2 select-text">
                     Scheduled: {new Date(card.scheduled_at).toLocaleString()}

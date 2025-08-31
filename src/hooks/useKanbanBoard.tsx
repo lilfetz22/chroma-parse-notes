@@ -133,10 +133,12 @@ export function useKanbanBoard() {
     card_type: 'simple' | 'linked';
     title: string;
     content?: any;
-  note_id?: string;
-  summary?: string | null;
-  scheduled_at?: string | null;
-  recurrence?: string | null;
+    note_id?: string;
+    summary?: string | null;
+    priority?: number;
+    tag_ids?: string[];
+    scheduled_at?: string | null;
+    recurrence?: string | null;
   }) => {
     if (!boardData) return;
 
@@ -144,22 +146,41 @@ export function useKanbanBoard() {
     const newPosition = Math.max(...columnCards.map(c => c.position), -1) + 1;
 
     try {
+      // Extract tag_ids to handle separately
+      const { tag_ids, ...cardInsertData } = cardData;
+      
       const { data, error } = await supabase
         .from('cards')
         .insert({
           column_id: columnId,
           position: newPosition,
-          ...cardData
+          priority: cardData.priority || 0,
+          ...cardInsertData
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setBoardData(prev => prev ? {
-        ...prev,
-        cards: [...prev.cards, data].sort((a, b) => a.position - b.position)
-      } : null);
+      // If tags are provided, create card_tags entries
+      if (tag_ids && tag_ids.length > 0) {
+        const cardTagInserts = tag_ids.map(tagId => ({
+          card_id: data.id,
+          tag_id: tagId
+        }));
+
+        const { error: tagsError } = await supabase
+          .from('card_tags')
+          .insert(cardTagInserts);
+
+        if (tagsError) {
+          console.error('Error creating card tags:', tagsError);
+          // Continue anyway - the card was created successfully
+        }
+      }
+
+      // Reload the board data to get updated tags
+      await loadBoardData();
 
       toast({ title: "Card created successfully" });
     } catch (error) {
@@ -199,21 +220,53 @@ export function useKanbanBoard() {
   };
 
   // Update card (title/summary/content)
-  const updateCard = async (cardId: string, updates: Partial<Card>) => {
+  const updateCard = async (cardId: string, updates: Partial<Card> & { tag_ids?: string[] }) => {
     try {
+      // Extract tag_ids to handle separately
+      const { tag_ids, tags, ...cardUpdates } = updates;
+      
       const { data, error } = await supabase
         .from('cards')
-        .update(updates)
+        .update(cardUpdates)
         .eq('id', cardId)
         .select()
         .single();
 
       if (error) throw error;
 
-      setBoardData(prev => prev ? {
-        ...prev,
-        cards: prev.cards.map(c => c.id === cardId ? data as Card : c)
-      } : null);
+      // Handle tag updates if provided
+      if (tag_ids !== undefined) {
+        // First, delete all existing tags for this card
+        await supabase
+          .from('card_tags')
+          .delete()
+          .eq('card_id', cardId);
+
+        // Then, insert the new tags
+        if (tag_ids.length > 0) {
+          const cardTagInserts = tag_ids.map(tagId => ({
+            card_id: cardId,
+            tag_id: tagId
+          }));
+
+          const { error: tagsError } = await supabase
+            .from('card_tags')
+            .insert(cardTagInserts);
+
+          if (tagsError) {
+            console.error('Error updating card tags:', tagsError);
+          }
+        }
+        
+        // Reload the board data to get updated tags
+        await loadBoardData();
+      } else {
+        // Update local state if not dealing with tags
+        setBoardData(prev => prev ? {
+          ...prev,
+          cards: prev.cards.map(c => c.id === cardId ? data as Card : c)
+        } : null);
+      }
 
       toast({ title: 'Card updated' });
     } catch (error) {
