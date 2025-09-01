@@ -97,6 +97,9 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
                   {card.card_type === 'linked' && (
                     <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   )}
+                  {card.completed_at && (
+                    <span className="text-xs text-destructive ml-2">{new Date(card.completed_at).toLocaleDateString()}</span>
+                  )}
                 </h4>
                 <div className="select-text">
                   {getContentPreview()}
@@ -127,11 +130,7 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
                     Created On: {new Date(card.activated_at).toLocaleDateString()}
                   </div>
                 )}
-                {card.completed_at && (
-                  <div className="text-xs text-destructive mt-1 select-text">
-                    Completed: {new Date(card.completed_at).toLocaleDateString()}
-                  </div>
-                )}
+                {/* completed_at now shown inline with the title */}
               </div>
               
               <DropdownMenu>

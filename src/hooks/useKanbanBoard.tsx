@@ -337,9 +337,14 @@ export function useKanbanBoard() {
           updateData.column_id = update.column_id;
         }
 
-        // If the card is moved into the "Done" column, set completed_at; if moved out, clear completed_at
+        // If the card is moved into a "Done/Completed" column, set completed_at; if moved out, clear completed_at
         if (update.column_id && boardData) {
-          const doneColumn = boardData.columns.find(col => col.title.toLowerCase() === 'done');
+          // allow some flexibility in matching the done column title (e.g. "Done", "Completed", "Done ✅")
+          const doneColumn = boardData.columns.find(col => {
+            const t = (col.title || '').toLowerCase();
+            return t === 'done' || t.includes('done') || t.includes('complete');
+          });
+
           if (doneColumn && update.column_id === doneColumn.id) {
             updateData.completed_at = new Date().toISOString();
           } else {
