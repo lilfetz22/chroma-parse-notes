@@ -22,6 +22,7 @@ interface ColumnProps {
   onAddCard: (columnId: string) => void;
   onDeleteCard: (cardId: string) => void;
   onUpdateCard?: (cardId: string, updates: Partial<CardType>) => void;
+  onConvertToScheduledTask?: (cardId: string) => void;
 }
 
 export function Column({ 
@@ -32,7 +33,8 @@ export function Column({
   onDeleteColumn, 
   onAddCard,
   onDeleteCard,
-  onUpdateCard
+  onUpdateCard,
+  onConvertToScheduledTask
 }: ColumnProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(column.title);
@@ -125,6 +127,7 @@ export function Column({
                           index={index} 
                           onDelete={onDeleteCard}
                           onUpdate={onUpdateCard}
+                          onConvertToScheduledTask={onConvertToScheduledTask}
                         />
                       </div>
                     ))}

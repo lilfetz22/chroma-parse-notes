@@ -12,6 +12,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, Tag } from '@/types/kanban';
 import { TagInput } from '@/components/TagInput';
+import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface EditCardModalProps {
   isOpen: boolean;
@@ -24,9 +27,10 @@ interface EditCardModalProps {
     priority?: number;
     tag_ids?: string[];
   }) => void;
+  onConvertToScheduledTask?: (cardId: string) => void;
 }
 
-export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalProps) {
+export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToScheduledTask }: EditCardModalProps) {
   const [title, setTitle] = useState(card.title);
   const [summary, setSummary] = useState(card.summary || '');
   const [content, setContent] = useState(
@@ -37,6 +41,14 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
   const [priority, setPriority] = useState<number>(card.priority || 0);
   const [selectedTags, setSelectedTags] = useState<Tag[]>(card.tags || []);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Scheduling state
+  const [scheduleData, setScheduleData] = useState<ScheduleData>({
+    isScheduled: false,
+    recurrenceType: 'once',
+    selectedDate: undefined,
+    daysOfWeek: undefined,
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -49,11 +61,98 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
       );
       setPriority(card.priority || 0);
       setSelectedTags(card.tags || []);
+      
+      // Reset scheduling state when modal opens
+      setScheduleData({
+        isScheduled: false,
+        recurrenceType: 'once',
+        selectedDate: undefined,
+        daysOfWeek: undefined,
+      });
     }
   }, [isOpen, card]);
 
+  const handleConvertToScheduledTask = async () => {
+    if (!scheduleData.isScheduled || !title.trim()) return;
+
+    // Validate scheduling data
+    if (scheduleData.recurrenceType === 'once' && !scheduleData.selectedDate) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Schedule',
+        description: 'Please select a date for one-time tasks.',
+      });
+      return;
+    }
+
+    if ((scheduleData.recurrenceType === 'weekly' || scheduleData.recurrenceType === 'custom_weekly') && 
+        (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0)) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Schedule',
+        description: 'Please select at least one day for weekly tasks.',
+      });
+      return;
+    }
+
+    if (scheduleData.recurrenceType !== 'once' && !scheduleData.selectedDate) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Schedule',
+        description: 'Please select a start date for recurring tasks.',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const nextOccurrenceDate = scheduleData.selectedDate!.toISOString().split('T')[0];
+      
+      const { data, error } = await supabase.rpc('convert_card_to_scheduled_task', {
+        p_card_id: card.id,
+        p_recurrence_type: scheduleData.recurrenceType,
+        p_days_of_week: scheduleData.daysOfWeek || null,
+        p_next_occurrence_date: nextOccurrenceDate,
+      });
+
+      if (error) throw error;
+      
+      const result = data as { success: boolean; error?: string; message: string };
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Conversion failed');
+      }
+
+      toast({
+        title: 'Card Converted',
+        description: 'Card has been successfully converted to a scheduled task.',
+      });
+
+      if (onConvertToScheduledTask) {
+        onConvertToScheduledTask(card.id);
+      }
+      
+      onClose();
+    } catch (error: any) {
+      console.error('Error converting card to scheduled task:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Conversion Failed',
+        description: error.message || 'Failed to convert card to scheduled task.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!title.trim()) return;
+
+    // If scheduling is enabled, convert to scheduled task instead
+    if (scheduleData.isScheduled) {
+      await handleConvertToScheduledTask();
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -154,12 +253,20 @@ export function EditCardModal({ isOpen, onClose, card, onSave }: EditCardModalPr
             </div>
           )}
 
+          {/* Scheduling Options */}
+          <SchedulingOptions
+            scheduleData={scheduleData}
+            onScheduleChange={setScheduleData}
+          />
+
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={!title.trim() || isLoading}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading 
+                ? (scheduleData.isScheduled ? 'Converting...' : 'Saving...')
+                : (scheduleData.isScheduled ? 'Convert to Scheduled Task' : 'Save Changes')}
             </Button>
           </div>
         </div>

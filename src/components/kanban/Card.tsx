@@ -21,9 +21,10 @@ interface CardProps {
   index: number;
   onDelete: (cardId: string) => void;
   onUpdate?: (cardId: string, updates: Partial<CardType>) => void;
+  onConvertToScheduledTask?: (cardId: string) => void;
 }
 
-export function Card({ card, index, onDelete, onUpdate }: CardProps) {
+export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask }: CardProps) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [currentCard, setCurrentCard] = useState<CardType | null>(card);
@@ -180,6 +181,12 @@ export function Card({ card, index, onDelete, onUpdate }: CardProps) {
             setEditing(false);
             if (typeof onUpdate === 'function') {
               onUpdate(cardId, updates);
+            }
+          }}
+          onConvertToScheduledTask={(cardId) => {
+            setEditing(false);
+            if (typeof onConvertToScheduledTask === 'function') {
+              onConvertToScheduledTask(cardId);
             }
           }}
         />

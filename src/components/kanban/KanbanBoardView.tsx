@@ -55,6 +55,17 @@ export function KanbanBoardView() {
     }
   };
 
+  const handleConvertToScheduledTask = async (cardId: string) => {
+    // The conversion happens in the EditCardModal, we just need to refresh the board
+    // to remove the converted card from the display
+    window.location.reload(); // Simple refresh for now
+    
+    toast({
+      title: 'Card Converted',
+      description: 'Card has been converted to a scheduled task.',
+    });
+  };
+
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, type } = result;
 
@@ -177,6 +188,7 @@ export function KanbanBoardView() {
                     onAddCard={handleAddCard}
                     onDeleteCard={deleteCard}
                     onUpdateCard={updateCard}
+                    onConvertToScheduledTask={handleConvertToScheduledTask}
                   />
                 );
               })}

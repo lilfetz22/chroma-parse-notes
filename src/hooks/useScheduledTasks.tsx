@@ -74,6 +74,41 @@ export function useScheduledTasks() {
     }
   };
 
+  const updateScheduledTask = async (taskId: string, updates: Partial<CreateScheduledTaskData>) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('scheduled_tasks')
+        .update(updates)
+        .eq('id', taskId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setScheduledTasks(prev => prev.map(task => 
+        task.id === taskId ? { ...task, ...data } : task
+      ));
+
+      toast({
+        title: 'Task Updated',
+        description: 'Scheduled task has been updated successfully.',
+      });
+
+      return data;
+    } catch (error: any) {
+      console.error('Error updating scheduled task:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to update scheduled task',
+      });
+      return null;
+    }
+  };
+
   const deleteScheduledTask = async (taskId: string) => {
     if (!user) return;
 
@@ -109,6 +144,7 @@ export function useScheduledTasks() {
     scheduledTasks,
     loading,
     createScheduledTask,
+    updateScheduledTask,
     deleteScheduledTask,
     refreshScheduledTasks: fetchScheduledTasks,
   };

@@ -1,88 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Clock, Trash2, Calendar, Repeat } from 'lucide-react';
+import { Clock, Trash2, Calendar, Repeat, Edit } from 'lucide-react';
 import { AppHeader } from '@/components/AppHeader';
 import { useScheduledTasks } from '@/hooks/useScheduledTasks';
 import { useProject } from '@/hooks/useProject';
+import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { RecurrenceType } from '@/types/scheduled-task';
-
-const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-/**
- * Get display information for recurrence types including the new advanced options
- */
-const getRecurrenceDisplay = (recurrenceType: RecurrenceType, daysOfWeek?: number[] | null, nextDate?: string) => {
-  switch (recurrenceType) {
-    case 'once':
-      return {
-        label: 'One-time',
-        description: nextDate ? `On ${format(new Date(nextDate), 'MMM d, yyyy')}` : '',
-        variant: 'secondary' as const,
-      };
-    case 'daily':
-      return {
-        label: 'Daily',
-        description: 'Every day',
-        variant: 'default' as const,
-      };
-    case 'weekdays':
-      return {
-        label: 'Weekdays',
-        description: 'Monday to Friday',
-        variant: 'outline' as const,
-      };
-    case 'weekly':
-      return {
-        label: 'Weekly',
-        description: daysOfWeek && daysOfWeek.length === 1 
-          ? `Every ${DAYS_OF_WEEK[daysOfWeek[0]]}` 
-          : 'Weekly',
-        variant: 'outline' as const,
-      };
-    case 'bi-weekly':
-      return {
-        label: 'Bi-weekly',
-        description: 'Every 2 weeks',
-        variant: 'outline' as const,
-      };
-    case 'monthly':
-      return {
-        label: 'Monthly',
-        description: 'Every month',
-        variant: 'outline' as const,
-      };
-    case 'custom_weekly':
-      if (daysOfWeek && daysOfWeek.length > 0) {
-        const dayNames = daysOfWeek
-          .map(day => DAYS_OF_WEEK[day])
-          .filter(Boolean);
-        return {
-          label: 'Custom Weekly',
-          description: `Every ${dayNames.join(' and ')}`,
-          variant: 'outline' as const,
-        };
-      }
-      return {
-        label: 'Custom Weekly',
-        description: 'Custom schedule',
-        variant: 'outline' as const,
-      };
-    default:
-      return {
-        label: 'Unknown',
-        description: '',
-        variant: 'secondary' as const,
-      };
-  }
-};
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { EditScheduledTaskModal } from '@/components/EditScheduledTaskModal';
+import { formatRecurrenceRule } from '@/lib/recurrence-utils';
+import { RecurrenceType, ScheduledTask } from '@/types/scheduled-task';
 
 export function ScheduledTasks() {
   const { activeProject } = useProject();
-  const { scheduledTasks, loading, deleteScheduledTask } = useScheduledTasks();
+  const { scheduledTasks, loading, updateScheduledTask, deleteScheduledTask } = useScheduledTasks();
+  const { boardData } = useKanbanBoard();
+  const [editingTask, setEditingTask] = useState<ScheduledTask | null>(null);
+
+  const handleUpdateTask = async (taskId: string, updates: any) => {
+    await updateScheduledTask(taskId, updates);
+    setEditingTask(null);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    await deleteScheduledTask(taskId);
+  };
 
   if (!activeProject) {
     return (
@@ -124,7 +79,7 @@ export function ScheduledTasks() {
         ) : (
           <div className="grid gap-4">
             {scheduledTasks.map((task) => {
-              const recurrence = getRecurrenceDisplay(
+              const recurrenceDescription = formatRecurrenceRule(
                 task.recurrence_type,
                 task.days_of_week,
                 task.next_occurrence_date
@@ -140,14 +95,44 @@ export function ScheduledTasks() {
                           <p className="text-sm text-muted-foreground">{task.summary}</p>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteScheduledTask(task.id)}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingTask(task)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Scheduled Task</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{task.title}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
@@ -155,10 +140,10 @@ export function ScheduledTasks() {
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                           <Repeat className="w-4 h-4 text-muted-foreground" />
-                          <Badge variant={recurrence.variant}>{recurrence.label}</Badge>
+                          <Badge variant="outline">{task.recurrence_type}</Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {recurrence.description}
+                          {recurrenceDescription}
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -176,6 +161,17 @@ export function ScheduledTasks() {
           </div>
         )}
       </main>
+
+      {/* Edit Modal */}
+      {editingTask && boardData && (
+        <EditScheduledTaskModal
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+          task={editingTask}
+          columns={boardData.columns}
+          onSave={handleUpdateTask}
+        />
+      )}
     </div>
   );
 }
