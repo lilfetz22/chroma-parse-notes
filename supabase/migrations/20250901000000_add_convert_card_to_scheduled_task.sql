@@ -21,7 +21,7 @@ BEGIN
   JOIN columns col ON c.column_id = col.id
   JOIN boards b ON col.board_id = b.id
   JOIN projects p ON b.project_id = p.id
-  JOIN users u ON p.user_id = u.id
+  JOIN auth.users u ON p.user_id = u.id
   WHERE c.id = p_card_id AND u.id = auth.uid()
   INTO card_record;
 
