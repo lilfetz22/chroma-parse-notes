@@ -6,12 +6,14 @@ import { CreateCardModal } from './CreateCardModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Loader2, Clock } from 'lucide-react';
+import { Plus, Loader2, Clock, Calendar } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
 import { useScheduledTasks } from '@/hooks/useScheduledTasks';
+import { useNavigate } from 'react-router-dom';
 
 export function KanbanBoardView() {
+  const navigate = useNavigate();
   const {
     boardData,
     loading,
@@ -158,13 +160,23 @@ export function KanbanBoardView() {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{boardData.board.title}</h1>
-        <Button
-          onClick={() => setShowScheduleModal(true)}
-          className="flex items-center gap-2"
-        >
-          <Clock className="w-4 h-4" />
-          Schedule Task
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/schedule')}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            View Scheduled Tasks
+          </Button>
+          <Button
+            onClick={() => setShowScheduleModal(true)}
+            className="flex items-center gap-2"
+          >
+            <Clock className="w-4 h-4" />
+            Schedule Task
+          </Button>
+        </div>
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
