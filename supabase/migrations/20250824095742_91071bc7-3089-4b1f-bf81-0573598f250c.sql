@@ -1,43 +1,91 @@
--- Create projects table
-CREATE TABLE public.projects (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  title text NOT NULL,
-  description text,
-  created_at timestamp with time zone NOT NULL DEFAULT now()
-);
+-- Create projects table (commented out as it already exists)
+-- CREATE TABLE public.projects (
+--   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+--   user_id uuid NOT NULL,
+--   title text NOT NULL,
+--   description text,
+--   created_at timestamp with time zone NOT NULL DEFAULT now()
+-- );
 
 -- Enable RLS on projects table
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies for projects table
-CREATE POLICY "Users can view their own projects" 
-ON public.projects 
-FOR SELECT 
-USING (auth.uid() = user_id);
+-- Create RLS policies for projects table (with IF NOT EXISTS protection)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'projects' AND policyname = 'Users can view their own projects'
+  ) THEN
+    CREATE POLICY "Users can view their own projects" 
+    ON public.projects 
+    FOR SELECT 
+    USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
-CREATE POLICY "Users can create their own projects" 
-ON public.projects 
-FOR INSERT 
-WITH CHECK (auth.uid() = user_id);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'projects' AND policyname = 'Users can create their own projects'
+  ) THEN
+    CREATE POLICY "Users can create their own projects" 
+    ON public.projects 
+    FOR INSERT 
+    WITH CHECK (auth.uid() = user_id);
+  END IF;
+END $$;
 
-CREATE POLICY "Users can update their own projects" 
-ON public.projects 
-FOR UPDATE 
-USING (auth.uid() = user_id);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'projects' AND policyname = 'Users can update their own projects'
+  ) THEN
+    CREATE POLICY "Users can update their own projects" 
+    ON public.projects 
+    FOR UPDATE 
+    USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
-CREATE POLICY "Users can delete their own projects" 
-ON public.projects 
-FOR DELETE 
-USING (auth.uid() = user_id);
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'projects' AND policyname = 'Users can delete their own projects'
+  ) THEN
+    CREATE POLICY "Users can delete their own projects" 
+    ON public.projects 
+    FOR DELETE 
+    USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
--- Add project_id to boards table
-ALTER TABLE public.boards 
-ADD COLUMN project_id uuid;
+-- Add project_id to boards table (only if it doesn't exist)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'boards' AND column_name = 'project_id'
+  ) THEN
+    ALTER TABLE public.boards 
+    ADD COLUMN project_id uuid;
+  END IF;
+END $$;
 
 -- Add project_id to notes table (nullable since notes can exist without projects)
-ALTER TABLE public.notes 
-ADD COLUMN project_id uuid;
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'notes' AND column_name = 'project_id'
+  ) THEN
+    ALTER TABLE public.notes 
+    ADD COLUMN project_id uuid;
+  END IF;
+END $$;
 
 -- Create a function to automatically create a board when a project is created
 CREATE OR REPLACE FUNCTION public.create_board_for_project()
@@ -54,10 +102,18 @@ BEGIN
 END;
 $$;
 
--- Create trigger to automatically create board when project is created
-CREATE TRIGGER on_project_created
-  AFTER INSERT ON public.projects
-  FOR EACH ROW EXECUTE FUNCTION public.create_board_for_project();
+-- Create trigger to automatically create board when project is created (with IF NOT EXISTS protection)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger 
+    WHERE tgname = 'on_project_created'
+  ) THEN
+    CREATE TRIGGER on_project_created
+      AFTER INSERT ON public.projects
+      FOR EACH ROW EXECUTE FUNCTION public.create_board_for_project();
+  END IF;
+END $$;
 
 -- Update the get_board_details function to be project-aware
 CREATE OR REPLACE FUNCTION public.get_board_details(project_id_param uuid DEFAULT NULL::uuid)

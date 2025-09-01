@@ -1,7 +1,10 @@
 -- Expand recurrence options for scheduled tasks
 -- This migration adds support for weekdays, bi-weekly, monthly, and custom weekly schedules
 
--- First, drop the existing check constraint on recurrence_type
+-- First, drop any existing check constraints that might conflict
+ALTER TABLE public.scheduled_tasks 
+DROP CONSTRAINT IF EXISTS scheduled_tasks_day_of_week_check;
+
 ALTER TABLE public.scheduled_tasks 
 DROP CONSTRAINT IF EXISTS scheduled_tasks_recurrence_type_check;
 
@@ -31,15 +34,11 @@ ALTER TABLE public.scheduled_tasks
 ADD CONSTRAINT scheduled_tasks_days_of_week_check 
 CHECK (
   days_of_week IS NULL OR 
-  (array_length(days_of_week, 1) > 0 AND 
-   array_length(days_of_week, 1) <= 7 AND
-   (SELECT bool_and(array(
-     SELECT (day >= 0 AND day <= 6) 
-     FROM unnest(days_of_week) AS day
-   )))
+  (array_length(days_of_week, 1) BETWEEN 1 AND 7 AND
+   days_of_week <@ ARRAY[0,1,2,3,4,5,6]
   )
 );
 
 -- Add comment to document the new structure
 COMMENT ON COLUMN public.scheduled_tasks.recurrence_type IS 'Recurrence pattern: once, daily, weekdays (Mon-Fri), weekly, bi-weekly (every 2 weeks), monthly, or custom_weekly';
-COMMENT ON COLUMN public.scheduled_tasks.days_of_week IS 'Array of day numbers (0=Sunday to 6=Saturday) for weekly and custom_weekly recurrence types'; 
+COMMENT ON COLUMN public.scheduled_tasks.days_of_week IS 'Array of day numbers (0=Sunday to 6=Saturday) for weekly and custom_weekly recurrence types';
