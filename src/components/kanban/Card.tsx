@@ -31,10 +31,19 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
 
   const getPriorityBorderClass = () => {
     switch (card.priority) {
-      case 1: return 'border-l-4 border-l-blue-400'; // Low
-      case 2: return 'border-l-4 border-l-yellow-400'; // Medium
-      case 3: return 'border-l-4 border-l-red-500'; // High
+      case 1: return 'border-l-4 border-l-green-500'; // Low - green
+      case 2: return 'border-l-4 border-l-yellow-500'; // Medium - yellow  
+      case 3: return 'border-l-4 border-l-red-500'; // High - red
       default: return ''; // Default (no border)
+    }
+  };
+
+  const getPriorityBackgroundClass = () => {
+    switch (card.priority) {
+      case 1: return 'bg-green-50 dark:bg-green-950/20'; // Low
+      case 2: return 'bg-yellow-50 dark:bg-yellow-950/20'; // Medium
+      case 3: return 'bg-red-50 dark:bg-red-950/20'; // High
+      default: return '';
     }
   };
 
@@ -86,7 +95,7 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
           {...provided.dragHandleProps}
           className={`mb-2 cursor-pointer transition-shadow hover:shadow-md ${
             snapshot.isDragging ? 'shadow-lg' : ''
-          } ${getPriorityBorderClass()}`}
+          } ${getPriorityBorderClass()} ${getPriorityBackgroundClass()}`}
           onClick={handleCardClick}
         >
           <CardContent className="p-3 select-auto">
@@ -98,7 +107,9 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
                     <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   )}
                   {card.completed_at && (
-                    <span className="text-xs text-destructive ml-2">{new Date(card.completed_at).toLocaleDateString()}</span>
+                    <span className="text-xs text-red-600 dark:text-red-400 ml-2 font-medium">
+                      Completed: {new Date(card.completed_at).toLocaleDateString()}
+                    </span>
                   )}
                 </h4>
                 <div className="select-text">

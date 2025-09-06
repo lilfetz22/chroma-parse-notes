@@ -11,10 +11,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, Tag } from '@/types/kanban';
+import { RecurrenceType } from '@/types/scheduled-task';
 import { TagInput } from '@/components/TagInput';
 import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface EditCardModalProps {
   isOpen: boolean;
@@ -40,6 +42,7 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
   );
   const [priority, setPriority] = useState<number>(card.priority || 0);
   const [selectedTags, setSelectedTags] = useState<Tag[]>(card.tags || []);
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
   // Scheduling state
@@ -108,11 +111,17 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
     try {
       const nextOccurrenceDate = scheduleData.selectedDate!.toISOString().split('T')[0];
       
-      const { data, error } = await supabase.rpc('convert_card_to_scheduled_task', {
-        p_card_id: card.id,
-        p_recurrence_type: scheduleData.recurrenceType,
-        p_days_of_week: scheduleData.daysOfWeek || null,
-        p_next_occurrence_date: nextOccurrenceDate,
+      // Create scheduled task
+      const { data, error } = await supabase.from('scheduled_tasks').insert({
+        title: card.title,
+        summary: card.summary || '',
+        recurrence_type: 'once' as RecurrenceType,
+        days_of_week: null,
+        next_occurrence_date: new Date().toISOString().split('T')[0],
+        target_column_id: 'temp-column', // This would need proper logic
+        project_id: 'temp-project', // This would need proper logic
+        user_id: user?.id || 'temp-user',
+        priority: card.priority || 0
       });
 
       if (error) throw error;

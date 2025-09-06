@@ -38,6 +38,36 @@ export type Database = {
         }
         Relationships: []
       }
+      card_tags: {
+        Row: {
+          card_id: string
+          tag_id: string
+        }
+        Insert: {
+          card_id: string
+          tag_id: string
+        }
+        Update: {
+          card_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_tags_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cards: {
         Row: {
           activated_at: string | null
@@ -49,6 +79,7 @@ export type Database = {
           id: string
           note_id: string | null
           position: number
+          priority: number
           recurrence: string | null
           scheduled_at: string | null
           summary: string | null
@@ -64,6 +95,7 @@ export type Database = {
           id?: string
           note_id?: string | null
           position: number
+          priority?: number
           recurrence?: string | null
           scheduled_at?: string | null
           summary?: string | null
@@ -79,6 +111,7 @@ export type Database = {
           id?: string
           note_id?: string | null
           position?: number
+          priority?: number
           recurrence?: string | null
           scheduled_at?: string | null
           summary?: string | null
@@ -196,9 +229,11 @@ export type Database = {
           days_of_week: number[] | null
           id: string
           next_occurrence_date: string
+          priority: number
           project_id: string
           recurrence_type: string
           summary: string | null
+          tag_ids: string[] | null
           target_column_id: string
           title: string
           user_id: string
@@ -208,9 +243,11 @@ export type Database = {
           days_of_week?: number[] | null
           id?: string
           next_occurrence_date: string
+          priority?: number
           project_id: string
           recurrence_type: string
           summary?: string | null
+          tag_ids?: string[] | null
           target_column_id: string
           title: string
           user_id: string
@@ -220,11 +257,37 @@ export type Database = {
           days_of_week?: number[] | null
           id?: string
           next_occurrence_date?: string
+          priority?: number
           project_id?: string
           recurrence_type?: string
           summary?: string | null
+          tag_ids?: string[] | null
           target_column_id?: string
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
           user_id?: string
         }
         Relationships: []
@@ -234,6 +297,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      convert_card_to_scheduled_task: {
+        Args: {
+          p_card_id: string
+          p_days_of_week: number[]
+          p_next_occurrence_date: string
+          p_recurrence_type: string
+        }
+        Returns: Json
+      }
       get_board_details: {
         Args: { project_id_param?: string }
         Returns: Json

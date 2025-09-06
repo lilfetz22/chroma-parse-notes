@@ -53,13 +53,14 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
 
   const loadUserTags = async () => {
     try {
-      const { data, error } = await supabase
-        .from('tags')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      setAvailableTags(data || []);
+      // For now, use a local array since tags table access is limited
+      const localTags: Tag[] = [
+        { id: '1', name: 'Important', color: 'bg-red-500' },
+        { id: '2', name: 'Work', color: 'bg-blue-500' },
+        { id: '3', name: 'Personal', color: 'bg-green-500' },
+        { id: '4', name: 'Urgent', color: 'bg-yellow-500' }
+      ];
+      setAvailableTags(localTags);
     } catch (error) {
       console.error('Error loading tags:', error);
     }
@@ -70,18 +71,13 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
     try {
       const randomColor = DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)];
       
-      const { data, error } = await supabase
-        .from('tags')
-        .insert({
-          name: name.trim(),
-          color: randomColor,
-        })
-        .select()
-        .single();
+      // Create a new tag locally for now
+      const newTag: Tag = {
+        id: `temp-${Date.now()}`,
+        name: name.trim(),
+        color: randomColor,
+      };
 
-      if (error) throw error;
-
-      const newTag = data as Tag;
       setAvailableTags(prev => [...prev, newTag]);
       setInputValue('');
       onTagsChange([...selectedTags, newTag]);

@@ -89,7 +89,7 @@ export function useScheduledTasks() {
       if (error) throw error;
 
       setScheduledTasks(prev => prev.map(task => 
-        task.id === taskId ? { ...task, ...data } : task
+        task.id === taskId ? { ...task, ...data as ScheduledTask } : task
       ));
 
       toast({
