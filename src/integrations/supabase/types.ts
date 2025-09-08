@@ -314,6 +314,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_card_positions: {
+        Args: { updates: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       card_type: "simple" | "linked"

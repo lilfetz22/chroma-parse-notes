@@ -31,10 +31,19 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
 
   const getPriorityBorderClass = () => {
     switch (card.priority) {
-      case 1: return 'border-l-4 border-l-priority-low'; // Low - green
-      case 2: return 'border-l-4 border-l-priority-medium'; // Medium - yellow  
-      case 3: return 'border-l-4 border-l-priority-high'; // High - red
+      case 1: return 'border-l-4'; // Low - green border will be applied via style
+      case 2: return 'border-l-4'; // Medium - yellow border will be applied via style
+      case 3: return 'border-l-4'; // High - red border will be applied via style
       default: return ''; // Default (no border)
+    }
+  };
+
+  const getPriorityBorderStyle = () => {
+    switch (card.priority) {
+      case 1: return { borderLeftColor: 'hsl(var(--priority-low))' }; // Low - green
+      case 2: return { borderLeftColor: 'hsl(var(--priority-medium))' }; // Medium - yellow  
+      case 3: return { borderLeftColor: 'hsl(var(--priority-high))' }; // High - red
+      default: return {}; // Default (no border)
     }
   };
 
@@ -95,7 +104,8 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
           {...provided.dragHandleProps}
           className={`mb-2 cursor-pointer transition-shadow hover:shadow-md ${
             snapshot.isDragging ? 'shadow-lg' : ''
-          } ${getPriorityBorderClass()}`}
+          } ${getPriorityBorderClass()} ${getPriorityBackgroundClass()}`}
+          style={getPriorityBorderStyle()}
           onClick={handleCardClick}
         >
           <CardContent className="p-3 select-auto">
@@ -108,7 +118,7 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
                   )}
                 </h4>
                 {card.completed_at && (
-                  <span className="text-xs text-red-500 ml-2 font-medium">
+                  <span className="text-xs text-destructive ml-2 font-medium">
                     Completed: {new Date(card.completed_at).toLocaleDateString()}
                   </span>
                 )}
