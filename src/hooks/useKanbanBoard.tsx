@@ -321,13 +321,6 @@ export function useKanbanBoard() {
       setBoardData(prev => {
         if (!prev) return null;
 
-        let newCompletedAt: string | null | undefined = undefined;
-        if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
-          newCompletedAt = new Date().toISOString();
-        } else if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
-          newCompletedAt = null;
-        }
-
         const updatedCards = prev.cards.map(card => {
           const update = updates.find(u => u.id === card.id);
           if (update) {
@@ -336,9 +329,17 @@ export function useKanbanBoard() {
               position: update.position,
               column_id: update.column_id || card.column_id
             };
-            if (newCompletedAt !== undefined && update.column_id) {
-              updatedCard.completed_at = newCompletedAt;
+
+            // Update completion date based on column movement
+            if (update.column_id) {
+              const targetColumn = prev.columns.find(c => c.id === update.column_id);
+              if (targetColumn?.title === 'Done' && card.column_id !== update.column_id) {
+                updatedCard.completed_at = new Date().toISOString();
+              } else if (card.column_id !== update.column_id && prev.columns.find(c => c.id === card.column_id)?.title === 'Done') {
+                updatedCard.completed_at = null;
+              }
             }
+
             return updatedCard;
           }
           return card;
@@ -363,7 +364,7 @@ export function useKanbanBoard() {
         description: "Failed to update card positions."
       });
       // If optimistic update fails, reload to get consistent state
-      loadBoardData();
+      await loadBoardData();
     }
   };
 

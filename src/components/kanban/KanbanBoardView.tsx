@@ -74,8 +74,14 @@ export function KanbanBoardView() {
 
     console.log('Drag ended:', { destination, source, type });
 
-    if (!destination || !boardData) {
-      console.log('No destination or no board data');
+    if (!destination) {
+      console.log('No destination');
+      return;
+    }
+
+    if (!boardData) {
+      console.log('No board data, reloading...');
+      await loadBoardData();
       return;
     }
 
@@ -101,8 +107,12 @@ export function KanbanBoardView() {
     if (type === 'card') {
       const sourceColumn = boardData.columns.find(col => col.id === source.droppableId);
       const destColumn = boardData.columns.find(col => col.id === destination.droppableId);
-      
-      if (!sourceColumn || !destColumn) return;
+
+      if (!sourceColumn || !destColumn) {
+        console.log('Source or destination column not found, reloading data...');
+        await loadBoardData();
+        return;
+      }
 
       const sourceCards = boardData.cards.filter(card => card.column_id === source.droppableId);
       const destCards = boardData.cards.filter(card => card.column_id === destination.droppableId);
