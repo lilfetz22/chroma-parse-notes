@@ -100,13 +100,13 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Priority colors for kanban cards - dark mode */
-    --priority-low: 142.1 70.6% 45.3%;
-    --priority-low-bg: 142.1 76.2% 6.3%;
-    --priority-medium: 32.1 94.6% 53.7%;
-    --priority-medium-bg: 54.5 91.7% 5.3%;
-    --priority-high: 0 84.2% 70.2%;
-    --priority-high-bg: 0 85.7% 7.3%;
+    /* Priority colors for kanban cards */
+    --priority-low: 142.1 76.2% 36.3%;
+    --priority-low-bg: 222.2 84% 4.9%;
+    --priority-medium: 32.1 94.6% 43.7%;
+    --priority-medium-bg: 222.2 84% 4.9%;
+    --priority-high: 0 74.2% 60.2%;
+    --priority-high-bg: 222.2 84% 4.9%;
   }
 }
 

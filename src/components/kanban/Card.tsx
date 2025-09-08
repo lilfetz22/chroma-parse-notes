@@ -95,23 +95,23 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
           {...provided.dragHandleProps}
           className={`mb-2 cursor-pointer transition-shadow hover:shadow-md ${
             snapshot.isDragging ? 'shadow-lg' : ''
-          } ${getPriorityBorderClass()} ${getPriorityBackgroundClass()}`}
+          } ${getPriorityBorderClass()}`}
           onClick={handleCardClick}
         >
           <CardContent className="p-3 select-auto">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-2 group">
               <div className="flex-1 min-w-0 select-text">
                 <h4 className="font-medium text-sm line-clamp-2 mb-1 flex items-center gap-2 select-text">
                   {card.title}
                   {card.card_type === 'linked' && (
                     <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   )}
-                  {card.completed_at && (
-                    <span className="text-xs text-priority-high ml-2 font-medium">
-                      Completed: {new Date(card.completed_at).toLocaleDateString()}
-                    </span>
-                  )}
                 </h4>
+                {card.completed_at && (
+                  <span className="text-xs text-red-500 ml-2 font-medium">
+                    Completed: {new Date(card.completed_at).toLocaleDateString()}
+                  </span>
+                )}
                 <div className="select-text">
                   {getContentPreview()}
                 </div>

@@ -274,7 +274,46 @@ export function useKanbanBoard() {
   };
 
   // Update positions after drag and drop
-  const updatePositions = async (updates: Array<{ id: string; position: number; column_id?: string }>) => {
+  const updatePositions = async (
+    updates: Array<{ id: string; position: number; column_id?: string }>,
+    sourceColumnId?: string,
+    destColumnId?: string,
+  ) => {
+    const sourceColumn = boardData?.columns.find(c => c.id === sourceColumnId);
+    const destColumn = boardData?.columns.find(c => c.id === destColumnId);
+
+    const cardUpdatePromises = [];
+
+    // Add completion date if moving to "Done"
+    if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
+      const cardToUpdate = updates.find(u => u.column_id === destColumnId);
+      if (cardToUpdate) {
+        cardUpdatePromises.push(
+          supabase
+            .from('cards')
+            .update({ completed_at: new Date().toISOString() })
+            .eq('id', cardToUpdate.id)
+        );
+      }
+    }
+
+    // Remove completion date if moving out of "Done"
+    if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
+      const cardToUpdate = updates.find(u => u.column_id === destColumnId);
+      if (cardToUpdate) {
+        cardUpdatePromises.push(
+          supabase
+            .from('cards')
+            .update({ completed_at: null })
+            .eq('id', cardToUpdate.id)
+        );
+      }
+    }
+    
+    if (cardUpdatePromises.length > 0) {
+      await Promise.all(cardUpdatePromises);
+    }
+
     try {
       // Optimistically update the state first
       setBoardData(prev => {
@@ -298,92 +337,31 @@ export function useKanbanBoard() {
         };
       });
 
-      // Update in database
-      // helper to compute next scheduled date based on recurrence
-      const computeNextScheduled = (recurrence: string | null | undefined, fromIso: string) => {
-        if (!recurrence) return null;
-        const from = new Date(fromIso);
-        let next = new Date(from);
-        switch (recurrence) {
-          case 'daily':
-            next.setDate(next.getDate() + 1);
-            break;
-          case 'weekdays':
-            // advance until weekday Mon-Fri
-            do { next.setDate(next.getDate() + 1); } while (next.getDay() === 0 || next.getDay() === 6);
-            break;
-          case 'weekly':
-            next.setDate(next.getDate() + 7);
-            break;
-          case 'biweekly':
-            next.setDate(next.getDate() + 14);
-            break;
-          case 'monthly':
-            // increment month, keep date where possible
-            const month = next.getMonth();
-            next.setMonth(month + 1);
-            break;
-          default:
-            return null;
-        }
-        return next.toISOString();
-      };
+      const { error } = await supabase.rpc('update_card_positions', {
+        updates
+      });
 
-      for (const update of updates) {
-        const updateData: any = { position: update.position };
-        if (update.column_id) {
-          updateData.column_id = update.column_id;
-        }
-
-        // If the card is moved into a "Done/Completed" column, set completed_at; if moved out, clear completed_at
-        if (update.column_id && boardData) {
-          // allow some flexibility in matching the done column title (e.g. "Done", "Completed", "Done ✅")
-          const doneColumn = boardData.columns.find(col => {
-            const t = (col.title || '').toLowerCase();
-            return t === 'done' || t.includes('done') || t.includes('complete');
-          });
-
-          if (doneColumn && update.column_id === doneColumn.id) {
-            updateData.completed_at = new Date().toISOString();
-          } else {
-            // If moving out of Done, clear completed_at
-            const cardBefore = boardData.cards.find(c => c.id === update.id);
-            if (cardBefore && cardBefore.column_id === doneColumn?.id) {
-              updateData.completed_at = null;
-            }
-          }
-        }
-
-        const { error } = await supabase
-          .from('cards')
-          .update(updateData)
-          .eq('id', update.id);
-
-        if (error) throw error;
-
-        // Note: Recurrence logic handled by scheduled_tasks table now
-      }
+      if (error) throw error;
     } catch (error) {
       console.error('Error updating positions:', error);
-      // Reload data on error to revert optimistic update
-      loadBoardData();
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update card positions."
       });
+      // If optimistic update fails, reload to get consistent state
+      loadBoardData();
     }
   };
 
-  // Update column positions
-  const updateColumnPositions = async (columnUpdates: Array<{ id: string; position: number }>) => {
+  const updateColumnPositions = async (updates: Array<{ id: string; position: number }>) => {
     try {
       // Optimistically update the state first
       setBoardData(prev => {
         if (!prev) return null;
 
         const updatedColumns = prev.columns.map(column => {
-          const update = columnUpdates.find(u => u.id === column.id);
+          const update = updates.find(u => u.id === column.id);
           return update ? { ...column, position: update.position } : column;
         });
 
@@ -394,7 +372,7 @@ export function useKanbanBoard() {
       });
 
       // Update in database
-      for (const update of columnUpdates) {
+      for (const update of updates) {
         const { error } = await supabase
           .from('columns')
           .update({ position: update.position })
@@ -427,7 +405,7 @@ export function useKanbanBoard() {
     deleteColumn,
     createCard,
     deleteCard,
-  updateCard,
+    updateCard,
     updatePositions,
     updateColumnPositions
   };

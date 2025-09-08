@@ -22,9 +22,10 @@ export function KanbanBoardView() {
     deleteColumn,
     createCard,
     deleteCard,
-  updateCard,
-  updatePositions,
-  updateColumnPositions
+    updateCard,
+    updatePositions,
+    updateColumnPositions,
+    loadBoardData,
   } = useKanbanBoard();
 
   const [showCreateCard, setShowCreateCard] = useState(false);
@@ -114,7 +115,8 @@ export function KanbanBoardView() {
           position: index
         }));
 
-        await updatePositions(updates);
+        await updatePositions(updates, source.droppableId, destination.droppableId);
+        await loadBoardData();
       } else {
         // Moving to different column
         const movedCard = sourceCards[source.index];
@@ -135,7 +137,8 @@ export function KanbanBoardView() {
           column_id: destination.droppableId
         }));
 
-        await updatePositions([...sourceUpdates, ...destUpdates]);
+        await updatePositions([...sourceUpdates, ...destUpdates], source.droppableId, destination.droppableId);
+        await loadBoardData();
       }
     }
   };
