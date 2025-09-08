@@ -236,16 +236,19 @@ export function useKanbanBoard() {
           const sourceColumn = boardData?.columns.find(c => c.id === currentCard.column_id);
           
           if (destColumn) {
-            // Calculate new position (add to end of destination column)
+            // Calculate new position (add to TOP of destination column)
             const destCards = boardData?.cards.filter(c => c.column_id === column_id) || [];
-            const newPosition = destCards.length;
             
-            // Update positions for destination column
-            const destUpdates = [
-              { id: cardId, position: newPosition, column_id: column_id }
-            ];
+            // Shift all existing cards down by 1 position
+            const destUpdates = destCards.map((card, index) => ({
+              id: card.id,
+              position: index + 1
+            }));
             
-            // Update positions for source column (remove the card)
+            // Add the moved card at position 0
+            destUpdates.unshift({ id: cardId, position: 0, column_id: column_id });
+            
+            // Update positions for source column (remove the card and shift others up)
             const sourceCards = boardData?.cards.filter(c => c.column_id === currentCard.column_id && c.id !== cardId) || [];
             const sourceUpdates = sourceCards.map((card, index) => ({
               id: card.id,

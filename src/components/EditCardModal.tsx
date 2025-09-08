@@ -219,19 +219,18 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
             />
           </div>
 
-          {/* Column Selection */}
+          {/* Priority Selection */}
           <div className="space-y-2">
-            <Label htmlFor="edit-column">Column</Label>
-            <Select value={selectedColumnId} onValueChange={setSelectedColumnId}>
+            <Label htmlFor="edit-priority">Priority</Label>
+            <Select value={priority.toString()} onValueChange={(value) => setPriority(parseInt(value))}>
               <SelectTrigger>
-                <SelectValue placeholder="Select column" />
+                <SelectValue placeholder="Select priority" />
               </SelectTrigger>
               <SelectContent>
-                {columns.map((column) => (
-                  <SelectItem key={column.id} value={column.id}>
-                    {column.title}
-                  </SelectItem>
-                ))}
+                <SelectItem value="0">Default</SelectItem>
+                <SelectItem value="1">Low</SelectItem>
+                <SelectItem value="2">Medium</SelectItem>
+                <SelectItem value="3">High</SelectItem>
               </SelectContent>
             </Select>
           </div>
