@@ -61,6 +61,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				priority: {
+					low: 'hsl(var(--priority-low))',
+					'low-bg': 'hsl(var(--priority-low-bg))',
+					medium: 'hsl(var(--priority-medium))',
+					'medium-bg': 'hsl(var(--priority-medium-bg))',
+					high: 'hsl(var(--priority-high))',
+					'high-bg': 'hsl(var(--priority-high-bg))'
 				}
 			},
 			borderRadius: {

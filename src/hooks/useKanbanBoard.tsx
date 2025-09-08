@@ -262,10 +262,8 @@ export function useKanbanBoard() {
         await loadBoardData();
       } else {
         // Update local state if not dealing with tags
-        setBoardData(prev => prev ? {
-          ...prev,
-          cards: prev.cards.map(c => c.id === cardId ? data as Card : c)
-        } : null);
+        // Refresh board data to get updated card with tags
+        await loadBoardData();
       }
 
       toast({ title: 'Card updated' });

@@ -31,18 +31,18 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
 
   const getPriorityBorderClass = () => {
     switch (card.priority) {
-      case 1: return 'border-l-4 border-l-green-500'; // Low - green
-      case 2: return 'border-l-4 border-l-yellow-500'; // Medium - yellow  
-      case 3: return 'border-l-4 border-l-red-500'; // High - red
+      case 1: return 'border-l-4 border-l-priority-low'; // Low - green
+      case 2: return 'border-l-4 border-l-priority-medium'; // Medium - yellow  
+      case 3: return 'border-l-4 border-l-priority-high'; // High - red
       default: return ''; // Default (no border)
     }
   };
 
   const getPriorityBackgroundClass = () => {
     switch (card.priority) {
-      case 1: return 'bg-green-50 dark:bg-green-950/20'; // Low
-      case 2: return 'bg-yellow-50 dark:bg-yellow-950/20'; // Medium
-      case 3: return 'bg-red-50 dark:bg-red-950/20'; // High
+      case 1: return 'bg-priority-low-bg'; // Low
+      case 2: return 'bg-priority-medium-bg'; // Medium
+      case 3: return 'bg-priority-high-bg'; // High
       default: return '';
     }
   };
@@ -107,7 +107,7 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
                     <ExternalLink className="w-3 h-3 text-muted-foreground" />
                   )}
                   {card.completed_at && (
-                    <span className="text-xs text-red-600 dark:text-red-400 ml-2 font-medium">
+                    <span className="text-xs text-priority-high ml-2 font-medium">
                       Completed: {new Date(card.completed_at).toLocaleDateString()}
                     </span>
                   )}
