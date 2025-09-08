@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, Tag } from '@/types/kanban';
+import { Card, Tag, Column } from '@/types/kanban';
 import { RecurrenceType } from '@/types/scheduled-task';
 import { TagInput } from '@/components/TagInput';
 import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
@@ -23,17 +23,19 @@ interface EditCardModalProps {
   isOpen: boolean;
   onClose: () => void;
   card: Card;
+  columns: Column[];
   onSave: (cardId: string, updates: { 
     title: string; 
     summary?: string; 
     content?: any; 
     priority?: number;
     tag_ids?: string[];
+    column_id?: string;
   }) => void;
   onConvertToScheduledTask?: (cardId: string) => void;
 }
 
-export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToScheduledTask }: EditCardModalProps) {
+export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConvertToScheduledTask }: EditCardModalProps) {
   const [title, setTitle] = useState(card.title);
   const [summary, setSummary] = useState(card.summary || '');
   const [content, setContent] = useState(
@@ -43,6 +45,7 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
   );
   const [priority, setPriority] = useState<number>(card.priority || 0);
   const [selectedTags, setSelectedTags] = useState<Tag[]>(card.tags || []);
+  const [selectedColumnId, setSelectedColumnId] = useState<string>(card.column_id);
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -65,6 +68,7 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
       );
       setPriority(card.priority || 0);
       setSelectedTags(card.tags || []);
+      setSelectedColumnId(card.column_id);
       
       // Reset scheduling state when modal opens
       setScheduleData({
@@ -169,7 +173,8 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
       const updates: any = { 
         title: title.trim(),
         priority: priority,
-        tag_ids: selectedTags.map(tag => tag.id)
+        tag_ids: selectedTags.map(tag => tag.id),
+        column_id: selectedColumnId
       };
       
       if (card.card_type === 'linked') {
@@ -214,18 +219,19 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
             />
           </div>
 
-          {/* Priority Selection */}
+          {/* Column Selection */}
           <div className="space-y-2">
-            <Label htmlFor="edit-priority">Priority</Label>
-            <Select value={priority.toString()} onValueChange={(value) => setPriority(parseInt(value))}>
+            <Label htmlFor="edit-column">Column</Label>
+            <Select value={selectedColumnId} onValueChange={setSelectedColumnId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select priority" />
+                <SelectValue placeholder="Select column" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0">Default</SelectItem>
-                <SelectItem value="1">Low</SelectItem>
-                <SelectItem value="2">Medium</SelectItem>
-                <SelectItem value="3">High</SelectItem>
+                {columns.map((column) => (
+                  <SelectItem key={column.id} value={column.id}>
+                    {column.title}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

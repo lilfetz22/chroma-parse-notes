@@ -211,6 +211,7 @@ export function KanbanBoardView() {
                     column={column}
                     cards={columnCards}
                     index={index}
+                    columns={boardData.columns}
                     onUpdateTitle={updateColumnTitle}
                     onDeleteColumn={deleteColumn}
                     onAddCard={handleAddCard}

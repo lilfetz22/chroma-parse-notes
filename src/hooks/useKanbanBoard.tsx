@@ -220,12 +220,43 @@ export function useKanbanBoard() {
   };
 
   // Update card (title/summary/content)
-  const updateCard = async (cardId: string, updates: Partial<Card> & { tag_ids?: string[] }) => {
+  const updateCard = async (cardId: string, updates: Partial<Card> & { tag_ids?: string[]; column_id?: string }) => {
     try {
       console.log('Updating card:', cardId, 'with updates:', updates);
       
-      // Extract tag_ids to handle separately
-      const { tag_ids, tags, ...cardUpdates } = updates;
+      // Extract special fields to handle separately
+      const { tag_ids, tags, column_id, ...cardUpdates } = updates;
+      
+      // Handle column change separately
+      if (column_id !== undefined) {
+        const currentCard = boardData?.cards.find(c => c.id === cardId);
+        if (currentCard && column_id !== currentCard.column_id) {
+          // This is a column change - use the position update logic
+          const destColumn = boardData?.columns.find(c => c.id === column_id);
+          const sourceColumn = boardData?.columns.find(c => c.id === currentCard.column_id);
+          
+          if (destColumn) {
+            // Calculate new position (add to end of destination column)
+            const destCards = boardData?.cards.filter(c => c.column_id === column_id) || [];
+            const newPosition = destCards.length;
+            
+            // Update positions for destination column
+            const destUpdates = [
+              { id: cardId, position: newPosition, column_id: column_id }
+            ];
+            
+            // Update positions for source column (remove the card)
+            const sourceCards = boardData?.cards.filter(c => c.column_id === currentCard.column_id && c.id !== cardId) || [];
+            const sourceUpdates = sourceCards.map((card, index) => ({
+              id: card.id,
+              position: index
+            }));
+            
+            await updatePositions([...sourceUpdates, ...destUpdates], currentCard.column_id, column_id);
+            return;
+          }
+        }
+      }
       
       const { data, error } = await supabase
         .from('cards')

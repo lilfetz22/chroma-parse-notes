@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
-import { Card as CardType } from '@/types/kanban';
+import { Card as CardType, Column } from '@/types/kanban';
 import { Card as UICard, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,12 +17,13 @@ import { EditCardModal } from '../EditCardModal';
 interface CardProps {
   card: CardType;
   index: number;
+  columns: Column[];
   onDelete: (cardId: string) => void;
   onUpdate?: (cardId: string, updates: Partial<CardType>) => void;
   onConvertToScheduledTask?: (cardId: string) => void;
 }
 
-export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask }: CardProps) {
+export function Card({ card, index, columns, onDelete, onUpdate, onConvertToScheduledTask }: CardProps) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [currentCard, setCurrentCard] = useState<CardType | null>(card);
@@ -198,6 +199,7 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
           isOpen={editing}
           onClose={() => setEditing(false)}
           card={currentCard}
+          columns={columns}
           onSave={(cardId, updates) => {
             setCurrentCard(prev => prev ? { ...prev, ...updates } : null);
             setEditing(false);

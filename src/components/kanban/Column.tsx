@@ -17,6 +17,7 @@ interface ColumnProps {
   column: ColumnType;
   cards: CardType[];
   index: number;
+  columns: ColumnType[];
   onUpdateTitle: (columnId: string, title: string) => void;
   onDeleteColumn: (columnId: string) => void;
   onAddCard: (columnId: string) => void;
@@ -29,6 +30,7 @@ export function Column({
   column, 
   cards, 
   index, 
+  columns,
   onUpdateTitle, 
   onDeleteColumn, 
   onAddCard,
@@ -125,6 +127,7 @@ export function Column({
                         <Card 
                           card={card} 
                           index={index} 
+                          columns={columns}
                           onDelete={onDeleteCard}
                           onUpdate={onUpdateCard}
                           onConvertToScheduledTask={onConvertToScheduledTask}
