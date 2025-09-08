@@ -16,9 +16,9 @@ BEGIN
     SET 
       position = (update_record->>'position')::integer,
       column_id = COALESCE(
-        NULLIF(update_record->>'column_id', ''), 
+        NULLIF(update_record->>'column_id', '')::uuid, 
         column_id
-      )::uuid
+      )
     WHERE id = (update_record->>'id')::uuid;
   END LOOP;
 END;
