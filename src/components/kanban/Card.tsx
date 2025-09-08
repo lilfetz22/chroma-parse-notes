@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { Card as CardType } from '@/types/kanban';
 import { Card as UICard, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, ExternalLink, Trash2 } from 'lucide-react';
+import { MoreVertical, ExternalLink, Trash2, Edit3 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { EditCardModal } from '../EditCardModal';
-import { Edit3 } from 'lucide-react';
 
 interface CardProps {
   card: CardType;
@@ -29,6 +27,10 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
   const [editing, setEditing] = useState(false);
   const [currentCard, setCurrentCard] = useState<CardType | null>(card);
 
+  useEffect(() => {
+    setCurrentCard(card);
+  }, [card]);
+
   const getPriorityBorderClass = () => {
     switch (card.priority) {
       case 1: return 'border-l-4'; // Low - green border will be applied via style
@@ -40,18 +42,18 @@ export function Card({ card, index, onDelete, onUpdate, onConvertToScheduledTask
 
   const getPriorityBorderStyle = () => {
     switch (card.priority) {
-      case 1: return { borderLeftColor: 'hsl(var(--priority-low))' }; // Low - green
-      case 2: return { borderLeftColor: 'hsl(var(--priority-medium))' }; // Medium - yellow  
-      case 3: return { borderLeftColor: 'hsl(var(--priority-high))' }; // High - red
+      case 1: return { borderLeftColor: 'hsl(142 76% 36%)' }; // Low - green
+      case 2: return { borderLeftColor: 'hsl(48 96% 53%)' }; // Medium - yellow  
+      case 3: return { borderLeftColor: 'hsl(0 84% 60%)' }; // High - red
       default: return {}; // Default (no border)
     }
   };
 
   const getPriorityBackgroundClass = () => {
     switch (card.priority) {
-      case 1: return 'bg-priority-low-bg'; // Low
-      case 2: return 'bg-priority-medium-bg'; // Medium
-      case 3: return 'bg-priority-high-bg'; // High
+      case 1: return ''; // Low - just border
+      case 2: return ''; // Medium - just border
+      case 3: return ''; // High - just border
       default: return '';
     }
   };

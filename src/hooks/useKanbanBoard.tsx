@@ -222,6 +222,8 @@ export function useKanbanBoard() {
   // Update card (title/summary/content)
   const updateCard = async (cardId: string, updates: Partial<Card> & { tag_ids?: string[] }) => {
     try {
+      console.log('Updating card:', cardId, 'with updates:', updates);
+      
       // Extract tag_ids to handle separately
       const { tag_ids, tags, ...cardUpdates } = updates;
       

@@ -72,7 +72,12 @@ export function KanbanBoardView() {
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, type } = result;
 
-    if (!destination || !boardData) return;
+    console.log('Drag ended:', { destination, source, type });
+
+    if (!destination || !boardData) {
+      console.log('No destination or no board data');
+      return;
+    }
 
     // Handle column reordering
     if (type === 'column') {

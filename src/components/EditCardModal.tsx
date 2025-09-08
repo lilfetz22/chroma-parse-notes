@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -197,6 +198,9 @@ export function EditCardModal({ isOpen, onClose, card, onSave, onConvertToSchedu
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Card</DialogTitle>
+          <DialogDescription>
+            Edit the card details below. You can also convert this card to a scheduled task.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
