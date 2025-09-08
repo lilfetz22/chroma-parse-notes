@@ -321,14 +321,25 @@ export function useKanbanBoard() {
       setBoardData(prev => {
         if (!prev) return null;
 
+        let newCompletedAt: string | null | undefined = undefined;
+        if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
+          newCompletedAt = new Date().toISOString();
+        } else if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
+          newCompletedAt = null;
+        }
+
         const updatedCards = prev.cards.map(card => {
           const update = updates.find(u => u.id === card.id);
           if (update) {
-            return {
+            const updatedCard = {
               ...card,
               position: update.position,
               column_id: update.column_id || card.column_id
             };
+            if (newCompletedAt !== undefined && update.column_id) {
+              updatedCard.completed_at = newCompletedAt;
+            }
+            return updatedCard;
           }
           return card;
         });

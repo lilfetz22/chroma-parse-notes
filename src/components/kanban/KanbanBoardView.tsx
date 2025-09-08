@@ -121,7 +121,6 @@ export function KanbanBoardView() {
         }));
 
         await updatePositions(updates, source.droppableId, destination.droppableId);
-        await loadBoardData();
       } else {
         // Moving to different column
         const movedCard = sourceCards[source.index];
@@ -143,7 +142,6 @@ export function KanbanBoardView() {
         }));
 
         await updatePositions([...sourceUpdates, ...destUpdates], source.droppableId, destination.droppableId);
-        await loadBoardData();
       }
     }
   };
