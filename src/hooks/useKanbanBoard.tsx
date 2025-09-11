@@ -315,21 +315,23 @@ export function useKanbanBoard() {
     sourceColumnId?: string,
     destColumnId?: string,
   ) => {
+    const startTime = performance.now();
+    console.log('updatePositions started, updates count:', updates.length);
+
     const sourceColumn = boardData?.columns.find(c => c.id === sourceColumnId);
     const destColumn = boardData?.columns.find(c => c.id === destColumnId);
 
-    const cardUpdatePromises = [];
+    // Prepare completion date updates
+    const completionUpdates: Array<{ id: string; completed_at: string | null }> = [];
 
     // Add completion date if moving to "Done"
     if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
       const cardToUpdate = updates.find(u => u.column_id === destColumnId);
       if (cardToUpdate) {
-        cardUpdatePromises.push(
-          supabase
-            .from('cards')
-            .update({ completed_at: new Date().toISOString() })
-            .eq('id', cardToUpdate.id)
-        );
+        completionUpdates.push({
+          id: cardToUpdate.id,
+          completed_at: new Date().toISOString()
+        });
       }
     }
 
@@ -337,21 +339,29 @@ export function useKanbanBoard() {
     if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
       const cardToUpdate = updates.find(u => u.column_id === destColumnId);
       if (cardToUpdate) {
-        cardUpdatePromises.push(
-          supabase
-            .from('cards')
-            .update({ completed_at: null })
-            .eq('id', cardToUpdate.id)
-        );
+        completionUpdates.push({
+          id: cardToUpdate.id,
+          completed_at: null
+        });
       }
-    }
-    
-    if (cardUpdatePromises.length > 0) {
-      await Promise.all(cardUpdatePromises);
     }
 
     try {
+      // Batch all completion date updates into a single operation
+      if (completionUpdates.length > 0) {
+        console.log('Processing completion updates:', completionUpdates.length);
+        const completionPromises = completionUpdates.map(update =>
+          supabase
+            .from('cards')
+            .update({ completed_at: update.completed_at })
+            .eq('id', update.id)
+        );
+        await Promise.all(completionPromises);
+        console.log('Completion updates done in:', (performance.now() - startTime).toFixed(2), 'ms');
+      }
+
       // Optimistically update the state first
+      console.log('Starting optimistic state update');
       setBoardData(prev => {
         if (!prev) return null;
 
@@ -379,15 +389,25 @@ export function useKanbanBoard() {
           return card;
         });
 
+        // Only sort if positions actually changed
+        const hasPositionChanges = updates.some(u => u.position !== prev.cards.find(c => c.id === u.id)?.position);
+        const finalCards = hasPositionChanges
+          ? updatedCards.sort((a, b) => a.position - b.position)
+          : updatedCards;
+
         return {
           ...prev,
-          cards: updatedCards.sort((a, b) => a.position - b.position)
+          cards: finalCards
         };
       });
+      console.log('Optimistic state update done in:', (performance.now() - startTime).toFixed(2), 'ms');
 
+      // Single database call for position updates
+      console.log('Starting database update');
       const { error } = await supabase.rpc('update_card_positions', {
         updates
       });
+      console.log('Database update completed in:', (performance.now() - startTime).toFixed(2), 'ms');
 
       if (error) throw error;
     } catch (error) {
@@ -400,6 +420,8 @@ export function useKanbanBoard() {
       // If optimistic update fails, reload to get consistent state
       await loadBoardData();
     }
+
+    console.log('Total updatePositions time:', (performance.now() - startTime).toFixed(2), 'ms');
   };
 
   const updateColumnPositions = async (updates: Array<{ id: string; position: number }>) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useKanbanBoard } from '@/hooks/useKanbanBoard';
 import { Column } from './Column';
@@ -11,6 +11,7 @@ import { toast } from '@/hooks/use-toast';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
 import { useScheduledTasks } from '@/hooks/useScheduledTasks';
 import { useNavigate } from 'react-router-dom';
+import { Card as CardType } from '@/types/kanban';
 
 export function KanbanBoardView() {
   const navigate = useNavigate();
@@ -35,6 +36,20 @@ export function KanbanBoardView() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const { createScheduledTask } = useScheduledTasks();
+
+  // Memoize sorted cards to avoid repeated sorting
+  const sortedCardsByColumn = useMemo(() => {
+    if (!boardData) return new Map();
+    
+    const map = new Map<string, CardType[]>();
+    boardData.columns.forEach(column => {
+      const columnCards = boardData.cards
+        .filter(card => card.column_id === column.id)
+        .sort((a, b) => a.position - b.position);
+      map.set(column.id, columnCards);
+    });
+    return map;
+  }, [boardData]);
 
   const handleAddCard = (columnId: string) => {
     setSelectedColumnId(columnId);
@@ -70,6 +85,9 @@ export function KanbanBoardView() {
   };
 
   const handleDragEnd = async (result: DropResult) => {
+    const startTime = performance.now();
+    console.log('Drag operation started at:', startTime);
+
     const { destination, source, type } = result;
 
     console.log('Drag ended:', { destination, source, type });
@@ -109,12 +127,8 @@ export function KanbanBoardView() {
 
     // Handle card reordering/moving
     if (type === 'card') {
-      const sourceCards = boardData.cards
-        .filter(card => card.column_id === source.droppableId)
-        .sort((a, b) => a.position - b.position);
-      const destCards = boardData.cards
-        .filter(card => card.column_id === destination.droppableId)
-        .sort((a, b) => a.position - b.position);
+      const sourceCards = sortedCardsByColumn.get(source.droppableId) || [];
+      const destCards = sortedCardsByColumn.get(destination.droppableId) || [];
 
       if (!sourceCards || !destCards) {
         console.log('Source or destination cards not found, reloading data...');
@@ -169,6 +183,9 @@ export function KanbanBoardView() {
         await updatePositions([...sourceUpdates, ...destUpdates], source.droppableId, destination.droppableId);
       }
     }
+
+    const endTime = performance.now();
+    console.log('Drag operation completed in:', (endTime - startTime).toFixed(2), 'ms');
   };
 
   if (loading) {
@@ -219,9 +236,7 @@ export function KanbanBoardView() {
               className="flex gap-4 overflow-x-auto pb-4"
             >
               {boardData.columns.map((column, index) => {
-                const columnCards = boardData.cards
-                  .filter(card => card.column_id === column.id)
-                  .sort((a, b) => a.position - b.position);
+                const columnCards = sortedCardsByColumn.get(column.id) || [];
                 return (
                   <Column
                     key={column.id}
