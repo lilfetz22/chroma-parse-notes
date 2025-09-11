@@ -85,6 +85,10 @@ export function KanbanBoardView() {
       return;
     }
 
+    console.log('Board data cards length:', boardData.cards.length);
+    console.log('Source droppableId:', source.droppableId, 'index:', source.index);
+    console.log('Destination droppableId:', destination.droppableId, 'index:', destination.index);
+
     // Handle column reordering
     if (type === 'column') {
       if (destination.index === source.index) return;
@@ -105,17 +109,18 @@ export function KanbanBoardView() {
 
     // Handle card reordering/moving
     if (type === 'card') {
-      const sourceColumn = boardData.columns.find(col => col.id === source.droppableId);
-      const destColumn = boardData.columns.find(col => col.id === destination.droppableId);
+      const sourceCards = boardData.cards
+        .filter(card => card.column_id === source.droppableId)
+        .sort((a, b) => a.position - b.position);
+      const destCards = boardData.cards
+        .filter(card => card.column_id === destination.droppableId)
+        .sort((a, b) => a.position - b.position);
 
-      if (!sourceColumn || !destColumn) {
-        console.log('Source or destination column not found, reloading data...');
+      if (!sourceCards || !destCards) {
+        console.log('Source or destination cards not found, reloading data...');
         await loadBoardData();
         return;
       }
-
-      const sourceCards = boardData.cards.filter(card => card.column_id === source.droppableId);
-      const destCards = boardData.cards.filter(card => card.column_id === destination.droppableId);
 
       // Same column reordering
       if (source.droppableId === destination.droppableId) {
@@ -123,6 +128,11 @@ export function KanbanBoardView() {
 
         const newCards = Array.from(sourceCards);
         const [movedCard] = newCards.splice(source.index, 1);
+        if (!movedCard) {
+          console.error('Moved card is undefined, source index:', source.index, 'source cards length:', sourceCards.length);
+          await loadBoardData();
+          return;
+        }
         newCards.splice(destination.index, 0, movedCard);
 
         const updates = newCards.map((card, index) => ({
@@ -134,6 +144,11 @@ export function KanbanBoardView() {
       } else {
         // Moving to different column
         const movedCard = sourceCards[source.index];
+        if (!movedCard) {
+          console.error('Moved card is undefined, source index:', source.index, 'source cards length:', sourceCards.length);
+          await loadBoardData();
+          return;
+        }
         
         // Update source column positions
         const newSourceCards = sourceCards.filter((_, index) => index !== source.index);
@@ -204,7 +219,9 @@ export function KanbanBoardView() {
               className="flex gap-4 overflow-x-auto pb-4"
             >
               {boardData.columns.map((column, index) => {
-                const columnCards = boardData.cards.filter(card => card.column_id === column.id);
+                const columnCards = boardData.cards
+                  .filter(card => card.column_id === column.id)
+                  .sort((a, b) => a.position - b.position);
                 return (
                   <Column
                     key={column.id}
