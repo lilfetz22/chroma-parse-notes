@@ -1,12 +1,31 @@
-C:\Users\WilliamFetzner\Documents\chroma-parse-notes>npx supabase db push
+                                                     npx supabase db pull
 Initialising login role...
 Connecting to remote database...
-Skipping migration 20250723110629-f809655b-9d22-4c7c-9c97-a780e2bb2e0a.sql... (file name must match pattern "<timestamp>_name.sql")
-Skipping migration 20250723110651-aaa93dd4-df17-4ce9-a865-c9f370e20c70.sql... (file name must match pattern "<timestamp>_name.sql")
-Remote migration versions not found in local migrations directory.
+The remote database's migration history does not match local files in supabase\migrations directory.
 
 Make sure your local git repo is up-to-date. If the error persists, try repairing the migration history table:
-supabase migration repair --status reverted 20250723110624 20250723110648 20250817102034 20250817102122 20250824095814 20250825121433 20250826094342 20250908122501
-
-And update local migrations to match remote database:
-supabase db pull
+supabase migration repair --status reverted 20250723110624
+supabase migration repair --status reverted 20250723110648
+supabase migration repair --status reverted 20250817102034
+supabase migration repair --status reverted 20250817102122
+supabase migration repair --status reverted 20250824095814
+supabase migration repair --status reverted 20250825121433
+supabase migration repair --status reverted 20250826094342
+supabase migration repair --status reverted 20250908122501
+supabase migration repair --status applied 20250723110629
+supabase migration repair --status applied 20250723110651
+supabase migration repair --status applied 20250723120000
+supabase migration repair --status applied 20250817102037
+supabase migration repair --status applied 20250817102123
+supabase migration repair --status applied 20250817103000
+supabase migration repair --status applied 20250824095742
+supabase migration repair --status applied 20250824095815
+supabase migration repair --status applied 20250824120000
+supabase migration repair --status applied 20250825121435
+supabase migration repair --status applied 20250826214343
+supabase migration repair --status applied 20250827000000
+supabase migration repair --status applied 20250827000001
+supabase migration repair --status applied 20250831000000
+supabase migration repair --status applied 20250901000000
+supabase migration repair --status applied 20250906112737
+supabase migration repair --status applied 20250908122503
