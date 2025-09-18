@@ -350,19 +350,27 @@ export function useKanbanBoard() {
 
 
     try {
-      console.log('Starting database update');
-      const { error } = await supabase.rpc('update_card_positions', {
+      const rpcPayload = {
         updates,
         p_source_column_id: sourceColumnId,
         p_dest_column_id: destColumnId
-      });
+      };
+      console.log('Calling update_card_positions with payload:', JSON.stringify(rpcPayload, null, 2));
+
+      const { error } = await supabase.rpc('update_card_positions', rpcPayload);
       console.log('Database update completed in:', (performance.now() - startTime).toFixed(2), 'ms');
 
-      if (error) throw error;
-
+      if (error) {
+        console.error('RPC Error:', JSON.stringify(error, null, 2));
+        throw error;
+      }
+      
+      console.log('Card positions updated successfully. Checking if data reload is needed.');
       // If a card was moved to a different column, reload the data to get the updated completed_at value
       if (sourceColumnId !== destColumnId) {
+        console.log('Card moved columns, reloading board data...');
         await loadBoardData();
+        console.log('Board data reloaded.');
       }
 
     } catch (error) {
