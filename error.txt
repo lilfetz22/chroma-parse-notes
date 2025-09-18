@@ -1,31 +1,116 @@
-                                                     npx supabase db pull
+npx supabase db pull
 Initialising login role...
 Connecting to remote database...
 The remote database's migration history does not match local files in supabase\migrations directory.
 
 Make sure your local git repo is up-to-date. If the error persists, try repairing the migration history table:
-supabase migration repair --status reverted 20250723110624
-supabase migration repair --status reverted 20250723110648
-supabase migration repair --status reverted 20250817102034
-supabase migration repair --status reverted 20250817102122
-supabase migration repair --status reverted 20250824095814
-supabase migration repair --status reverted 20250825121433
-supabase migration repair --status reverted 20250826094342
-supabase migration repair --status reverted 20250908122501
-supabase migration repair --status applied 20250723110629
-supabase migration repair --status applied 20250723110651
-supabase migration repair --status applied 20250723120000
-supabase migration repair --status applied 20250817102037
-supabase migration repair --status applied 20250817102123
-supabase migration repair --status applied 20250817103000
-supabase migration repair --status applied 20250824095742
-supabase migration repair --status applied 20250824095815
-supabase migration repair --status applied 20250824120000
-supabase migration repair --status applied 20250825121435
-supabase migration repair --status applied 20250826214343
-supabase migration repair --status applied 20250827000000
-supabase migration repair --status applied 20250827000001
-supabase migration repair --status applied 20250831000000
-supabase migration repair --status applied 20250901000000
-supabase migration repair --status applied 20250906112737
-supabase migration repair --status applied 20250908122503
+
+
+
+
+
+
+
+
+
+
+
+
+C:\Users\WilliamFetzner\Documents\chroma-parse-notes>npx supabase db pull
+Initialising login role...
+Connecting to remote database...
+Creating shadow database...
+17.4.1.064: Pulling from supabase/postgres
+02d2813e5192: Pull complete
+d5278b54d742: Pull complete
+8fbb54f235c9: Pull complete
+b1cd7a1988b2: Pull complete
+a474f933da3b: Pull complete
+9571aa18287d: Pull complete
+7041c99a8bf2: Pull complete
+8665f1d0e5cd: Pull complete
+205be70e59fc: Pull complete
+38a9e902e1dd: Pull complete
+ba6bf0c49dcc: Pull complete
+13b7e930469f: Pull complete
+01e937108b5d: Pull complete
+9c6b2721b74b: Pull complete
+992f385fe21a: Pull complete
+fac239b9502f: Pull complete
+24828b4c1abc: Pull complete
+7adf684822f9: Pull complete
+9ac3b7d41fb6: Pull complete
+6bc128be103a: Pull complete
+4f4fb700ef54: Pull complete
+1134a3fe5c45: Pull complete
+2c8e34ada2cc: Pull complete
+4cd13c2c6d7b: Pull complete
+d9795c7ae2c6: Pull complete
+a97f20b37ce4: Pull complete
+a4b7c65fe72e: Pull complete
+dcbfef8b5e68: Pull complete
+ee0a4d7c42bc: Pull complete
+9203b3214e35: Pull complete
+94985f2c8c8d: Pull complete
+2658f667f86f: Pull complete
+4c7af308d22c: Pull complete
+d055d32b37f2: Pull complete
+24d945578715: Pull complete
+ede2622cffae: Pull complete
+393e63181edd: Pull complete
+7c3236311d34: Pull complete
+5db1c6d34f4f: Pull complete
+8ddd9d5c3ff4: Pull complete
+b905b33c9d33: Pull complete
+eaa436257373: Pull complete
+c47d698d1672: Pull complete
+98da453425d5: Pull complete
+e0c2dc133fc7: Pull complete
+bef8ba34aa8b: Pull complete
+a1fa371da3c3: Pull complete
+7f09e3b80363: Pull complete
+a7c620be981a: Pull complete
+Digest: sha256:52aa9b6e53d5f165a5518c3e09a907b2238c8bf0501908926819a6ef80147e27
+Status: Downloaded newer image for public.ecr.aws/supabase/postgres:17.4.1.064
+Initialising schema...
+v2.179.0: Pulling from supabase/gotrue
+7e8c14f04798: Pull complete
+b3c4a98a4ddd: Pull complete
+9824c27679d3: Pull complete
+6e4298db6b80: Pull complete
+1b998bfcdb55: Pull complete
+3332e68a49bb: Pull complete
+Digest: sha256:658cf69f57d48e10cbe508a79874e6067348b82a4d216a0bb446c067d7a246f9
+Status: Downloaded newer image for public.ecr.aws/supabase/gotrue:v2.179.0
+Seeding globals from roles.sql...
+Applying migration 20250723110629_f809655b-9d22-4c7c-9c97-a780e2bb2e0a.sql...
+Applying migration 20250723110651_aaa93dd4-df17-4ce9-a865-c9f370e20c70.sql...
+Applying migration 20250723120000_create_search_notes_function.sql...
+Applying migration 20250817102037_30454eb5-ab7c-41d9-9d40-efdf9b46353b.sql...
+Applying migration 20250817102123_69de0a88-07c5-4bb5-afc2-7f117e4aaa2b.sql...
+Applying migration 20250817103000_add_summary_to_cards.sql...
+Applying migration 20250824095742_91071bc7-3089-4b1f-bf81-0573598f250c.sql...
+ERROR: relation "public.projects" does not exist (SQLSTATE 42P01)
+At statement: 0
+-- Create projects table (commented out as it already exists)
+-- CREATE TABLE public.projects (
+--   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+--   user_id uuid NOT NULL,
+--   title text NOT NULL,
+--   description text,
+--   created_at timestamp with time zone NOT NULL DEFAULT now()
+-- );
+
+-- Enable RLS on projects table
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY
+Try rerunning the command with --debug to troubleshoot the error.
+
+
+
+
+
+
+
+
+
+
