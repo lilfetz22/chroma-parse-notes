@@ -38,11 +38,9 @@ BEGIN
     IF dest_column_title = 'Done' AND moved_card_id IS NOT NULL THEN
       UPDATE cards
       SET completed_at = now()
-      WHERE id = moved_card_id;
-    END IF;
-
+      WHERE id = moved_card_id AND completed_at IS NULL;
     -- Remove completed_at if moved out of 'Done'
-    IF (SELECT title FROM columns WHERE id = p_source_column_id) = 'Done' AND dest_column_title <> 'Done' AND moved_card_id IS NOT NULL THEN
+    ELSIF (SELECT title FROM columns WHERE id = p_source_column_id) = 'Done' AND dest_column_title <> 'Done' AND moved_card_id IS NOT NULL THEN
       UPDATE cards
       SET completed_at = NULL
       WHERE id = moved_card_id;
