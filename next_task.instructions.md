@@ -1,67 +1,57 @@
 ### **Prompt for AI Coding Agent**
 
-**Role:** You are a senior full-stack developer tasked with completing the feature set for the task scheduling system.
+**Role:** You are a senior full-stack developer specializing in frontend performance optimization and fixing complex state management bugs.
 
-**Primary Objective:** Your goal is to provide full lifecycle management for scheduled tasks. This involves two core features: **1)** Allowing users to convert an existing Kanban card into a future scheduled task, and **2)** Building a dedicated page where users can view, edit, and delete all their upcoming scheduled tasks.
+**Primary Objective:** Your goal is to diagnose and fix three critical bugs in the Kanban board feature: severe drag-and-drop lag, incorrect state persistence for "Done" cards, and a visual regression with priority indicators.
 
 **Context Provided:**
-1.  **Existing Architecture:** You have full context of the application's schema (`cards`, `scheduled_tasks`, etc.) and the component-based architecture, including the reusable `<SchedulingOptions />` component.
-2.  **Full Codebase:** You have access to the entire project.
+1.  **Existing Codebase:** You have full access to the application, including the Kanban board components (`KanbanBoardView.tsx`, `Column.tsx`, `Card.tsx`), the Supabase schema, and all related logic.
 
 ---
 
-### **Architectural Mandate: Complete the Task Lifecycle**
+### **Architectural Mandate: Focus on Performance and Persistence**
 
-The current implementation allows for the creation of scheduled tasks but lacks the ability to manage them post-creation or to create them from existing items. You will close this loop by providing a clear UI for converting, viewing, and managing all scheduled tasks.
+The issues identified point to two primary weaknesses: unnecessary re-renders causing performance bottlenecks, and a failure to persist state to the database, leading to data loss on refresh. Your solutions must address these root causes.
 
 ### **Plan of Action**
 
-Follow these two major steps in order.
+You will address each of the three bugs in separate, focused steps.
 
-**Part 1: Implement "Card to Scheduled Task" Conversion**
+**Task 1: Fix Severe Drag-and-Drop Performance Lag**
 
-Users often create a card and later decide to defer it or make it recurring. We need to support this workflow.
+*   **Problem:** The drag-and-drop functionality is extremely slow and laggy, especially on boards with many cards.
+*   **Root Cause Diagnosis:** This is a classic React performance issue. During a drag operation, `react-beautiful-dnd` is causing too many components to re-render unnecessarily. The `Card` and `Column` components are likely re-rendering every time the mouse moves, even if their own data hasn't changed.
+*   **Required Solution:** You must use memoization to prevent these unnecessary re-renders.
+    *   **Action:** Modify the `Card.tsx` and `Column.tsx` components located in `src/components/kanban/`.
+    *   **Implementation:** Wrap both component exports in `React.memo`. This will ensure that a card or column only re-renders if its own props (`card`, `column`, `index`) have actually changed, rather than re-rendering because a parent component updated. This is the standard and correct way to optimize `react-beautiful-dnd`.
 
-*   **Action:** Enhance the `EditCardModal.tsx` component.
-*   **Implementation:**
-    1.  **Integrate the Reusable Component:** Add the `<SchedulingOptions />` component to the `EditCardModal.tsx` form. By default, the scheduling toggle should be off.
-    2.  **Implement the Conversion Logic:** This is the most critical part. When the user opens the edit modal for a standard card and **enables the scheduling toggle**, the "Save" button's behavior must change. On save, it must perform a "convert" operation:
-        *   **`INSERT` a new record** into the `scheduled_tasks` table. Copy all relevant data from the card: `user_id`, `project_id`, `title`, `summary`, `priority`, `note_id` (if it's a linked card), and the new scheduling rules from the `<SchedulingOptions />` component.
-        *   **`DELETE` the original card** from the `cards` table.
-        *   This two-step process should ideally be handled in a single Supabase RPC function (e.g., `convert_card_to_scheduled_task`) to ensure it is atomic.
-    3.  **Update State:** After the conversion is successful, ensure the card is removed from the board's UI state.
+**Task 2: Fix "Done" Column Date Persistence**
 
-**Part 2: Build the "Scheduled Tasks" Management Page**
+*   **Problem:** When a card is moved to the "Done" column, a completion date appears correctly. However, this date disappears after a page refresh.
+*   **Root Cause Diagnosis:** The completion date is being set in the client-side React state but is **not being saved to the Supabase database**. The `completed_at` column already exists in the `cards` table, but the backend logic to update it is missing.
+*   **Required Solution:** You must update the drag-and-drop logic to persist this date.
+    1.  **Update Backend Logic:**
+        *   **Action:** Modify the `onDragEnd` function in `src/components/kanban/KanbanBoardView.tsx`.
+        *   **Implementation:** Enhance the logic that handles moving a card between columns. You must identify the "Done" column (e.g., by its title `Done`).
+            *   **If a card is moved *into* the "Done" column:** Set its `completed_at` value to `now()` in the Supabase `update` call within the `updateCard` function.
+            *   **If a card is moved *out of* the "Done" column:** Set its `completed_at` value to `NULL` in the Supabase `update` call.
+    2.  **Verify Frontend Display:**
+        *   **Action:** Check the `Card.tsx` component in `src/components/kanban/`.
+        *   **Implementation:** The component already has logic to display the `card.completed_at` property. Ensure it correctly formats and displays this date on the card in red text when present.
 
-Users need a central dashboard to see and manage everything that is scheduled to happen in the future.
+**Task 3: Fix Missing Priority Indicators**
 
-*   **Action:** Create a new page at the route `/schedule`.
-*   **Implementation:**
-    1.  **Create the Page Component:** Create a new file `app/schedule/page.tsx`. This page should be wrapped in the main application layout to ensure consistent navigation.
-    2.  **Fetch Data:** On page load, fetch all records from the `scheduled_tasks` table for the currently logged-in user.
-    3.  **Display Tasks:**
-        *   Render the tasks in a list or table view.
-        *   Each item must clearly display:
-            *   The task `title`.
-            *   The `project` it belongs to.
-            *   A **human-readable summary of its schedule**. You will need to create a helper function for this (e.g., `formatRecurrenceRule(task)`). Examples:
-                *   `"Once on December 25, 2024"`
-                *   `"Every weekday (Mon-Fri)"`
-                *   `"Weekly on Mondays and Fridays"`
-                *   `"Bi-weekly"`
-    4.  **Implement Edit Functionality:**
-        *   Each item in the list must have an "Edit" button.
-        *   Clicking "Edit" should open a new `EditScheduledTaskModal.tsx`.
-        *   This modal should be pre-filled with all the data for that task, including its title, summary, and current scheduling options (populating the state for the `<SchedulingOptions />` component).
-        *   Saving the modal should perform a `supabase.from('scheduled_tasks').update()` operation.
-    5.  **Implement Delete Functionality:**
-        *   Each item must have a "Delete" button.
-        *   Clicking "Delete" must trigger a confirmation dialog (`AlertDialog` from `shadcn/ui`).
-        *   Upon confirmation, it should `DELETE` the record from the `scheduled_tasks` table and remove it from the UI.
+*   **Problem:** The colored visual indicators for card priority (e.g., a red border for "High" priority) are no longer showing on the Kanban board.
+*   **Root Cause Diagnosis:** This is a visual regression caused by an overly complex and incorrect implementation of conditional styling in the `Card.tsx` component. The component uses a combination of a static `border-l-4` class and a separate inline style for the color, which is not working as expected.
+*   **Required Solution:** You must refactor the conditional styling logic to use Tailwind CSS classes directly.
+    *   **Action:** Modify the `Card.tsx` component in `src/components/kanban/`.
+    *   **Implementation:** Replace the existing `getPriorityBorderClass` and `getPriorityBorderStyle` functions with a single, simpler function. This function should conditionally apply the correct Tailwind CSS classes to the card's main container `div` based on the `card.priority` value. The expected behavior is as follows:
+        *   `priority: 0` (Default): No special class or a subtle gray border.
+        *   `priority: 1` (Low): A blue left border (e.g., `border-l-4 border-l-blue-400`).
+        *   `priority: 2` (Medium): A yellow/orange left border (e.g., `border-l-4 border-l-yellow-400`).
+        *   `priority: 3` (High): A red left border (e.g., `border-l-4 border-l-red-500`).
 
 **Final Output:**
-Please provide the complete code for all new and modified files. Structure your response as follows:
-1.  The modified `EditCardModal.tsx` and the new Supabase RPC function for the conversion logic.
-2.  The new page file `app/schedule/page.tsx`.
-3.  The new `EditScheduledTaskModal.tsx` component.
-4.  The new `formatRecurrenceRule` helper function.
+Please provide the complete code for all modified files. Structure your response in this order:
+1.  The updated `KanbanBoardView.tsx` with the modified `onDragEnd` logic.
+2.  The refactored `Column.tsx` and `Card.tsx` components, showing the `React.memo` implementation and the fixes for the date and priority rendering.
