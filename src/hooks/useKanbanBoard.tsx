@@ -342,18 +342,6 @@ export function useKanbanBoard() {
         }
       });
 
-      // Handle completion date changes optimistically
-      if (cardToUpdate) {
-        const sourceColumn = prev.columns.find(c => c.id === sourceColumnId);
-        const destColumn = prev.columns.find(c => c.id === destColumnId);
-
-        if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
-          cardToUpdate.completed_at = new Date().toISOString();
-        } else if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
-          cardToUpdate.completed_at = null;
-        }
-      }
-
       return {
         ...prev,
         cards: newCards.sort((a, b) => a.position - b.position),
@@ -371,6 +359,11 @@ export function useKanbanBoard() {
       console.log('Database update completed in:', (performance.now() - startTime).toFixed(2), 'ms');
 
       if (error) throw error;
+
+      // If a card was moved to a different column, reload the data to get the updated completed_at value
+      if (sourceColumnId !== destColumnId) {
+        await loadBoardData();
+      }
 
     } catch (error) {
       console.error('Error updating positions:', error);
