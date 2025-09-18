@@ -154,7 +154,7 @@ export function KanbanBoardView() {
           position: index
         }));
 
-        await updatePositions(updates, source.droppableId, destination.droppableId);
+        await updatePositions(updates, source.droppableId, source.droppableId);
       } else {
         // Moving to different column
         const sourceColumnCards = Array.from(sourceCards);

@@ -312,104 +312,69 @@ export function useKanbanBoard() {
   // Update positions after drag and drop
   const updatePositions = async (
     updates: Array<{ id: string; position: number; column_id?: string }>,
-    sourceColumnId?: string,
-    destColumnId?: string,
+    sourceColumnId: string,
+    destColumnId: string,
   ) => {
     const startTime = performance.now();
     console.log('updatePositions started, updates count:', updates.length);
 
-    const sourceColumn = boardData?.columns.find(c => c.id === sourceColumnId);
-    const destColumn = boardData?.columns.find(c => c.id === destColumnId);
+    // Optimistically update the state first
+    setBoardData(prev => {
+      if (!prev) return null;
 
-    // Prepare completion date updates
-    const completionUpdates: Array<{ id: string; completed_at: string | null }> = [];
+      const newCards = [...prev.cards];
+      let cardToUpdate: Card | undefined;
 
-    // Add completion date if moving to "Done"
-    if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
-      const cardToUpdate = updates.find(u => u.column_id === destColumnId);
+      updates.forEach(update => {
+        const cardIndex = newCards.findIndex(c => c.id === update.id);
+        if (cardIndex !== -1) {
+          const originalCard = newCards[cardIndex];
+          const updatedCard: Card = {
+            ...originalCard,
+            position: update.position,
+          };
+
+          if (update.column_id && update.column_id !== originalCard.column_id) {
+            updatedCard.column_id = update.column_id;
+            cardToUpdate = updatedCard; // This is the moved card
+          }
+          newCards[cardIndex] = updatedCard;
+        }
+      });
+
+      // Handle completion date changes optimistically
       if (cardToUpdate) {
-        completionUpdates.push({
-          id: cardToUpdate.id,
-          completed_at: new Date().toISOString()
-        });
-      }
-    }
+        const sourceColumn = prev.columns.find(c => c.id === sourceColumnId);
+        const destColumn = prev.columns.find(c => c.id === destColumnId);
 
-    // Remove completion date if moving out of "Done"
-    if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
-      const cardToUpdate = updates.find(u => u.column_id === destColumnId);
-      if (cardToUpdate) {
-        completionUpdates.push({
-          id: cardToUpdate.id,
-          completed_at: null
-        });
+        if (destColumn?.title === 'Done' && sourceColumn?.title !== 'Done') {
+          cardToUpdate.completed_at = new Date().toISOString();
+        } else if (sourceColumn?.title === 'Done' && destColumn?.title !== 'Done') {
+          cardToUpdate.completed_at = null;
+        }
       }
-    }
+
+      return {
+        ...prev,
+        cards: newCards.sort((a, b) => a.position - b.position),
+      };
+    });
+
 
     try {
-      // Batch all completion date updates into a single operation
-      if (completionUpdates.length > 0) {
-        console.log('Processing completion updates:', completionUpdates.length);
-        const completionPromises = completionUpdates.map(update =>
-          supabase
-            .from('cards')
-            .update({ completed_at: update.completed_at })
-            .eq('id', update.id)
-        );
-        await Promise.all(completionPromises);
-        console.log('Completion updates done in:', (performance.now() - startTime).toFixed(2), 'ms');
-      }
-
-      // Optimistically update the state first
-      console.log('Starting optimistic state update');
-      setBoardData(prev => {
-        if (!prev) return null;
-
-        const updatedCards = prev.cards.map(card => {
-          const update = updates.find(u => u.id === card.id);
-          if (update) {
-            const updatedCard = {
-              ...card,
-              position: update.position,
-              column_id: update.column_id || card.column_id
-            };
-
-            // Update completion date based on column movement
-            if (update.column_id) {
-              const targetColumn = prev.columns.find(c => c.id === update.column_id);
-              if (targetColumn?.title === 'Done' && card.column_id !== update.column_id) {
-                updatedCard.completed_at = new Date().toISOString();
-              } else if (card.column_id !== update.column_id && prev.columns.find(c => c.id === card.column_id)?.title === 'Done') {
-                updatedCard.completed_at = null;
-              }
-            }
-
-            return updatedCard;
-          }
-          return card;
-        });
-
-        // Only sort if positions actually changed
-        const hasPositionChanges = updates.some(u => u.position !== prev.cards.find(c => c.id === u.id)?.position);
-        const finalCards = hasPositionChanges
-          ? updatedCards.sort((a, b) => a.position - b.position)
-          : updatedCards;
-
-        return {
-          ...prev,
-          cards: finalCards
-        };
-      });
-      console.log('Optimistic state update done in:', (performance.now() - startTime).toFixed(2), 'ms');
-
-      // Single database call for position updates
       console.log('Starting database update');
       const { error } = await supabase.rpc('update_card_positions', {
-        updates
+        updates,
+        p_source_column_id: sourceColumnId,
+        p_dest_column_id: destColumnId
       });
       console.log('Database update completed in:', (performance.now() - startTime).toFixed(2), 'ms');
 
       if (error) throw error;
+
+      // We need to refresh the data to get the accurate `completed_at` from the DB
+      await loadBoardData();
+
     } catch (error) {
       console.error('Error updating positions:', error);
       toast({
