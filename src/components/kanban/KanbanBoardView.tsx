@@ -140,7 +140,7 @@ export function KanbanBoardView() {
       if (source.droppableId === destination.droppableId) {
         if (destination.index === source.index) return;
 
-        const newCards = Array.from(sourceCards);
+        const newCards: CardType[] = Array.from(sourceCards);
         const [movedCard] = newCards.splice(source.index, 1);
         if (!movedCard) {
           console.error('Moved card is undefined, source index:', source.index, 'source cards length:', sourceCards.length);
@@ -164,6 +164,23 @@ export function KanbanBoardView() {
           return;
         }
         
+        // Check if moving to/from "Done" column for completion tracking
+        const sourceColumn = boardData.columns.find(col => col.id === source.droppableId);
+        const destColumn = boardData.columns.find(col => col.id === destination.droppableId);
+        
+        let completedAt = movedCard.completed_at;
+        if (destColumn?.title.toLowerCase() === 'done') {
+          completedAt = new Date().toISOString();
+        } else if (sourceColumn?.title.toLowerCase() === 'done') {
+          completedAt = null;
+        }
+        
+        // Update the moved card with new column and completion status
+        await updateCard(movedCard.id, { 
+          column_id: destination.droppableId,
+          completed_at: completedAt
+        });
+        
         // Update source column positions
         const newSourceCards = sourceCards.filter((_, index) => index !== source.index);
         const sourceUpdates = newSourceCards.map((card, index) => ({
@@ -172,12 +189,11 @@ export function KanbanBoardView() {
         }));
 
         // Update destination column positions
-        const newDestCards = Array.from(destCards);
+        const newDestCards: CardType[] = Array.from(destCards);
         newDestCards.splice(destination.index, 0, movedCard);
         const destUpdates = newDestCards.map((card, index) => ({
           id: card.id,
-          position: index,
-          column_id: destination.droppableId
+          position: index
         }));
 
         await updatePositions([...sourceUpdates, ...destUpdates], source.droppableId, destination.droppableId);

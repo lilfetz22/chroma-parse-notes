@@ -26,7 +26,7 @@ interface ColumnProps {
   onConvertToScheduledTask?: (cardId: string) => void;
 }
 
-export function Column({ 
+export const Column = React.memo(function Column({ 
   column, 
   cards, 
   index, 
@@ -154,4 +154,4 @@ export function Column({
       )}
     </Draggable>
   );
-}
+});

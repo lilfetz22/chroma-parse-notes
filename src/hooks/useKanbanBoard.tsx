@@ -246,7 +246,7 @@ export function useKanbanBoard() {
             }));
             
             // Add the moved card at position 0
-            destUpdates.unshift({ id: cardId, position: 0, column_id: column_id });
+            destUpdates.unshift({ id: cardId, position: 0 });
             
             // Update positions for source column (remove the card and shift others up)
             const sourceCards = boardData?.cards.filter(c => c.column_id === currentCard.column_id && c.id !== cardId) || [];

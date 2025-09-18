@@ -23,7 +23,7 @@ interface CardProps {
   onConvertToScheduledTask?: (cardId: string) => void;
 }
 
-export function Card({ card, index, columns, onDelete, onUpdate, onConvertToScheduledTask }: CardProps) {
+export const Card = React.memo(function Card({ card, index, columns, onDelete, onUpdate, onConvertToScheduledTask }: CardProps) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [currentCard, setCurrentCard] = useState<CardType | null>(card);
@@ -32,30 +32,12 @@ export function Card({ card, index, columns, onDelete, onUpdate, onConvertToSche
     setCurrentCard(card);
   }, [card]);
 
-  const getPriorityBorderClass = () => {
+  const getPriorityClass = () => {
     switch (card.priority) {
-      case 1: return 'border-l-4'; // Low - green border will be applied via style
-      case 2: return 'border-l-4'; // Medium - yellow border will be applied via style
-      case 3: return 'border-l-4'; // High - red border will be applied via style
+      case 1: return 'border-l-4 border-l-blue-400'; // Low - blue
+      case 2: return 'border-l-4 border-l-yellow-400'; // Medium - yellow
+      case 3: return 'border-l-4 border-l-red-500'; // High - red
       default: return ''; // Default (no border)
-    }
-  };
-
-  const getPriorityBorderStyle = () => {
-    switch (card.priority) {
-      case 1: return { borderLeftColor: 'hsl(142 76% 36%)' }; // Low - green
-      case 2: return { borderLeftColor: 'hsl(48 96% 53%)' }; // Medium - yellow  
-      case 3: return { borderLeftColor: 'hsl(0 84% 60%)' }; // High - red
-      default: return {}; // Default (no border)
-    }
-  };
-
-  const getPriorityBackgroundClass = () => {
-    switch (card.priority) {
-      case 1: return ''; // Low - just border
-      case 2: return ''; // Medium - just border
-      case 3: return ''; // High - just border
-      default: return '';
     }
   };
 
@@ -107,8 +89,7 @@ export function Card({ card, index, columns, onDelete, onUpdate, onConvertToSche
           {...provided.dragHandleProps}
           className={`mb-2 cursor-pointer transition-shadow hover:shadow-md ${
             snapshot.isDragging ? 'shadow-lg' : ''
-          } ${getPriorityBorderClass()} ${getPriorityBackgroundClass()}`}
-          style={getPriorityBorderStyle()}
+          } ${getPriorityClass()}`}
           onClick={handleCardClick}
         >
           <CardContent className="p-3 select-auto">
@@ -217,4 +198,4 @@ export function Card({ card, index, columns, onDelete, onUpdate, onConvertToSche
       )}
     </>
   );
-}
+});
