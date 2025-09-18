@@ -28,12 +28,12 @@ export function useKanbanBoard() {
       const board = data as unknown as BoardData;
 
       setBoardData(board);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error loading board data:', error);
       toast({
         variant: 'destructive',
         title: 'Error loading board',
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error',
       });
     } finally {
       setLoading(false);
@@ -132,7 +132,7 @@ export function useKanbanBoard() {
   const createCard = async (columnId: string, cardData: {
     card_type: 'simple' | 'linked';
     title: string;
-    content?: any;
+    content?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     note_id?: string;
     summary?: string | null;
     priority?: number;
@@ -371,9 +371,6 @@ export function useKanbanBoard() {
       console.log('Database update completed in:', (performance.now() - startTime).toFixed(2), 'ms');
 
       if (error) throw error;
-
-      // We need to refresh the data to get the accurate `completed_at` from the DB
-      await loadBoardData();
 
     } catch (error) {
       console.error('Error updating positions:', error);
