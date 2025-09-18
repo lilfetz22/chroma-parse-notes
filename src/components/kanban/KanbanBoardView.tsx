@@ -127,8 +127,8 @@ export function KanbanBoardView() {
 
     // Handle card reordering/moving
     if (type === 'card') {
-      const sourceCards = sortedCardsByColumn.get(source.droppableId) || [];
-      const destCards = sortedCardsByColumn.get(destination.droppableId) || [];
+      const sourceCards = sortedCardsByColumn.get(source.droppableId) as CardType[] || [];
+      const destCards = sortedCardsByColumn.get(destination.droppableId) as CardType[] || [];
 
       if (!sourceCards || !destCards) {
         console.log('Source or destination cards not found, reloading data...');
@@ -177,7 +177,8 @@ export function KanbanBoardView() {
         const destUpdates = destColumnCards.map((card, index) => ({
           id: card.id,
           position: index,
-          column_id: destination.droppableId, // Add column_id for the moved card
+          // Only set column_id for the moved card
+          ...(card.id === movedCard.id && { column_id: destination.droppableId })
         }));
 
         await updatePositions(
