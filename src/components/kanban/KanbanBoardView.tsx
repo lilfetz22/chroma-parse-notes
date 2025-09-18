@@ -157,46 +157,34 @@ export function KanbanBoardView() {
         await updatePositions(updates, source.droppableId, destination.droppableId);
       } else {
         // Moving to different column
-        const movedCard = sourceCards[source.index];
+        const sourceColumnCards = Array.from(sourceCards);
+        const [movedCard] = sourceColumnCards.splice(source.index, 1);
+
         if (!movedCard) {
           console.error('Moved card is undefined, source index:', source.index, 'source cards length:', sourceCards.length);
           await loadBoardData();
           return;
         }
-        
-        // Check if moving to/from "Done" column for completion tracking
-        const sourceColumn = boardData.columns.find(col => col.id === source.droppableId);
-        const destColumn = boardData.columns.find(col => col.id === destination.droppableId);
-        
-        let completedAt = movedCard.completed_at;
-        if (destColumn?.title.toLowerCase() === 'done') {
-          completedAt = new Date().toISOString();
-        } else if (sourceColumn?.title.toLowerCase() === 'done') {
-          completedAt = null;
-        }
-        
-        // Update the moved card with new column and completion status
-        await updateCard(movedCard.id, { 
-          column_id: destination.droppableId,
-          completed_at: completedAt
-        });
-        
-        // Update source column positions
-        const newSourceCards = sourceCards.filter((_, index) => index !== source.index);
-        const sourceUpdates = newSourceCards.map((card, index) => ({
+
+        const destColumnCards = Array.from(destCards);
+        destColumnCards.splice(destination.index, 0, movedCard);
+
+        const sourceUpdates = sourceColumnCards.map((card, index) => ({
           id: card.id,
-          position: index
+          position: index,
         }));
 
-        // Update destination column positions
-        const newDestCards: CardType[] = Array.from(destCards);
-        newDestCards.splice(destination.index, 0, movedCard);
-        const destUpdates = newDestCards.map((card, index) => ({
+        const destUpdates = destColumnCards.map((card, index) => ({
           id: card.id,
-          position: index
+          position: index,
+          column_id: destination.droppableId, // Add column_id for the moved card
         }));
 
-        await updatePositions([...sourceUpdates, ...destUpdates], source.droppableId, destination.droppableId);
+        await updatePositions(
+          [...sourceUpdates, ...destUpdates],
+          source.droppableId,
+          destination.droppableId
+        );
       }
     }
 
