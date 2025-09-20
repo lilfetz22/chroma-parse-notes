@@ -365,7 +365,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         <div
           ref={editorRef}
           contentEditable
-          className="w-full h-full p-4 outline-none prose prose-sm max-w-none break-words"
+          className="w-full h-full p-4 outline-none prose prose-sm max-w-none break-all"
           style={{ minHeight: '100%' }}
           onInput={handleContentChange}
           onPaste={handlePaste}

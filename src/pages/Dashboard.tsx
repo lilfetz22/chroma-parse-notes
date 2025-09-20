@@ -1,3 +1,4 @@
+// src/pages/Dashboard.tsx
 import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -164,7 +165,7 @@ const Dashboard = () => {
                   value={noteTitle}
                   onChange={(e) => setNoteTitle(e.target.value)}
                   placeholder="Note title..."
-                  className="text-lg font-semibold border-none px-0 focus-visible:ring-0"
+                  className="text-lg font-semibold border-none px-0 focus-visible:ring-0 min-w-0"
                 />
               </div>
 
