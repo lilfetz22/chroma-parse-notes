@@ -39,7 +39,7 @@ export function NotesList({
   onDeleteNote,
   loading 
 }: NotesListProps) {
-  const { activeProject } = useProject();
+  const { activeProject, setActiveProject, projects } = useProject();
   const { updateNote, searchNotes, refetch } = useNotes();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Note[]>([]);
@@ -72,8 +72,19 @@ export function NotesList({
   const handleSelectSearchResult = async (note: Note) => {
     setSearchQuery('');
     setSearchResults([]);
-    // Refetch notes to ensure the selected note is in the main list,
-    // especially if it belongs to a different project.
+    
+    // If the note belongs to a different project, switch to that project
+    if (note.project_id && (!activeProject || note.project_id !== activeProject.id)) {
+      const targetProject = projects.find(p => p.id === note.project_id);
+      if (targetProject) {
+        setActiveProject(targetProject);
+      }
+    } else if (!note.project_id && activeProject) {
+      // If the note is unassigned but we're in a project, switch to unassigned view
+      setActiveProject(null);
+    }
+    
+    // Refetch notes to ensure the selected note is in the main list
     await refetch();
     onSelectNote(note);
   };
@@ -209,24 +220,29 @@ export function NotesList({
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => onDeleteNote(note.id)}>
-                                  Continue
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
+                                  Delete      Continue
+                                </AlertDialogAction>        </AlertDialogAction>
+                              </AlertDialogFooter>        </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                        </div>
-                      </div>
+                        </div>div>
+                      </div>v>
                       
-                      {note.content && (
-                        <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
-                          {truncateContent(note.content)}
-                        </p>
-                      )}
-                      
-                      <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
-                        {formatDate(note.updated_at)}
-                      </p>
-                    </div>
+                      <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>note.content && (
+                        {formatDate(note.updated_at)}        <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
+                      </p>            {truncateContent(note.content)}
+                    </div>        </p>
+                  </CardContent> )}
+                </Card>          
+              ))            <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
+            )}                    {formatDate(note.updated_at)}
+          </div>                     </p>
+
+
+
+
+
+}  );    </div>      </div>        </ScrollArea>                    </div>
                   </CardContent>
                 </Card>
               ))
