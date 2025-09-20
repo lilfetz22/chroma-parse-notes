@@ -1,3 +1,4 @@
+// src/hooks/useNotes.tsx
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Note } from '@/types/note';
@@ -110,25 +111,25 @@ export function useNotes() {
 
   const searchNotes = async (query: string): Promise<Note[]> => {
     if (!user || !query.trim()) {
-      return notes;
+      return [];
     }
-
-    const { data, error } = await supabase
-      .from('notes')
-      .select('*')
-      .eq('user_id', user.id)
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-      .order('updated_at', { ascending: false });
-
+  
+    // Format the query for PostgreSQL's to_tsquery function (e.g., 'word1' & 'word2')
+    const formattedQuery = query.trim().split(/\s+/).join(' & ');
+  
+    const { data, error } = await supabase.rpc('search_notes', {
+      search_term: formattedQuery,
+    });
+  
     if (error) {
       toast({
-        variant: "destructive",
-        title: "Error searching notes",
+        variant: 'destructive',
+        title: 'Error searching notes',
         description: error.message,
       });
       return [];
     }
-
+  
     return data || [];
   };
 

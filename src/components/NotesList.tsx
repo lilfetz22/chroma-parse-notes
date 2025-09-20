@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// src/components/NotesList.tsx
+import { useState, useEffect } from 'react';
 import { useProject } from '@/hooks/useProject';
 import { useNotes } from '@/hooks/useNotes';
 import { Note } from '@/types/note';
@@ -26,7 +27,6 @@ interface NotesListProps {
   selectedNote: Note | null;
   onSelectNote: (note: Note) => void;
   onCreateNote: () => Promise<Note | null>;
-  onSearch: (query: string) => void;
   onDeleteNote: (id: string) => void;
   loading: boolean;
 }
@@ -36,31 +36,51 @@ export function NotesList({
   selectedNote, 
   onSelectNote, 
   onCreateNote, 
-  onSearch,
   onDeleteNote,
   loading 
 }: NotesListProps) {
   const { activeProject } = useProject();
-  const { updateNote } = useNotes();
+  const { updateNote, searchNotes, refetch } = useNotes();
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Note[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    const debounceTimer = setTimeout(async () => {
+      setIsSearching(true);
+      const results = await searchNotes(searchQuery);
+      setSearchResults(results);
+      setIsSearching(false);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery, searchNotes]);
 
   const handleCreateNote = async () => {
     const newNote = await onCreateNote();
     if (newNote && activeProject) {
-      // Automatically assign the note to the active project
       await updateNote(newNote.id, { project_id: activeProject.id });
     }
   };
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    onSearch(query);
+  
+  const handleSelectSearchResult = async (note: Note) => {
+    setSearchQuery('');
+    setSearchResults([]);
+    // Refetch notes to ensure the selected note is in the main list,
+    // especially if it belongs to a different project.
+    await refetch();
+    onSelectNote(note);
   };
 
-  // Filter notes by active project
   const filteredNotes = activeProject 
     ? notes.filter(note => note.project_id === activeProject.id)
-    : notes.filter(note => !note.project_id); // Show unassigned notes when no project is selected
+    : notes.filter(note => !note.project_id);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -72,16 +92,16 @@ export function NotesList({
   };
 
   const truncateContent = (content: string, maxLength: number = 100) => {
-    // Remove HTML tags for preview
     const textContent = content.replace(/<[^>]*>/g, '');
     return textContent.length > maxLength 
       ? textContent.substring(0, maxLength) + '...'
       : textContent;
   };
 
+  const showSearchResults = (isSearching || searchResults.length > 0) && searchQuery.trim() !== '';
+
   return (
     <div className="h-full flex flex-col bg-card border-r">
-      {/* Header */}
       <div className="p-4 border-b flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">
@@ -93,19 +113,44 @@ export function NotesList({
           </Button>
         </div>
         
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search notes..."
             value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
           />
+          {showSearchResults && (
+            <div className="absolute top-full mt-2 w-full bg-card border rounded-md shadow-lg z-10 max-h-80 overflow-y-auto">
+              <div className="p-2 space-y-1">
+                {isSearching && (
+                  <div className="px-2 py-3 text-sm text-muted-foreground flex items-center justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Searching...
+                  </div>
+                )}
+                {!isSearching && searchResults.length === 0 && (
+                  <div className="px-2 py-3 text-sm text-center text-muted-foreground">
+                    No results found for "{searchQuery}"
+                  </div>
+                )}
+                {!isSearching && searchResults.map(note => (
+                  <div 
+                    key={note.id} 
+                    onClick={() => handleSelectSearchResult(note)} 
+                    className="p-2 rounded-md hover:bg-accent cursor-pointer"
+                  >
+                    <p className="font-medium truncate text-sm">{note.title || 'Untitled Note'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{truncateContent(note.content, 80)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Notes List */}
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full notes-list-scroll">
           <div className="p-2 space-y-2">

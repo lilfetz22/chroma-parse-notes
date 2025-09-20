@@ -18,12 +18,10 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
-  const { notes, loading, createNote, updateNote, deleteNote, searchNotes } = useNotes();
+  const { notes, loading, createNote, updateNote, deleteNote } = useNotes();
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<Note[]>([]);
 
   // Auto-save timer
   useEffect(() => {
@@ -70,7 +68,7 @@ const Dashboard = () => {
       if (note) {
         setSelectedNote(note);
         // Clear the state to prevent reselection on refresh
-        navigate('/', { replace: true });
+        navigate(location.pathname, { replace: true, state: {} });
       }
     }
   }, [notes, location.state, navigate]);
@@ -89,8 +87,6 @@ const Dashboard = () => {
 
   const handleSelectNote = (note: Note) => {
     setSelectedNote(note);
-    setIsSearching(false);
-    setSearchResults([]);
   };
 
   const handleDeleteNote = async (id: string) => {
@@ -134,32 +130,25 @@ const Dashboard = () => {
     }
   };
 
-  const displayNotes = isSearching ? searchResults : notes;
-
   return (
     <div className="h-screen flex flex-col bg-background">
       <AppHeader />
 
-      {/* Main Content */}
       <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
-        {/* Left Pane - Notes List */}
         <div className="w-80 flex-shrink-0 flex flex-col">
           <NotesList
-            notes={displayNotes}
+            notes={notes}
             selectedNote={selectedNote}
             onSelectNote={handleSelectNote}
             onCreateNote={handleCreateNote}
             onDeleteNote={handleDeleteNote}
-            onSearch={searchNotes}
             loading={loading}
           />
         </div>
 
-        {/* Right Pane - Editor */}
         <div className="flex-1 flex flex-col min-h-0 min-w-0">
           {selectedNote ? (
             <>
-              {/* Note Header */}
               <div className="p-4 border-b bg-card flex-shrink-0">
                 <Input
                   value={noteTitle}
@@ -168,8 +157,6 @@ const Dashboard = () => {
                   className="text-lg font-semibold border-none px-0 focus-visible:ring-0 min-w-0"
                 />
               </div>
-
-              {/* Editor */}
               <div className="flex-1 min-h-0">
                 <RichTextEditor
                   content={noteContent}
