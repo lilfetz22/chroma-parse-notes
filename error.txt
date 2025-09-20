@@ -1,116 +1,139 @@
-npx supabase db pull
-Initialising login role...
-Connecting to remote database...
-The remote database's migration history does not match local files in supabase\migrations directory.
-
-Make sure your local git repo is up-to-date. If the error persists, try repairing the migration history table:
-
-
-
-
-
-
-
-
-
-
-
-
-C:\Users\WilliamFetzner\Documents\chroma-parse-notes>npx supabase db pull
-Initialising login role...
-Connecting to remote database...
-Creating shadow database...
-17.4.1.064: Pulling from supabase/postgres
-02d2813e5192: Pull complete
-d5278b54d742: Pull complete
-8fbb54f235c9: Pull complete
-b1cd7a1988b2: Pull complete
-a474f933da3b: Pull complete
-9571aa18287d: Pull complete
-7041c99a8bf2: Pull complete
-8665f1d0e5cd: Pull complete
-205be70e59fc: Pull complete
-38a9e902e1dd: Pull complete
-ba6bf0c49dcc: Pull complete
-13b7e930469f: Pull complete
-01e937108b5d: Pull complete
-9c6b2721b74b: Pull complete
-992f385fe21a: Pull complete
-fac239b9502f: Pull complete
-24828b4c1abc: Pull complete
-7adf684822f9: Pull complete
-9ac3b7d41fb6: Pull complete
-6bc128be103a: Pull complete
-4f4fb700ef54: Pull complete
-1134a3fe5c45: Pull complete
-2c8e34ada2cc: Pull complete
-4cd13c2c6d7b: Pull complete
-d9795c7ae2c6: Pull complete
-a97f20b37ce4: Pull complete
-a4b7c65fe72e: Pull complete
-dcbfef8b5e68: Pull complete
-ee0a4d7c42bc: Pull complete
-9203b3214e35: Pull complete
-94985f2c8c8d: Pull complete
-2658f667f86f: Pull complete
-4c7af308d22c: Pull complete
-d055d32b37f2: Pull complete
-24d945578715: Pull complete
-ede2622cffae: Pull complete
-393e63181edd: Pull complete
-7c3236311d34: Pull complete
-5db1c6d34f4f: Pull complete
-8ddd9d5c3ff4: Pull complete
-b905b33c9d33: Pull complete
-eaa436257373: Pull complete
-c47d698d1672: Pull complete
-98da453425d5: Pull complete
-e0c2dc133fc7: Pull complete
-bef8ba34aa8b: Pull complete
-a1fa371da3c3: Pull complete
-7f09e3b80363: Pull complete
-a7c620be981a: Pull complete
-Digest: sha256:52aa9b6e53d5f165a5518c3e09a907b2238c8bf0501908926819a6ef80147e27
-Status: Downloaded newer image for public.ecr.aws/supabase/postgres:17.4.1.064
-Initialising schema...
-v2.179.0: Pulling from supabase/gotrue
-7e8c14f04798: Pull complete
-b3c4a98a4ddd: Pull complete
-9824c27679d3: Pull complete
-6e4298db6b80: Pull complete
-1b998bfcdb55: Pull complete
-3332e68a49bb: Pull complete
-Digest: sha256:658cf69f57d48e10cbe508a79874e6067348b82a4d216a0bb446c067d7a246f9
-Status: Downloaded newer image for public.ecr.aws/supabase/gotrue:v2.179.0
-Seeding globals from roles.sql...
-Applying migration 20250723110629_f809655b-9d22-4c7c-9c97-a780e2bb2e0a.sql...
-Applying migration 20250723110651_aaa93dd4-df17-4ce9-a865-c9f370e20c70.sql...
-Applying migration 20250723120000_create_search_notes_function.sql...
-Applying migration 20250817102037_30454eb5-ab7c-41d9-9d40-efdf9b46353b.sql...
-Applying migration 20250817102123_69de0a88-07c5-4bb5-afc2-7f117e4aaa2b.sql...
-Applying migration 20250817103000_add_summary_to_cards.sql...
-Applying migration 20250824095742_91071bc7-3089-4b1f-bf81-0573598f250c.sql...
-ERROR: relation "public.projects" does not exist (SQLSTATE 42P01)
-At statement: 0
--- Create projects table (commented out as it already exists)
--- CREATE TABLE public.projects (
---   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
---   user_id uuid NOT NULL,
---   title text NOT NULL,
---   description text,
---   created_at timestamp with time zone NOT NULL DEFAULT now()
--- );
-
--- Enable RLS on projects table
-ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY
-Try rerunning the command with --debug to troubleshoot the error.
-
-
-
-
-
-
-
-
-
-
+Drag operation started at: 477837.7000000477
+index-zE3u6kzp.js:406 Drag ended: {destination: {…}, source: {…}, type: 'card'}
+index-zE3u6kzp.js:406 Board data cards length: 30
+index-zE3u6kzp.js:406 Source droppableId: e46dbc61-3657-4d45-9c6a-0d885178e5a1 index: 3
+index-zE3u6kzp.js:406 Destination droppableId: df4bc1fd-ae2f-452d-9f2b-9e21f52edb0e index: 0
+index-zE3u6kzp.js:406 updatePositions started, updates count: 30
+index-zE3u6kzp.js:406 Calling update_card_positions with payload: {
+  "updates": [
+    {
+      "id": "11519d2a-4e58-4e3c-8634-14fe7ef16e62",
+      "position": 0
+    },
+    {
+      "id": "925ade4f-a032-4dfb-b469-22297b46ceaf",
+      "position": 1
+    },
+    {
+      "id": "34071e48-f0d0-4eb4-84ef-7712584a5a4e",
+      "position": 2
+    },
+    {
+      "id": "11ab4958-da6a-4d5a-80d1-d414a8991332",
+      "position": 0,
+      "column_id": "df4bc1fd-ae2f-452d-9f2b-9e21f52edb0e"
+    },
+    {
+      "id": "063596f4-65da-48cc-bc55-52eb4a8b1b6e",
+      "position": 1
+    },
+    {
+      "id": "95da9506-d78e-4222-9285-5fa27947b994",
+      "position": 2
+    },
+    {
+      "id": "031f9f8e-4d36-4ba5-b2b2-6fdfb2585566",
+      "position": 3
+    },
+    {
+      "id": "c67d52f1-6a66-46ef-b723-3f9835eb099a",
+      "position": 4
+    },
+    {
+      "id": "d6c186a6-aa69-45af-98bc-5e6ab728e7d2",
+      "position": 5
+    },
+    {
+      "id": "52504c4d-679a-4a2f-b886-e4ea23097331",
+      "position": 6
+    },
+    {
+      "id": "8ec530ed-9500-4684-82b4-94b41f9b0a2a",
+      "position": 7
+    },
+    {
+      "id": "0806caf6-6caa-458a-919f-0d73666247df",
+      "position": 8
+    },
+    {
+      "id": "789c74d8-5096-46a5-b11f-43d3399f3fb7",
+      "position": 9
+    },
+    {
+      "id": "e14b0fff-3da0-4650-93f9-8fe8853681a9",
+      "position": 10
+    },
+    {
+      "id": "51a28d9a-b71f-49f7-a06d-14a7c4ed4cb0",
+      "position": 11
+    },
+    {
+      "id": "639c294b-038e-4611-a2b5-6b7209b93f42",
+      "position": 12
+    },
+    {
+      "id": "ea090a09-358d-46a9-b4a2-936051914268",
+      "position": 13
+    },
+    {
+      "id": "2ef96923-7651-46ce-bdea-9f0d2cb31ffe",
+      "position": 14
+    },
+    {
+      "id": "74091b6f-c39a-419d-aee2-bb1b4db6839b",
+      "position": 15
+    },
+    {
+      "id": "04ab7819-d9b9-45b6-82c5-233e7e938cac",
+      "position": 16
+    },
+    {
+      "id": "0ff0f855-c982-44f8-8fd9-d844513d8ec2",
+      "position": 17
+    },
+    {
+      "id": "d655a0f8-25e6-4d46-819e-4b143e0b9803",
+      "position": 18
+    },
+    {
+      "id": "f55d0204-484e-4417-83e9-f4febd4cab08",
+      "position": 19
+    },
+    {
+      "id": "8743450e-d05b-4784-857e-6db2af9a20af",
+      "position": 20
+    },
+    {
+      "id": "019ffa26-376a-4c2c-a979-6a22c0eb9c90",
+      "position": 21
+    },
+    {
+      "id": "f9d16e66-973b-475a-919e-fc1497c6bd5d",
+      "position": 22
+    },
+    {
+      "id": "a304e86b-5f76-40c5-9ffa-f8fdce430c7e",
+      "position": 23
+    },
+    {
+      "id": "b6304571-246a-4380-b94e-9eb565cf25b6",
+      "position": 24
+    },
+    {
+      "id": "7f4a5ae8-0cda-4fac-8bb3-842df04c9294",
+      "position": 25
+    },
+    {
+      "id": "512ce992-60e6-4153-9e89-fa163913ba8d",
+      "position": 26
+    }
+  ],
+  "p_source_column_id": "e46dbc61-3657-4d45-9c6a-0d885178e5a1",
+  "p_dest_column_id": "df4bc1fd-ae2f-452d-9f2b-9e21f52edb0e"
+}
+index-zE3u6kzp.js:406 Database update completed in: 190.20 ms
+index-zE3u6kzp.js:406 Card positions updated successfully. Checking if data reload is needed.
+index-zE3u6kzp.js:406 Card moved columns, reloading board data...
+index-zE3u6kzp.js:406 Board data reloaded.
+index-zE3u6kzp.js:406 Total updatePositions time: 350.80 ms
+index-zE3u6kzp.js:406 Drag operation completed in: 354.10 ms
