@@ -220,29 +220,24 @@ export function NotesList({
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={() => onDeleteNote(note.id)}>
-                                  Delete      Continue
-                                </AlertDialogAction>        </AlertDialogAction>
-                              </AlertDialogFooter>        </AlertDialogFooter>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>
-                        </div>div>
-                      </div>v>
+                        </div>
+                      </div>
                       
-                      <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>note.content && (
-                        {formatDate(note.updated_at)}        <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
-                      </p>            {truncateContent(note.content)}
-                    </div>        </p>
-                  </CardContent> )}
-                </Card>          
-              ))            <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
-            )}                    {formatDate(note.updated_at)}
-          </div>                     </p>
-
-
-
-
-
-}  );    </div>      </div>        </ScrollArea>                    </div>
+                      {note.content && (
+                        <p className="text-sm text-muted-foreground line-clamp-2" onClick={() => onSelectNote(note)}>
+                          {truncateContent(note.content)}
+                        </p>
+                      )}
+                      
+                      <p className="text-xs text-muted-foreground" onClick={() => onSelectNote(note)}>
+                        {formatDate(note.updated_at)}
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               ))
