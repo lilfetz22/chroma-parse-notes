@@ -114,12 +114,12 @@ export function useNotes() {
       return [];
     }
   
-    // Format the query for PostgreSQL's to_tsquery function (e.g., 'word1' & 'word2')
-    const formattedQuery = query.trim().split(/\s+/).join(' & ');
-  
-    const { data, error } = await supabase.rpc('search_notes', {
-      search_term: formattedQuery,
-    });
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('user_id', user.id)
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+      .order('updated_at', { ascending: false });
   
     if (error) {
       toast({
