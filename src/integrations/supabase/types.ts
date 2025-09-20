@@ -315,7 +315,13 @@ export type Database = {
         Returns: undefined
       }
       update_card_positions: {
-        Args: { updates: Json }
+        Args:
+          | {
+              p_dest_column_id: string
+              p_source_column_id: string
+              updates: Json
+            }
+          | { updates: Json }
         Returns: undefined
       }
     }
