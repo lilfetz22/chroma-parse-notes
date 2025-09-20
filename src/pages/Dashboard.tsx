@@ -140,7 +140,7 @@ const Dashboard = () => {
       <AppHeader />
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
         {/* Left Pane - Notes List */}
         <div className="w-80 flex-shrink-0 flex flex-col">
           <NotesList
