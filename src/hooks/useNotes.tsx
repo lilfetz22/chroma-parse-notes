@@ -1,5 +1,5 @@
 // src/hooks/useNotes.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Note } from '@/types/note';
 import { useAuth } from './useAuth';
@@ -109,7 +109,7 @@ export function useNotes() {
     }
   };
 
-  const searchNotes = async (query: string): Promise<Note[]> => {
+  const searchNotes = useCallback(async (query: string): Promise<Note[]> => {
     if (!user || !query.trim()) {
       return [];
     }
@@ -131,7 +131,7 @@ export function useNotes() {
     }
   
     return data || [];
-  };
+  }, [user]);
 
   return {
     notes,
