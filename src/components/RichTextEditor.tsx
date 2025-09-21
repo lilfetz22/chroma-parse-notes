@@ -70,19 +70,11 @@ interface RichTextEditorProps {
   notes: Note[];
 }
 export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
-  console.log('📨 RichTextEditor: Received props:', {
-    contentLength: content.length,
-    nlhEnabled,
-    typeof: typeof nlhEnabled,
-    onNLHToggle: !!onNLHToggle
-  });
   const { user } = useAuth();
   const { settings } = useNLHSettings();
   
-  // --- START OF REFACTORED STATE MANAGEMENT ---
   const [isTyping, setIsTyping] = useState(false);
   const [processedContent, setProcessedContent] = useState('');
-  // --- END OF REFACTORED STATE MANAGEMENT ---
   
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -100,33 +92,19 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
   // Effect to apply NLH-processed content and restore the cursor
   useEffect(() => {
-    console.log('🔄 RichTextEditor: Should apply processed content?', {
-      hasEditorRef: !!editorRef.current,
-      processedDifferent: processedContent !== content,
-      isTyping,
-      nlhEnabled,
-      globalEnabled: settings.globalEnabled
-    });
-
     // Only apply changes if NLH is enabled, user is not typing, and new content is available
     if (editorRef.current && processedContent && processedContent !== content && !isTyping && nlhEnabled && settings.globalEnabled) {
-      console.log('🎯 RichTextEditor: Applying NLH processed content to editor');
-      
       const selection = window.getSelection();
       let cursorPosition = -1;
       if (selection?.focusNode && editorRef.current.contains(selection.focusNode)) {
         cursorPosition = getCursorPosition(editorRef.current);
-        console.log(`📍 Storing cursor position: ${cursorPosition}`);
       }
       
       editorRef.current.innerHTML = processedContent;
       
       if (cursorPosition !== -1) {
         setCursorPosition(editorRef.current, cursorPosition);
-        console.log(`✅ Cursor position restored to: ${cursorPosition}`);
       }
-    } else if (isTyping) {
-      console.log('⏸️ RichTextEditor: Skipping NLH application - user is typing');
     }
   }, [processedContent, content, isTyping, nlhEnabled, settings.globalEnabled]);
 
@@ -229,26 +207,20 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     }
   };
 
-  // REFACTORED: onInput handler based on user request for responsiveness
   const handleContentChange = () => {
     if (editorRef.current) {
-      // 1. Immediately set typing state to true
       setIsTyping(true);
       
-      // Clear the existing timer on each keystroke
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
       
-      // 3. Set a timer to mark typing as finished after a pause
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
-        console.log('⏸️ RichTextEditor: User finished typing. NLH can now process.');
-      }, 500); // 500ms of inactivity
+      }, 500);
 
       const currentHTML = editorRef.current.innerHTML;
       
-      // Perform simple transformations
       let newContent = currentHTML.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
       newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
       
@@ -256,7 +228,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         setShowNoteLinker(true);
       }
 
-      // 2. Immediately call onChange with raw HTML to prevent lost characters
       onChange(newContent);
     }
   };
@@ -280,11 +251,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     }
   };
   
-  // Sync editor if content prop changes externally (e.g., loading a new note)
-  // but avoid doing so while the user is actively typing.
   useEffect(() => {
     if (editorRef.current && content !== editorRef.current.innerHTML && !isTyping) {
-      console.log('📝 RichTextEditor: Syncing external content change to editor');
       const selection = window.getSelection();
       let cursorPosition = -1;
       if (selection?.focusNode && editorRef.current.contains(selection.focusNode)) {
@@ -299,7 +267,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     }
   }, [content]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {

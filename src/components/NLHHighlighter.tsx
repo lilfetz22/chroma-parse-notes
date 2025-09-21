@@ -18,17 +18,16 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
 
       try {
         // 1. Clean the content: Remove all previous NLH spans to prevent nesting and break the re-processing loop.
-        // This regex specifically targets the spans created by this component.
         const spanRegex = /<span style="color: (.*?); font-weight: 500;">(.*?)<\/span>/g;
         const cleanedContent = content.replace(spanRegex, '$2'); // $2 keeps the inner text
 
-        // 2. Get clean text for analysis from the now-cleaned HTML.
-        // This safely strips all HTML tags and decodes entities like `&amp;` to `&`.
+        // 2. Use the browser's parser to sanitize the HTML and get a clean representation with correct entity encoding.
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = cleanedContent;
+        const sanitizedHtml = tempDiv.innerHTML; // Re-serialize from the parsed DOM. This is the key step to normalize entities.
         const textToAnalyze = tempDiv.textContent || '';
         
-        if (!textToAnalyze) return cleanedContent; // Nothing to analyze
+        if (!textToAnalyze) return sanitizedHtml; // Return the sanitized HTML if there's no text.
 
         const doc = nlp(textToAnalyze);
 
@@ -54,7 +53,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
         });
         
         if (colorMap.size === 0) {
-          return cleanedContent; // Return the cleaned content if no words to highlight
+          return sanitizedHtml; // Return the sanitized content if no words to highlight
         }
 
         // 4. Build a single, performant Regex from all the words to be colored.
@@ -62,12 +61,13 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
         const escapedTerms = allTerms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
         // Sort by length to match longer phrases first (e.g., "New York" before "New").
         escapedTerms.sort((a, b) => b.length - a.length);
-        if (escapedTerms.length === 0) return cleanedContent;
+        if (escapedTerms.length === 0) return sanitizedHtml;
+        
         const regex = new RegExp(`\\b(${escapedTerms.join('|')})\\b`, 'g');
 
-        // 5. Replace words in the CLEANED content string. This is now safe because the regex
-        // is built from plain text and won't match/corrupt HTML attributes.
-        const processedText = cleanedContent.replace(regex, (match) => {
+        // 5. Replace words in the SANITIZED HTML string. This is safer as entity encoding is normalized,
+        // and the regex is built from plain text, so it won't corrupt HTML attributes.
+        const processedText = sanitizedHtml.replace(regex, (match) => {
           const color = colorMap.get(match);
           return `<span style="color: ${color}; font-weight: 500;">${match}</span>`;
         });
