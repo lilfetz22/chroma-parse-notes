@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Plus, FolderOpen, Settings } from 'lucide-react';
+import { ChevronDown, Plus, FolderOpen, Settings, Tag } from 'lucide-react'; // --- MODIFICATION: Imported the Tag icon
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -151,6 +151,14 @@ export function ProjectSwitcher() {
             <Settings className="h-4 w-4 mr-2" />
             Manage Projects
           </DropdownMenuItem>
+
+          {/* --- MODIFICATION START --- */}
+          <DropdownMenuItem onClick={() => navigate('/projects')}>
+            <Tag className="h-4 w-4 mr-2" />
+            Manage Tags
+          </DropdownMenuItem>
+          {/* --- MODIFICATION END --- */}
+          
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
