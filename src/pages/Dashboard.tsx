@@ -50,11 +50,6 @@ const Dashboard = () => {
     if (selectedNote) {
       const updatedNote = notes.find(note => note.id === selectedNote.id);
       if (updatedNote && updatedNote.nlh_enabled !== selectedNote.nlh_enabled) {
-        console.log('🔄 Dashboard: Syncing selectedNote with notes array:', {
-          noteId: selectedNote.id,
-          oldNLHEnabled: selectedNote.nlh_enabled,
-          newNLHEnabled: updatedNote.nlh_enabled
-        });
         setSelectedNote(updatedNote);
       }
     }
@@ -97,25 +92,14 @@ const Dashboard = () => {
   };
 
   const handleNLHToggle = async () => {
-    console.log('🔄 Dashboard: NLH toggle clicked');
     if (selectedNote) {
       const newNLHEnabled = !selectedNote.nlh_enabled;
-      console.log('🎯 Dashboard: Toggling NLH for note:', {
-        noteId: selectedNote.id,
-        noteTitle: selectedNote.title,
-        currentNLHEnabled: selectedNote.nlh_enabled,
-        newNLHEnabled
-      });
       
       // Update local state immediately for instant feedback
       setSelectedNote({ ...selectedNote, nlh_enabled: newNLHEnabled });
-      console.log('✅ Dashboard: Local selectedNote state updated');
       
       // Update in database
       await updateNote(selectedNote.id, { nlh_enabled: newNLHEnabled });
-      console.log('✅ Dashboard: Database update completed');
-    } else {
-      console.log('❌ Dashboard: No note selected for NLH toggle');
     }
   };
 
@@ -161,15 +145,7 @@ const Dashboard = () => {
                 <RichTextEditor
                   content={noteContent}
                   onChange={setNoteContent}
-                  nlhEnabled={(() => {
-                    console.log('🎯 Dashboard: Passing to RichTextEditor:', {
-                      selectedNoteId: selectedNote.id,
-                      selectedNoteTitle: selectedNote.title,
-                      nlhEnabledValue: selectedNote.nlh_enabled,
-                      typeof: typeof selectedNote.nlh_enabled
-                    });
-                    return selectedNote.nlh_enabled;
-                  })()}
+                  nlhEnabled={selectedNote.nlh_enabled}
                   onNLHToggle={handleNLHToggle}
                   notes={notes}
                 />
