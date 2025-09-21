@@ -19,8 +19,9 @@ import {
 } from '@/components/ui/select';
 import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
 import { CreateScheduledTaskData, RecurrenceType } from '@/types/scheduled-task';
-import { Column } from '@/types/kanban';
+import { Column, Tag } from '@/types/kanban'; // --- MODIFICATION: Import Tag
 import { format, addDays, nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday } from 'date-fns';
+import { TagInput } from '../TagInput'; // --- MODIFICATION: Import TagInput
 
 interface ScheduleTaskModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [targetColumnId, setTargetColumnId] = useState('');
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]); // --- MODIFICATION: Add state for selected tags
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [scheduleData, setScheduleData] = useState<ScheduleData>({
@@ -42,9 +44,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     daysOfWeek: undefined,
   });
 
-  /**
-   * Calculate the next occurrence date based on recurrence type and selected options
-   */
+  // (calculateNextOccurrenceDate function remains unchanged)
   const calculateNextOccurrenceDate = (): string | null => {
     const today = new Date();
 
@@ -56,7 +56,6 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
         return format(addDays(today, 1), 'yyyy-MM-dd');
         
       case 'weekdays':
-        // Find next weekday (skip weekends)
         let nextWeekday = addDays(today, 1);
         while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6) {
           nextWeekday = addDays(nextWeekday, 1);
@@ -76,7 +75,6 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
         return format(addDays(today, 14), 'yyyy-MM-dd');
         
       case 'monthly':
-        // Add one month to today
         const nextMonth = new Date(today);
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         return format(nextMonth, 'yyyy-MM-dd');
@@ -84,12 +82,10 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       case 'custom_weekly':
         if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
         
-        // Find the next scheduled day from the selected days
         const currentDayOfWeek = today.getDay();
         let nextScheduledDay = null;
         let daysUntilNext = 0;
         
-        // First, look for the next day in the current week
         for (const day of scheduleData.daysOfWeek) {
           if (day > currentDayOfWeek) {
             daysUntilNext = day - currentDayOfWeek;
@@ -98,7 +94,6 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
           }
         }
         
-        // If no day found in current week, wrap to next week
         if (nextScheduledDay === null) {
           daysUntilNext = (7 - currentDayOfWeek) + scheduleData.daysOfWeek[0];
           nextScheduledDay = scheduleData.daysOfWeek[0];
@@ -128,6 +123,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       recurrence_type: scheduleData.recurrenceType,
       days_of_week: scheduleData.daysOfWeek,
       next_occurrence_date: nextOccurrenceDate,
+      tag_ids: selectedTags.map(tag => tag.id), // --- MODIFICATION: Add tag IDs
     };
 
     await onTaskScheduled(taskData);
@@ -136,6 +132,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     setTitle('');
     setSummary('');
     setTargetColumnId('');
+    setSelectedTags([]); // --- MODIFICATION: Reset tags
     setScheduleData({
       isScheduled: true,
       recurrenceType: 'once',
@@ -152,9 +149,6 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     }
   };
 
-  /**
-   * Check if the form is valid based on the selected recurrence type
-   */
   const isFormValid = (): boolean => {
     if (!title.trim() || !targetColumnId) return false;
     
@@ -166,7 +160,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       case 'custom_weekly':
         return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0;
       default:
-        return true; // daily, weekdays, bi-weekly, monthly don't need additional validation
+        return true;
     }
   };
 
@@ -202,6 +196,17 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
               rows={3}
             />
           </div>
+
+          {/* --- MODIFICATION START: Add TagInput component --- */}
+          <div className="space-y-2">
+            <Label htmlFor="tags">Tags (Optional)</Label>
+            <TagInput
+              selectedTags={selectedTags}
+              onTagsChange={setSelectedTags}
+              placeholder="Add tags..."
+            />
+          </div>
+          {/* --- MODIFICATION END --- */}
 
           <div className="space-y-2">
             <Label htmlFor="column">Target Column</Label>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Clock, Trash2, Calendar, Repeat, Edit } from 'lucide-react';
 import { AppHeader } from '@/components/AppHeader';
@@ -22,13 +22,38 @@ import {
 } from '@/components/ui/alert-dialog';
 import { EditScheduledTaskModal } from '@/components/EditScheduledTaskModal';
 import { formatRecurrenceRule } from '@/lib/recurrence-utils';
-import { RecurrenceType, ScheduledTask } from '@/types/scheduled-task';
+import { ScheduledTask } from '@/types/scheduled-task';
+import { Tag } from '@/types/kanban'; // --- MODIFICATION: Import Tag
+import { supabase } from '@/integrations/supabase/client'; // --- MODIFICATION: Import supabase
+import { useAuth } from '@/hooks/useAuth'; // --- MODIFICATION: Import useAuth
 
 export function ScheduledTasks() {
+  const { user } = useAuth(); // --- MODIFICATION: Get user for fetching tags
   const { activeProject } = useProject();
   const { scheduledTasks, loading, updateScheduledTask, deleteScheduledTask } = useScheduledTasks();
   const { boardData } = useKanbanBoard();
   const [editingTask, setEditingTask] = useState<ScheduledTask | null>(null);
+  const [allTags, setAllTags] = useState<Tag[]>([]); // --- MODIFICATION: State to hold all user tags
+
+  // --- MODIFICATION START: Fetch all user tags once ---
+  useEffect(() => {
+    const fetchAllTags = async () => {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from('tags')
+          .select('*')
+          .eq('user_id', user.id);
+        if (error) throw error;
+        setAllTags(data || []);
+      } catch (error) {
+        console.error("Failed to fetch all user tags:", error);
+      }
+    };
+    fetchAllTags();
+  }, [user]);
+  // --- MODIFICATION END ---
+
 
   const handleUpdateTask = async (taskId: string, updates: any) => {
     await updateScheduledTask(taskId, updates);
@@ -85,12 +110,33 @@ export function ScheduledTasks() {
                 task.next_occurrence_date
               );
 
+              // --- MODIFICATION START: Find tags for the current task ---
+              const taskTags = (task.tag_ids || [])
+                .map(tagId => allTags.find(t => t.id === tagId))
+                .filter((t): t is Tag => t !== undefined);
+              // --- MODIFICATION END ---
+
               return (
                 <Card key={task.id}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
-                        <CardTitle className="text-lg">{task.title}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {task.title}
+                           {/* --- MODIFICATION START: Display tags in header --- */}
+                          <div className="flex flex-wrap gap-1">
+                            {taskTags.map(tag => (
+                              <Badge 
+                                key={tag.id} 
+                                variant="secondary" 
+                                className={`${tag.color} text-white text-xs px-1.5 py-0.5`}
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))}
+                          </div>
+                           {/* --- MODIFICATION END --- */}
+                        </CardTitle>
                         {task.summary && (
                           <p className="text-sm text-muted-foreground">{task.summary}</p>
                         )}
@@ -162,7 +208,6 @@ export function ScheduledTasks() {
         )}
       </main>
 
-      {/* Edit Modal */}
       {editingTask && boardData && (
         <EditScheduledTaskModal
           isOpen={!!editingTask}

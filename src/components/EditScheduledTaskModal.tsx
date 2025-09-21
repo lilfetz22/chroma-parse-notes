@@ -12,8 +12,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions';
 import { ScheduledTask, CreateScheduledTaskData } from '@/types/scheduled-task';
-import { Column } from '@/types/kanban';
+import { Column, Tag } from '@/types/kanban'; // --- MODIFICATION: Import Tag
 import { toast } from '@/hooks/use-toast';
+import { TagInput } from './TagInput'; // --- MODIFICATION: Import TagInput
+import { supabase } from '@/integrations/supabase/client'; // --- MODIFICATION: Import supabase client
 
 interface EditScheduledTaskModalProps {
   isOpen: boolean;
@@ -34,11 +36,11 @@ export function EditScheduledTaskModal({
   const [summary, setSummary] = useState(task.summary || '');
   const [priority, setPriority] = useState<number>(task.priority || 0);
   const [targetColumnId, setTargetColumnId] = useState(task.target_column_id);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]); // --- MODIFICATION: Add state for tags
   const [isLoading, setIsLoading] = useState(false);
   
-  // Initialize scheduling data from the existing task
   const [scheduleData, setScheduleData] = useState<ScheduleData>({
-    isScheduled: true, // Always true for scheduled tasks
+    isScheduled: true,
     recurrenceType: task.recurrence_type,
     selectedDate: new Date(task.next_occurrence_date),
     daysOfWeek: task.days_of_week || undefined,
@@ -57,36 +59,43 @@ export function EditScheduledTaskModal({
         selectedDate: new Date(task.next_occurrence_date),
         daysOfWeek: task.days_of_week || undefined,
       });
+
+      // --- MODIFICATION START: Fetch full tag objects from tag_ids
+      const fetchTags = async () => {
+        if (task.tag_ids && task.tag_ids.length > 0) {
+          try {
+            const { data, error } = await supabase
+              .from('tags')
+              .select('*')
+              .in('id', task.tag_ids);
+            if (error) throw error;
+            setSelectedTags(data || []);
+          } catch (error) {
+            console.error("Failed to fetch tags for scheduled task:", error);
+            setSelectedTags([]);
+          }
+        } else {
+          setSelectedTags([]);
+        }
+      };
+
+      fetchTags();
+      // --- MODIFICATION END
     }
   }, [isOpen, task]);
 
   const handleSave = async () => {
     if (!title.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Input',
-        description: 'Please enter a task title.',
-      });
+      toast({ variant: 'destructive', title: 'Invalid Input', description: 'Please enter a task title.' });
       return;
     }
-
     if (!scheduleData.selectedDate) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Schedule',
-        description: 'Please select a date for the task.',
-      });
+      toast({ variant: 'destructive', title: 'Invalid Schedule', description: 'Please select a date for the task.' });
       return;
     }
-
-    // Validate scheduling data
     if ((scheduleData.recurrenceType === 'weekly' || scheduleData.recurrenceType === 'custom_weekly') && 
         (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0)) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid Schedule',
-        description: 'Please select at least one day for weekly tasks.',
-      });
+      toast({ variant: 'destructive', title: 'Invalid Schedule', description: 'Please select at least one day for weekly tasks.' });
       return;
     }
 
@@ -100,17 +109,14 @@ export function EditScheduledTaskModal({
         days_of_week: scheduleData.daysOfWeek,
         next_occurrence_date: scheduleData.selectedDate.toISOString().split('T')[0],
         priority: priority,
+        tag_ids: selectedTags.map(tag => tag.id), // --- MODIFICATION: Add tag IDs to update payload
       };
 
       await onSave(task.id, updates);
       onClose();
     } catch (error) {
       console.error('Error saving scheduled task:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Save Failed',
-        description: 'Failed to save scheduled task changes.',
-      });
+      toast({ variant: 'destructive', title: 'Save Failed', description: 'Failed to save scheduled task changes.' });
     } finally {
       setIsLoading(false);
     }
@@ -132,24 +138,24 @@ export function EditScheduledTaskModal({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-title">Title</Label>
-            <Input
-              id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter task title..."
-            />
+            <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Enter task title..."/>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="edit-summary">Summary</Label>
-            <Textarea
-              id="edit-summary"
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              placeholder="Enter task summary..."
-              rows={3}
+            <Textarea id="edit-summary" value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Enter task summary..." rows={3}/>
+          </div>
+
+          {/* --- MODIFICATION START: Add TagInput for editing --- */}
+          <div className="space-y-2">
+            <Label htmlFor="edit-tags">Tags</Label>
+            <TagInput
+              selectedTags={selectedTags}
+              onTagsChange={setSelectedTags}
+              placeholder="Add tags..."
             />
           </div>
+          {/* --- MODIFICATION END --- */}
 
           <div className="space-y-2">
             <Label htmlFor="edit-priority">Priority</Label>
@@ -182,7 +188,6 @@ export function EditScheduledTaskModal({
             </Select>
           </div>
 
-          {/* Scheduling Options */}
           <div className="space-y-2">
             <Label>Schedule</Label>
             <SchedulingOptions
