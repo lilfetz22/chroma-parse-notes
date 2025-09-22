@@ -114,19 +114,13 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
 
     setIsLoading(true);
     try {
-      const nextOccurrenceDate = scheduleData.selectedDate!.toISOString().split('T')[0];
-      
-      // Create scheduled task
-      const { data, error } = await supabase.from('scheduled_tasks').insert({
-        title: card.title,
-        summary: card.summary || '',
-        recurrence_type: 'once' as RecurrenceType,
-        days_of_week: null,
-        next_occurrence_date: new Date().toISOString().split('T')[0],
-        target_column_id: 'temp-column', // This would need proper logic
-        project_id: 'temp-project', // This would need proper logic
-        user_id: user?.id || 'temp-user',
-        priority: card.priority || 0
+      // Use the RPC function to convert the card atomically, which is safer
+      // and correctly derives project_id, user_id, etc., from the card.
+      const { data, error } = await supabase.rpc('convert_card_to_scheduled_task', {
+        p_card_id: card.id,
+        p_recurrence_type: scheduleData.recurrenceType,
+        p_days_of_week: scheduleData.daysOfWeek || null,
+        p_next_occurrence_date: scheduleData.selectedDate.toISOString().split('T')[0],
       });
 
       if (error) throw error;
@@ -134,12 +128,12 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
       const result = data as { success: boolean; error?: string; message: string };
       
       if (!result.success) {
-        throw new Error(result.error || 'Conversion failed');
+        throw new Error(result.error || 'Conversion failed on the server.');
       }
 
       toast({
         title: 'Card Converted',
-        description: 'Card has been successfully converted to a scheduled task.',
+        description: result.message || 'Card has been successfully converted to a scheduled task.',
       });
 
       if (onConvertToScheduledTask) {
