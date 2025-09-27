@@ -207,7 +207,13 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
                 // Single day selector for weekly
                 <Select 
                   value={scheduleData.daysOfWeek?.[0]?.toString()} 
-                  onValueChange={(value) => handleDayOfWeekToggle(parseInt(value))}
+                  onValueChange={(value) => {
+                    // For weekly, set exactly one day (don't toggle)
+                    onScheduleChange({
+                      ...scheduleData,
+                      daysOfWeek: [parseInt(value)],
+                    });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select day" />
