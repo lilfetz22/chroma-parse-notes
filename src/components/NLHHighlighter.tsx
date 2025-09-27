@@ -1,4 +1,3 @@
-// src/components/NLHHighlighter.tsx
 import { useEffect, useMemo } from 'react';
 import nlp from 'compromise';
 import { NLHSettings } from '@/types/note';
@@ -22,7 +21,6 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
       let workingContent = content.replace(spanRegex, '$2');
 
       // 2. Protect HTML tags by replacing them with a placeholder.
-      // This is the key step to prevent the highlighter from corrupting attributes like `href`.
       const tags: string[] = [];
       const tagPlaceholder = '___HTML_TAG_PLACEHOLDER___';
       workingContent = workingContent.replace(/<[^>]+>/g, (match) => {
@@ -41,26 +39,45 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
 
       const doc = nlp(textToAnalyze);
 
-      // 4. Create a map of all unique words to highlight and their assigned color.
+      // 4. Create a map of all unique words to highlight and their assigned color, using a context-aware approach.
       const colorMap = new Map<string, string>();
-      const posConfig = [
-        { setting: settings.partOfSpeech.properNoun, terms: doc.match('#ProperNoun').out('array') },
-        { setting: settings.partOfSpeech.verb, terms: doc.verbs().out('array') },
-        { setting: settings.partOfSpeech.adverb, terms: doc.adverbs().out('array') },
-        { setting: settings.partOfSpeech.adjective, terms: doc.adjectives().out('array') },
-        { setting: settings.partOfSpeech.noun, terms: doc.nouns().out('array') },
-        { setting: settings.partOfSpeech.number, terms: textToAnalyze.match(/\b\d+(\.\d+)?\b/g) || [] }
+
+      // Define priority for tags. Lower index = higher priority.
+      const tagPriority: { tag: keyof typeof settings.partOfSpeech, compromiseTag: string }[] = [
+          { tag: 'properNoun', compromiseTag: '#ProperNoun' },
+          { tag: 'verb',       compromiseTag: '#Verb' },
+          { tag: 'adverb',     compromiseTag: '#Adverb' },
+          { tag: 'adjective',  compromiseTag: '#Adjective' },
+          { tag: 'number',     compromiseTag: '#Value' },
+          { tag: 'noun',       compromiseTag: '#Noun' },
       ];
 
-      posConfig.forEach(({ setting, terms }) => {
-        if (setting.enabled && terms) {
-          terms.forEach(term => {
-            if (term && !colorMap.has(term)) {
-              colorMap.set(term, setting.color);
-            }
-          });
-        }
+      // Process each term from the parsed document, respecting context
+      doc.terms().forEach(term => {
+          const text = term.text();
+          if (!text.trim() || colorMap.has(text)) {
+              return; // Skip empty or already-colored terms
+          }
+
+          // Find the highest-priority tag for this term
+          for (const { tag, compromiseTag } of tagPriority) {
+              const setting = settings.partOfSpeech[tag];
+              if (setting.enabled && term.has(compromiseTag)) {
+                  colorMap.set(text, setting.color);
+                  break; // Found the highest priority tag, move to next term
+              }
+          }
       });
+
+      // Fallback for numbers that compromise might miss.
+      if (settings.partOfSpeech.number.enabled) {
+          const numbers = textToAnalyze.match(/\b\d+(\.\d+)?\b/g) || [];
+          numbers.forEach(num => {
+              if (!colorMap.has(num)) {
+                  colorMap.set(num, settings.partOfSpeech.number.color);
+              }
+          });
+      }
       
       if (colorMap.size === 0) {
         return content; // No highlights to apply, return original.
