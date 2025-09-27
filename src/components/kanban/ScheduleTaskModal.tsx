@@ -37,11 +37,15 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]); // --- MODIFICATION: Add state for selected tags
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [scheduleData, setScheduleData] = useState<ScheduleData>({
-    isScheduled: true,
-    recurrenceType: 'once' as RecurrenceType,
-    selectedDate: undefined,
-    daysOfWeek: undefined,
+  const [scheduleData, setScheduleData] = useState<ScheduleData>(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return {
+      isScheduled: true,
+      recurrenceType: 'once' as RecurrenceType,
+      selectedDate: tomorrow,
+      daysOfWeek: undefined,
+    };
   });
 
   // (calculateNextOccurrenceDate function remains unchanged)
@@ -141,10 +145,12 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     setSummary('');
     setTargetColumnId('');
     setSelectedTags([]); // --- MODIFICATION: Reset tags
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     setScheduleData({
       isScheduled: true,
       recurrenceType: 'once',
-      selectedDate: undefined,
+      selectedDate: tomorrow,
       daysOfWeek: undefined,
     });
     setIsSubmitting(false);
