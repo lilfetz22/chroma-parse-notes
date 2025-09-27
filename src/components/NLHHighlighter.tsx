@@ -1,3 +1,4 @@
+// src/components/NLHHighlighter.tsx
 import { useEffect, useMemo } from 'react';
 import nlp from 'compromise';
 import { NLHSettings } from '@/types/note';
@@ -23,84 +24,74 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent 
       // 2. Protect HTML tags by replacing them with a placeholder.
       const tags: string[] = [];
       const tagPlaceholder = '___HTML_TAG_PLACEHOLDER___';
-      workingContent = workingContent.replace(/<[^>]+>/g, (match) => {
+      const textToAnalyze = workingContent.replace(/<[^>]+>/g, (match) => {
         tags.push(match);
         return tagPlaceholder;
       });
       
-      // 3. Decode any HTML entities in the remaining text to get a clean string for analysis.
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = workingContent;
-      const textToAnalyze = tempDiv.textContent || '';
-
       if (!textToAnalyze.trim()) {
         return content; // Nothing to highlight, return original content to avoid changes.
       }
 
       const doc = nlp(textToAnalyze);
 
-      // 4. Create a map of all unique words to highlight and their assigned color, using a context-aware approach.
-      const colorMap = new Map<string, string>();
-
-      // Define priority for tags. Lower index = higher priority.
-      const tagPriority: { tag: keyof typeof settings.partOfSpeech, compromiseTag: string }[] = [
-          { tag: 'properNoun', compromiseTag: '#ProperNoun' },
-          { tag: 'verb',       compromiseTag: '#Verb' },
-          { tag: 'adverb',     compromiseTag: '#Adverb' },
-          { tag: 'adjective',  compromiseTag: '#Adjective' },
-          { tag: 'number',     compromiseTag: '#Value' },
-          { tag: 'noun',       compromiseTag: '#Noun' },
+      // 4. Build the highlighted HTML string by iterating through parsed terms one by one, preserving context.
+      const priorityMap: Array<{ key: keyof typeof settings.partOfSpeech, tag: string }> = [
+          { key: 'properNoun', tag: 'ProperNoun' },
+          { key: 'verb', tag: 'Verb' },
+          { key: 'adverb', tag: 'Adverb' },
+          { key: 'adjective', tag: 'Adjective' },
+          { key: 'number', tag: 'Value' }, // Compromise uses 'Value' for numbers
+          { key: 'noun', tag: 'Noun' },
       ];
 
-      // Process each term from the parsed document, respecting context
-      doc.terms().forEach(term => {
-          const text = term.text();
-          if (!text.trim() || colorMap.has(text)) {
-              return; // Skip empty or already-colored terms
-          }
+      let highlightedText = '';
+      const sentences = doc.json();
 
-          // Find the highest-priority tag for this term
-          for (const { tag, compromiseTag } of tagPriority) {
-              const setting = settings.partOfSpeech[tag];
-              if (setting.enabled && term.has(compromiseTag)) {
-                  colorMap.set(text, setting.color);
-                  break; // Found the highest priority tag, move to next term
+      sentences.forEach(sentence => {
+          (sentence.terms as any[]).forEach(term => {
+              let color = null;
+              
+              // Don't highlight the placeholder itself
+              if (term.text === tagPlaceholder) {
+                  highlightedText += term.text;
+                  return;
               }
-          }
-      });
+              
+              // Find the highest-priority tag for this specific term
+              for (const p of priorityMap) {
+                  const setting = settings.partOfSpeech[p.key];
+                  if (setting.enabled && term.tags.includes(p.tag)) {
+                      color = setting.color;
+                      break; // Found highest priority match for this term
+                  }
+              }
+              
+              // Fallback check for numbers if compromise misses the #Value tag
+              if (!color && settings.partOfSpeech.number.enabled && /^\d+(\.\d+)?$/.test(term.text)) {
+                  color = settings.partOfSpeech.number.color;
+              }
 
-      // Fallback for numbers that compromise might miss.
-      if (settings.partOfSpeech.number.enabled) {
-          const numbers = textToAnalyze.match(/\b\d+(\.\d+)?\b/g) || [];
-          numbers.forEach(num => {
-              if (!colorMap.has(num)) {
-                  colorMap.set(num, settings.partOfSpeech.number.color);
-              }
+              // Construct the term with its original punctuation and optional highlighting
+              const termHtml = color
+                  ? `<span style="color: ${color}; font-weight: 500;">${term.text}</span>`
+                  : term.text;
+
+              highlightedText += (term.pre || '') + termHtml + (term.post || '');
           });
-      }
-      
-      if (colorMap.size === 0) {
-        return content; // No highlights to apply, return original.
-      }
-
-      // 5. Build a single, efficient regex from all words to highlight.
-      const allTerms = Array.from(colorMap.keys());
-      const escapedTerms = allTerms.map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-      escapedTerms.sort((a, b) => b.length - a.length);
-      const regex = new RegExp(`\\b(${escapedTerms.join('|')})\\b`, 'g');
-
-      // 6. Apply highlighting ONLY to the text content (which has placeholders instead of tags).
-      let highlightedText = workingContent.replace(regex, (match) => {
-        const color = colorMap.get(match);
-        return `<span style="color: ${color}; font-weight: 500;">${match}</span>`;
       });
+
+      if (!highlightedText.trim()) {
+          return content; // If processing results in empty, return original
+      }
 
       // 7. Restore the original HTML tags from the placeholders.
+      let finalHtml = highlightedText;
       tags.forEach(tag => {
-        highlightedText = highlightedText.replace(tagPlaceholder, tag);
+        finalHtml = finalHtml.replace(tagPlaceholder, tag);
       });
 
-      return highlightedText;
+      return finalHtml;
 
     } catch (error) {
       console.error('💥 NLH processing error:', error);
