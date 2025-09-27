@@ -164,22 +164,46 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
   };
 
   const isFormValid = (): boolean => {
-    if (!title.trim() || !targetColumnId) return false;
+    console.log('=== VALIDATION CHECK ===');
+    console.log('Title:', `"${title}"`, 'trimmed:', `"${title.trim()}"`, 'length:', title.trim().length);
+    console.log('Target Column ID:', targetColumnId);
+    console.log('Schedule Data:', {
+      isScheduled: scheduleData.isScheduled,
+      recurrenceType: scheduleData.recurrenceType,
+      selectedDate: scheduleData.selectedDate,
+      daysOfWeek: scheduleData.daysOfWeek
+    });
     
+    if (!title.trim() || !targetColumnId) {
+      console.log('❌ Failed basic validation - missing title or targetColumnId');
+      console.log('Title check:', !title.trim(), 'TargetColumn check:', !targetColumnId);
+      return false;
+    }
+    
+    let result = false;
     switch (scheduleData.recurrenceType) {
       case 'once':
-        return scheduleData.selectedDate !== undefined;
+        result = scheduleData.selectedDate !== undefined;
+        console.log('✓ Once validation:', result, '- selectedDate:', scheduleData.selectedDate);
+        return result;
       case 'weekly':
-        return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length === 1;
+        result = scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length === 1;
+        console.log('✓ Weekly validation:', result, '- daysOfWeek:', scheduleData.daysOfWeek);
+        return result;
       case 'custom_weekly':
-        return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0 && scheduleData.selectedDate !== undefined;
+        result = scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0 && scheduleData.selectedDate !== undefined;
+        console.log('✓ Custom weekly validation:', result, '- daysOfWeek:', scheduleData.daysOfWeek, '- selectedDate:', scheduleData.selectedDate);
+        return result;
       case 'daily':
       case 'weekdays':
       case 'bi-weekly':
       case 'monthly':
         // For recurring tasks, we need a start date
-        return scheduleData.selectedDate !== undefined;
+        result = scheduleData.selectedDate !== undefined;
+        console.log(`✓ ${scheduleData.recurrenceType} validation:`, result, '- selectedDate:', scheduleData.selectedDate);
+        return result;
       default:
+        console.log('❌ Default case - unknown recurrence type:', scheduleData.recurrenceType);
         return false;
     }
   };
