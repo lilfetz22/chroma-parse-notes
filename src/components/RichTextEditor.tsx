@@ -75,6 +75,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   
   const [isTyping, setIsTyping] = useState(false);
   const [processedContent, setProcessedContent] = useState('');
+  const [isPasted, setIsPasted] = useState(false);
   
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -113,7 +114,87 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   }, []);
 
   const handleFormat = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount || !editorRef.current) return;
+
+    const range = selection.getRangeAt(0);
+    
+    if (command === 'insertHTML' && value) {
+      // For inserting HTML (like images), use the modern approach
+      range.deleteContents();
+      const div = document.createElement('div');
+      div.innerHTML = value;
+      const fragment = document.createDocumentFragment();
+      while (div.firstChild) {
+        fragment.appendChild(div.firstChild);
+      }
+      range.insertNode(fragment);
+    } else {
+      // For formatting commands (bold, italic, underline), apply styling directly
+      if (range.collapsed) {
+        // If no text is selected, insert a placeholder and format it
+        // This gives immediate visual feedback and proper cursor placement
+        const placeholder = document.createTextNode('\u200B'); // Zero-width space
+        let wrapper: HTMLElement;
+        
+        switch (command) {
+          case 'bold':
+            wrapper = document.createElement('strong');
+            break;
+          case 'italic':
+            wrapper = document.createElement('em');
+            break;
+          case 'underline':
+            wrapper = document.createElement('u');
+            break;
+          default:
+            // For unsupported commands, just return
+            console.warn(`Command '${command}' not supported by modern implementation`);
+            return;
+        }
+        
+        wrapper.appendChild(placeholder);
+        range.insertNode(wrapper);
+        
+        // Position cursor inside the formatted element
+        const newRange = document.createRange();
+        newRange.setStartAfter(placeholder);
+        newRange.setEndAfter(placeholder);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } else {
+        // Text is selected, wrap it with appropriate formatting
+        const selectedText = range.extractContents();
+        let wrapper: HTMLElement;
+        
+        switch (command) {
+          case 'bold':
+            wrapper = document.createElement('strong');
+            break;
+          case 'italic':
+            wrapper = document.createElement('em');
+            break;
+          case 'underline':
+            wrapper = document.createElement('u');
+            break;
+          default:
+            // For unsupported commands, just reinsert the content
+            console.warn(`Command '${command}' not supported by modern implementation`);
+            range.insertNode(selectedText);
+            return;
+        }
+        
+        wrapper.appendChild(selectedText);
+        range.insertNode(wrapper);
+        
+        // Restore selection to the formatted content
+        const newRange = document.createRange();
+        newRange.selectNodeContents(wrapper);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
+    }
+    
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
@@ -121,9 +202,73 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   };
 
   const updateFormatState = () => {
-    setIsBold(document.queryCommandState('bold'));
-    setIsItalic(document.queryCommandState('italic'));
-    setIsUnderline(document.queryCommandState('underline'));
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount || !editorRef.current) {
+      setIsBold(false);
+      setIsItalic(false);
+      setIsUnderline(false);
+      return;
+    }
+
+    // Get the current element at the cursor position
+    const range = selection.getRangeAt(0);
+    const currentElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
+      ? range.commonAncestorContainer.parentElement 
+      : range.commonAncestorContainer as Element;
+
+    if (!currentElement || !editorRef.current.contains(currentElement)) {
+      setIsBold(false);
+      setIsItalic(false);
+      setIsUnderline(false);
+      return;
+    }
+
+    // Check for formatting by traversing up the DOM tree
+    let element = currentElement;
+    let isBold = false;
+    let isItalic = false;
+    let isUnderline = false;
+
+    while (element && editorRef.current.contains(element)) {
+      if (element instanceof HTMLElement) {
+        const computedStyle = window.getComputedStyle(element);
+        const tagName = element.tagName.toLowerCase();
+        
+        // Check for bold
+        if (!isBold && (
+          tagName === 'b' || 
+          tagName === 'strong' || 
+          computedStyle.fontWeight === 'bold' || 
+          parseInt(computedStyle.fontWeight) >= 600
+        )) {
+          isBold = true;
+        }
+
+        // Check for italic
+        if (!isItalic && (
+          tagName === 'i' || 
+          tagName === 'em' || 
+          computedStyle.fontStyle === 'italic'
+        )) {
+          isItalic = true;
+        }
+
+        // Check for underline
+        if (!isUnderline && (
+          tagName === 'u' || 
+          computedStyle.textDecoration.includes('underline')
+        )) {
+          isUnderline = true;
+        }
+      }
+
+      element = element.parentElement;
+      if (element === editorRef.current) break;
+    }
+
+    setIsBold(isBold);
+    setIsItalic(isItalic);
+    setIsUnderline(isUnderline);
   };
 
   useEffect(() => {
@@ -197,7 +342,36 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const handlePaste = async (e: React.ClipboardEvent) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
+    
+    // Set flag to indicate this is pasted content
+    setIsPasted(true);
+    
+    // Use modern Selection API instead of execCommand
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      
+      // Create a text node and insert it
+      const textNode = document.createTextNode(text);
+      range.insertNode(textNode);
+      
+      // Move cursor to end of inserted text
+      range.setStartAfter(textNode);
+      range.setEndAfter(textNode);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      // Trigger content change
+      if (editorRef.current) {
+        onChange(editorRef.current.innerHTML);
+      }
+    }
+    
+    // Reset the flag after a short delay to ensure NLH processes it correctly
+    setTimeout(() => {
+      setIsPasted(false);
+    }, 100);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -265,7 +439,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
           setCursorPosition(editorRef.current, cursorPosition);
       }
     }
-  }, [content]);
+  }, [content, isTyping]);
 
   useEffect(() => {
     return () => {
@@ -345,6 +519,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         enabled={nlhEnabled}
         settings={settings}
         onProcessedContent={handleProcessedContent}
+        isPasted={isPasted}
       />
 
       {/* Hidden file input */}
