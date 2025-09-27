@@ -49,20 +49,23 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
     const today = new Date();
 
     switch (scheduleData.recurrenceType) {
-      case 'once':
+      case 'once': {
         return scheduleData.selectedDate ? format(scheduleData.selectedDate, 'yyyy-MM-dd') : null;
+      }
         
-      case 'daily':
+      case 'daily': {
         return format(addDays(today, 1), 'yyyy-MM-dd');
+      }
         
-      case 'weekdays':
+      case 'weekdays': {
         let nextWeekday = addDays(today, 1);
         while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6) {
           nextWeekday = addDays(nextWeekday, 1);
         }
         return format(nextWeekday, 'yyyy-MM-dd');
+      }
         
-      case 'weekly':
+      case 'weekly': {
         if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
         const nextDayFunctions = [
           nextSunday, nextMonday, nextTuesday, nextWednesday, 
@@ -70,16 +73,19 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
         ];
         const nextOccurrence = nextDayFunctions[scheduleData.daysOfWeek[0]](today);
         return format(nextOccurrence, 'yyyy-MM-dd');
+      }
         
-      case 'bi-weekly':
+      case 'bi-weekly': {
         return format(addDays(today, 14), 'yyyy-MM-dd');
+      }
         
-      case 'monthly':
+      case 'monthly': {
         const nextMonth = new Date(today);
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         return format(nextMonth, 'yyyy-MM-dd');
+      }
         
-      case 'custom_weekly':
+      case 'custom_weekly': {
         if (!scheduleData.daysOfWeek || scheduleData.daysOfWeek.length === 0) return null;
         
         const currentDayOfWeek = today.getDay();
@@ -101,9 +107,11 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
         
         const nextCustomWeekly = addDays(today, daysUntilNext);
         return format(nextCustomWeekly, 'yyyy-MM-dd');
+      }
         
-      default:
+      default: {
         return null;
+      }
     }
   };
 
@@ -158,9 +166,15 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       case 'weekly':
         return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length === 1;
       case 'custom_weekly':
-        return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0;
+        return scheduleData.daysOfWeek !== undefined && scheduleData.daysOfWeek.length > 0 && scheduleData.selectedDate !== undefined;
+      case 'daily':
+      case 'weekdays':
+      case 'bi-weekly':
+      case 'monthly':
+        // For recurring tasks, we need a start date
+        return scheduleData.selectedDate !== undefined;
       default:
-        return true;
+        return false;
     }
   };
 
