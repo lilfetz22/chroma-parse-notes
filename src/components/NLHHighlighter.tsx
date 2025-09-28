@@ -19,6 +19,7 @@ const CHUNK_DELAY = 10; // Milliseconds between chunks
 export function NLHHighlighter({ content, enabled, settings, onProcessedContent, isPasted = false }: NLHHighlighterProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingContent, setPendingContent] = useState<string | null>(null);
+  const [previousContentLength, setPreviousContentLength] = useState(0);
 
   // Helper function to count lines in content
   const countLines = useCallback((text: string): number => {
@@ -124,7 +125,18 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
 
   // Effect to handle chunked processing for large pasted content
   useEffect(() => {
+    const currentContentLength = content.length;
+    const isContentDeleted = currentContentLength < previousContentLength;
+    
+    // Update the previous content length
+    setPreviousContentLength(currentContentLength);
+    
     if (!enabled || !settings.globalEnabled || !content.trim()) {
+      return;
+    }
+
+    // Don't process if content is being deleted or reduced in size
+    if (isContentDeleted) {
       return;
     }
 
@@ -148,7 +160,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
           onProcessedContent(content); // Return original on error
         });
     }
-  }, [content, enabled, settings.globalEnabled, isPasted, isProcessing, processContentInChunks, onProcessedContent]);
+  }, [content, enabled, settings.globalEnabled, isPasted, isProcessing, processContentInChunks, onProcessedContent, previousContentLength]);
 
   const processedContent = useMemo(() => {
     // If we're processing chunks, don't do synchronous processing

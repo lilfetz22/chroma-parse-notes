@@ -21,6 +21,9 @@ import { useNLHSettings } from '@/hooks/useNLHSettings';
 
 import { Note } from '@/types/note';
 
+// Configuration for chunked processing (should match NLHHighlighter)
+const CHUNK_SIZE_THRESHOLD = 500; // Lines threshold for chunked processing
+
 // Gets the character offset of the cursor within a container
 function getCursorPosition(parent: Node) {
   const selection = window.getSelection();
@@ -341,24 +344,63 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
 
   const handlePaste = async (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
     
-    // Set flag to indicate this is pasted content
-    setIsPasted(true);
+    // Try to get HTML content first (preserves formatting), fallback to plain text
+    let htmlContent = e.clipboardData.getData('text/html');
+    const plainText = e.clipboardData.getData('text/plain');
     
-    // Use modern Selection API instead of execCommand
+    // If no HTML content or it's just basic HTML, convert plain text to HTML with proper formatting
+    if (!htmlContent || htmlContent.trim() === plainText.trim()) {
+      // Convert plain text to HTML, preserving line breaks and paragraphs
+      htmlContent = plainText
+        .split('\n\n') // Split by double newlines (paragraphs)
+        .map(paragraph => paragraph.trim())
+        .filter(paragraph => paragraph.length > 0)
+        .map(paragraph => {
+          // Handle single line breaks within paragraphs
+          const lines = paragraph.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+          if (lines.length === 1) {
+            return `<p>${lines[0]}</p>`;
+          } else {
+            return `<p>${lines.join('<br>')}</p>`;
+          }
+        })
+        .join('');
+      
+      // If no paragraphs were created, just wrap in a single paragraph with line breaks
+      if (!htmlContent) {
+        htmlContent = `<p>${plainText.split('\n').join('<br>')}</p>`;
+      }
+    }
+    
+    // Count lines for chunked processing detection
+    const lineCount = plainText.split('\n').length;
+    
+    // Set flag to indicate this is pasted content - only for large pastes
+    if (lineCount > CHUNK_SIZE_THRESHOLD) {
+      setIsPasted(true);
+    }
+    
+    // Use modern Selection API to insert formatted content
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       range.deleteContents();
       
-      // Create a text node and insert it
-      const textNode = document.createTextNode(text);
-      range.insertNode(textNode);
+      // Create a document fragment from the HTML content
+      const div = document.createElement('div');
+      div.innerHTML = htmlContent;
+      const fragment = document.createDocumentFragment();
       
-      // Move cursor to end of inserted text
-      range.setStartAfter(textNode);
-      range.setEndAfter(textNode);
+      // Move all nodes from div to fragment
+      while (div.firstChild) {
+        fragment.appendChild(div.firstChild);
+      }
+      
+      range.insertNode(fragment);
+      
+      // Move cursor to end of inserted content
+      range.collapse(false);
       selection.removeAllRanges();
       selection.addRange(range);
       
@@ -368,10 +410,11 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       }
     }
     
-    // Reset the flag after a short delay to ensure NLH processes it correctly
+    // Reset the flag after processing is complete - longer delay for large content
+    const resetDelay = lineCount > CHUNK_SIZE_THRESHOLD ? 1000 : 100;
     setTimeout(() => {
       setIsPasted(false);
-    }, 100);
+    }, resetDelay);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -384,6 +427,11 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const handleContentChange = () => {
     if (editorRef.current) {
       setIsTyping(true);
+      
+      // Clear isPasted flag when user starts typing (not pasting)
+      if (isPasted) {
+        setIsPasted(false);
+      }
       
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
