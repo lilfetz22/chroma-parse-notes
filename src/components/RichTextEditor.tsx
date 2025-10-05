@@ -1,11 +1,30 @@
 // src/components/RichTextEditor.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-// ... other imports
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth'; 
+import { toast } from '@/hooks/use-toast';
+import { 
+  Bold, 
+  Italic, 
+  Underline, 
+  Link, 
+  Image as ImageIcon, 
+  Type,
+  Palette
+} from 'lucide-react';
 import { NLHHighlighter } from './NLHHighlighter';
 import { useNLHSettings } from '@/hooks/useNLHSettings';
+
 import { Note } from '@/types/note';
 
-// ... (getCursorPosition, setCursorPosition, CHUNK_SIZE_THRESHOLD functions remain the same) ...
+// Configuration for chunked processing (should match NLHHighlighter)
+const CHUNK_SIZE_THRESHOLD = 500; // Lines threshold for chunked processing
+
+// Gets the character offset of the cursor within a container
 function getCursorPosition(parent: Node) {
   const selection = window.getSelection();
   let charCount = -1;
@@ -46,8 +65,6 @@ function setCursorPosition(parent: Node, position: number) {
   selection?.addRange(range);
 }
 
-const CHUNK_SIZE_THRESHOLD = 500;
-
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -56,7 +73,6 @@ interface RichTextEditorProps {
   notes: Note[];
 }
 export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
-  // ... (state and refs remain the same) ...
   const { user } = useAuth();
   const { settings } = useNLHSettings();
   
@@ -77,7 +93,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
-
 
   // Effect to apply NLH-processed content and restore the cursor
   useEffect(() => {
@@ -105,9 +120,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     console.log('[Editor] Received processed content from NLHHighlighter:', JSON.stringify(processed));
     setProcessedContent(processed);
   }, []);
-  
-  // ... (handleFormat, updateFormatState, link/image handlers remain the same) ...
-    const handleFormat = (command: string, value?: string) => {
+
+  const handleFormat = (command: string, value?: string) => {
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount || !editorRef.current) return;
 
@@ -416,7 +430,6 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     }
   };
 
-
   const handleContentChange = () => {
     if (editorRef.current) {
       setIsTyping(true);
@@ -450,7 +463,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
     }
   };
 
-    const handleNoteLink = (note: Note) => {
+  const handleNoteLink = (note: Note) => {
     if (editorRef.current) {
       const link = document.createElement('a');
       link.href = `/note/${note.id}`;
@@ -468,7 +481,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       setShowNoteLinker(false);
     }
   };
-
+  
   useEffect(() => {
     if (editorRef.current && content !== editorRef.current.innerHTML && !isTyping) {
       console.log('[Editor] Syncing editor content with prop. isTyping:', isTyping);
