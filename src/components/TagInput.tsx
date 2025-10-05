@@ -30,6 +30,7 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
   const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth(); // --- MODIFICATION: Get the current user
 
@@ -61,11 +62,33 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
       );
       setFilteredTags(filtered);
       setShowSuggestions(true);
+      setHighlightedIndex(-1); // Reset highlighted index when filtering
     } else {
       setFilteredTags([]);
       setShowSuggestions(false);
+      setHighlightedIndex(-1);
     }
   }, [inputValue, availableTags, selectedTags]);
+
+  // Get all selectable options (filtered tags + create option)
+  const getSelectableOptions = () => {
+    const options: Array<{ type: 'tag' | 'create', tag?: Tag, createText?: string }> = [];
+    
+    // Add filtered tags
+    filteredTags.forEach(tag => {
+      options.push({ type: 'tag', tag });
+    });
+    
+    // Add create option if applicable
+    if (inputValue.trim() && 
+        !availableTags.some(tag => 
+          tag.name.toLowerCase() === inputValue.toLowerCase()
+        )) {
+      options.push({ type: 'create', createText: inputValue });
+    }
+    
+    return options;
+  };
 
   // --- MODIFICATION: Create a new tag in the database
   const createNewTag = async (name: string) => {
@@ -96,9 +119,10 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
         setInputValue('');
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle case where tag with the same name already exists for the user
-      if (error.code === '23505') { // Unique constraint violation
+      const dbError = error as { code?: string };
+      if (dbError.code === '23505') { // Unique constraint violation
         console.warn('Tag already exists.');
         const existingTag = availableTags.find(t => t.name.toLowerCase() === name.trim().toLowerCase());
         if (existingTag) {
@@ -116,6 +140,7 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
     onTagsChange([...selectedTags, tag]);
     setInputValue('');
     setShowSuggestions(false);
+    setHighlightedIndex(-1);
   };
 
   const removeTag = (tagToRemove: Tag) => {
@@ -123,22 +148,49 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && inputValue.trim()) {
+    const selectableOptions = getSelectableOptions();
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (showSuggestions && selectableOptions.length > 0) {
+        setHighlightedIndex(prev => 
+          prev < selectableOptions.length - 1 ? prev + 1 : 0
+        );
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (showSuggestions && selectableOptions.length > 0) {
+        setHighlightedIndex(prev => 
+          prev > 0 ? prev - 1 : selectableOptions.length - 1
+        );
+      }
+    } else if (e.key === 'Enter') {
       e.preventDefault();
       
-      const exactMatch = availableTags.find(tag => 
-        tag.name.toLowerCase() === inputValue.toLowerCase() &&
-        !selectedTags.some(selected => selected.id === tag.id)
-      );
+      if (showSuggestions && highlightedIndex >= 0 && selectableOptions[highlightedIndex]) {
+        const selectedOption = selectableOptions[highlightedIndex];
+        if (selectedOption.type === 'tag' && selectedOption.tag) {
+          selectTag(selectedOption.tag);
+        } else if (selectedOption.type === 'create' && selectedOption.createText) {
+          createNewTag(selectedOption.createText);
+        }
+      } else if (inputValue.trim()) {
+        // Fallback to original behavior when no option is highlighted
+        const exactMatch = availableTags.find(tag => 
+          tag.name.toLowerCase() === inputValue.toLowerCase() &&
+          !selectedTags.some(selected => selected.id === tag.id)
+        );
 
-      if (exactMatch) {
-        selectTag(exactMatch);
-      } else {
-        createNewTag(inputValue);
+        if (exactMatch) {
+          selectTag(exactMatch);
+        } else {
+          createNewTag(inputValue);
+        }
       }
     } else if (e.key === 'Escape') {
       setInputValue('');
       setShowSuggestions(false);
+      setHighlightedIndex(-1);
     }
   };
 
@@ -149,7 +201,10 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
   };
 
   const handleInputBlur = () => {
-    setTimeout(() => setShowSuggestions(false), 200);
+    setTimeout(() => {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
+    }, 200);
   };
 
   return (
@@ -194,12 +249,15 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
           <div className="absolute z-10 w-full mt-1 bg-card border rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredTags.length > 0 && (
               <div>
-                {filteredTags.map(tag => (
+                {filteredTags.map((tag, index) => (
                   <button
                     key={tag.id}
                     type="button"
-                    className="w-full px-3 py-2 text-left hover:bg-accent flex items-center gap-2"
+                    className={`w-full px-3 py-2 text-left hover:bg-accent flex items-center gap-2 ${
+                      highlightedIndex === index ? 'bg-accent' : ''
+                    }`}
                     onClick={() => selectTag(tag)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
                   >
                     <div className={`w-3 h-3 rounded-full ${tag.color}`} />
                     {tag.name}
@@ -215,8 +273,11 @@ export function TagInput({ selectedTags, onTagsChange, placeholder = "Type to se
              ) && (
               <button
                 type="button"
-                className="w-full px-3 py-2 text-left hover:bg-accent flex items-center gap-2 text-primary border-t"
+                className={`w-full px-3 py-2 text-left hover:bg-accent flex items-center gap-2 text-primary border-t ${
+                  highlightedIndex === filteredTags.length ? 'bg-accent' : ''
+                }`}
                 onClick={() => createNewTag(inputValue)}
+                onMouseEnter={() => setHighlightedIndex(filteredTags.length)}
                 disabled={isLoading}
               >
                 <Plus className="h-3 w-3" />
