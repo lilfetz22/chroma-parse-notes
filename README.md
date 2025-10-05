@@ -1,8 +1,8 @@
-# Chroma Notes
+# Chroma Notes 🚀
 
-A comprehensive project management and note-taking application featuring rich-text editing, natural language highlighting, Kanban boards, and task scheduling capabilities.
+A comprehensive project management and note-taking application designed to help teams and individuals manage tasks, projects, and notes efficiently. Features rich-text editing with natural language highlighting, visual Kanban boards, and advanced task scheduling capabilities.
 
-## Features
+## ✨ Key Features
 
 ### 📝 Rich Text Notes
 - **WYSIWYG Editor**: Full-featured rich text editor with support for formatting, checklists, links, and image uploads
@@ -12,18 +12,27 @@ A comprehensive project management and note-taking application featuring rich-te
 - **Global Full-text Search**: Instantly search across all your notes, regardless of which project they belong to. Selecting a search result will automatically switch you to the relevant project and open the note.
 
 ### 📋 Kanban Boards  
-- **Drag & Drop Interface**: Reorder cards and columns with smooth drag-and-drop functionality using `react-beautiful-dnd`
+- **Drag & Drop Interface**: Easily move cards between columns to update their status using `react-beautiful-dnd` 🖱️
+- **Real-time Updates**: Changes are reflected instantly for all users 🔄
 - **Two Card Types**:
   - **Simple Cards**: Standalone tasks with rich text content
   - **Linked Cards**: Cards connected to existing notes
 - **Flexible Organization**: Create custom columns and organize tasks visually
-- **Task Conversion**: Convert Kanban cards into scheduled tasks
+- **Task Conversion**: Convert Kanban cards into scheduled tasks 🔁
+- **Column Management**: Create, update, and delete columns to customize your workflow 🗂️
+- **Card Management**: Create, update, and delete cards with detailed descriptions and priorities 📝
 
 ### ⏰ Task Scheduling
-- **Scheduled Tasks**: Convert cards or create new scheduled tasks with due dates
+- **Scheduled Tasks**: Convert cards or create new scheduled tasks with due dates 🗓️
 - **Recurring Tasks**: Support for various recurrence patterns (daily, weekly, monthly, etc.)
 - **Task Management**: Dedicated page to view, edit, and manage all scheduled tasks
-- **Priority System**: Organize tasks by priority levels
+- **Priority System**: Assign priorities to cards to highlight important tasks 🚩
+- **Notifications**: Stay informed with real-time notifications 🔔
+
+### 🏷️ Tagging & Organization
+- **Tagging System**: Categorize cards using tags for better organization
+- **Priority Management**: Organize tasks by priority levels
+- **Project-specific Data**: Each project maintains its own notes, boards, and tasks
 
 ### 🏗️ Project Management
 - **Multi-project Support**: Organize notes and boards into separate projects
@@ -31,27 +40,47 @@ A comprehensive project management and note-taking application featuring rich-te
 - **Project-specific Data**: Each project maintains its own notes, boards, and tasks
 
 ### 🔐 Authentication & Security
-- **Supabase Authentication**: Secure user authentication with email/password
+- **Supabase Authentication**: Secure user authentication with email/password 🔒
 - **User Isolation**: All data is user-specific and properly isolated
 - **Session Management**: Persistent login sessions across browser restarts
 
-## Technology Stack
+### 🎨 User Experience
+- **Theming**: Customizable themes to personalize your experience
+- **Responsive Design**: Works seamlessly across desktop and mobile devices
+- **Performance Optimized**: Fast loading and smooth interactions
 
-- **Frontend**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **Backend**: Supabase (PostgreSQL database + Auth + Storage)
-- **UI Framework**: shadcn/ui components with Tailwind CSS
-- **Drag & Drop**: react-beautiful-dnd
-- **Rich Text**: TipTap editor
-- **NLP Processing**: compromise.js for natural language analysis
-- **Routing**: React Router v6
-- **State Management**: React Query + Custom hooks
+## 🛠️ Technology Stack
 
-## Getting Started
+- **Frontend:**
+  - React 18 with TypeScript
+  - React Router DOM (v6)
+  - React Query (@tanstack/react-query) for state management
+  - React Beautiful DnD for drag-and-drop functionality
+  - Radix UI (shadcn/ui components) with Tailwind CSS
+  - Lucide React for icons
+  - Sonner & React Hot Toast for notifications
+- **Backend:**
+  - Supabase (PostgreSQL database + Auth + Storage)
+  - PostgreSQL with real-time subscriptions
+- **Build Tool:**
+  - Vite for fast development and building
+- **Rich Text & NLP:**
+  - Custom contentEditable implementation for rich text editing
+  - compromise.js for natural language analysis and highlighting
+- **Other Libraries:**
+  - date-fns for date manipulation
+  - Tailwind CSS for styling
+  - TypeScript for type safety
+
+## 📦 Getting Started
+
+Follow these instructions to get the project up and running on your local machine.
 
 ### Prerequisites
-- Node.js (recommended version via [nvm](https://github.com/nvm-sh/nvm))
+
+- Node.js (>=18) - recommended version via [nvm](https://github.com/nvm-sh/nvm)
 - npm or bun package manager
+- Supabase account and project
 
 ### Installation
 
@@ -69,62 +98,151 @@ A comprehensive project management and note-taking application featuring rich-te
    ```
 
 3. **Environment Setup**
-   - Set up your Supabase project
-   - Configure environment variables for Supabase connection
-   - Run database migrations from the `supabase/migrations` folder
+   - Create a `.env` file in the root directory
+   - Set up your Supabase project and add your credentials:
+   ```env
+   VITE_SUPABASE_URL=<your_supabase_url>
+   VITE_SUPABASE_ANON_KEY=<your_supabase_anon_key>
+   ```
 
-4. **Start development server**
+4. **Database Setup**
+   - Run the SQL migrations located in the `supabase/migrations` directory against your Supabase database
+   ```bash
+   # Example using the Supabase CLI (if installed)
+   supabase db push
+   ```
+
+5. **Start development server**
    ```bash
    npm run dev
    # or
    bun dev
    ```
 
-5. **Open your browser**
+6. **Open your browser**
    Navigate to `http://localhost:5173` to view the application
 
-## Project Structure
+## 📂 Project Structure
 
 ```
-src/
-├── components/          # Reusable UI components
-│   ├── kanban/         # Kanban board specific components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-├── pages/              # Route components
-├── types/              # TypeScript type definitions
-├── lib/                # Utility functions
-└── integrations/       # External service integrations
-    └── supabase/       # Supabase client configuration
+├── supabase/               # Supabase related files
+│   ├── migrations/         # SQL migration scripts
+│   │   ├── 20250824120000_add_scheduling_to_cards.sql
+│   │   ├── 20250827000001_upgrade_process_scheduled_tasks.sql
+│   │   ├── 20250831000000_add_priority_and_tagging_system.sql
+│   │   └── 20250901000000_add_convert_card_to_scheduled_task.sql
+│   └── config.toml        # Supabase configuration
+├── src/                    # Source code
+│   ├── components/         # React components
+│   │   ├── kanban/         # Kanban specific components
+│   │   │   ├── KanbanBoardView.tsx   # Main kanban board container
+│   │   │   ├── Card.tsx              # Individual card component
+│   │   │   ├── Column.tsx            # Column component
+│   │   │   ├── CreateCardModal.tsx   # Card creation modal
+│   │   │   ├── EditCardModal.tsx     # Card editing modal
+│   │   │   └── ScheduleTaskModal.tsx # Task scheduling modal
+│   │   ├── ui/             # shadcn/ui components
+│   │   ├── RichTextEditor.tsx        # Custom rich text editor
+│   │   ├── NLHHighlighter.tsx        # Natural language highlighter
+│   │   ├── SchedulingOptions.tsx     # Task scheduling options
+│   │   ├── EditScheduledTaskModal.tsx # Scheduled task editor
+│   │   ├── TagInput.tsx              # Tag input component
+│   │   └── SettingsDialog.tsx        # Settings configuration
+│   ├── hooks/              # Custom React hooks
+│   │   ├── useKanbanBoard.tsx        # Kanban board state management
+│   │   ├── useScheduledTasks.tsx     # Scheduled tasks management
+│   │   ├── useNotes.tsx              # Notes management
+│   │   ├── useProject.tsx            # Project management
+│   │   ├── useTags.tsx               # Tags management
+│   │   └── useNLHSettings.tsx        # NLH settings management
+│   ├── pages/              # Page components
+│   │   ├── Dashboard.tsx             # Main notes interface
+│   │   ├── KanbanBoard.tsx           # Kanban board page
+│   │   ├── ScheduledTasks.tsx        # Scheduled tasks page
+│   │   ├── ProjectManagement.tsx     # Project management page
+│   │   └── Auth.tsx                  # Authentication page
+│   ├── types/              # TypeScript type definitions
+│   │   ├── note.ts                   # Note and NLH types
+│   │   ├── kanban.ts                 # Kanban board types
+│   │   ├── scheduled-task.ts         # Scheduled task types
+│   │   └── project.ts                # Project types
+│   ├── lib/                # Utility functions
+│   │   ├── utils.ts                  # General utilities
+│   │   └── recurrence-utils.ts       # Recurrence pattern utilities
+│   ├── integrations/       # External service integrations
+│   │   └── supabase/       # Supabase client configuration
+│   ├── App.tsx             # Main application component
+│   ├── main.tsx            # Entry point for React application
+│   └── index.css           # Global CSS styles
+├── vite.config.ts          # Vite configuration file
+├── tsconfig.json           # TypeScript configuration file
+├── tailwind.config.ts      # Tailwind CSS configuration
+├── package.json            # Project dependencies and scripts
+└── README.md               # This file
 ```
 
-## Key Components
+## 🔑 Key Components
 
-- **Dashboard**: Main notes interface with list and editor
-- **Kanban Board**: Visual task management with drag-and-drop
-- **Scheduled Tasks**: Task scheduling and management
-- **Project Management**: Multi-project organization
-- **Settings**: User preferences and NLH customization
+- **Dashboard**: Main notes interface with list and editor featuring Natural Language Highlighting
+- **Kanban Board**: Visual task management with drag-and-drop functionality and real-time updates
+- **Scheduled Tasks**: Advanced task scheduling and management with recurring patterns
+- **Project Management**: Multi-project organization and switching
+- **Settings**: User preferences and NLH customization with color pickers
+- **Rich Text Editor**: Custom contentEditable implementation with formatting tools
+- **Natural Language Highlighter**: Real-time part-of-speech highlighting using compromise.js
 
-## Database Schema
+## 📊 Database Schema
 
-The application uses Supabase with the following main tables:
-- `notes` - Rich text notes with NLH settings
-- `projects` - Project organization
-- `boards` - Kanban boards
-- `columns` - Board columns
-- `cards` - Kanban cards (simple and linked)
-- `scheduled_tasks` - Task scheduling with recurrence
-- `user_settings` - User preferences and NLH configuration
+The application uses Supabase PostgreSQL with the following main tables:
 
-## Contributing
+- **`notes`** - Rich text notes with NLH settings and project association
+- **`projects`** - Project organization and user workspace management
+- **`boards`** - Kanban boards linked to projects
+- **`columns`** - Board columns with positioning and titles
+- **`cards`** - Kanban cards (simple and linked) with scheduling, priority, and tagging
+- **`scheduled_tasks`** - Task scheduling with recurrence patterns and activation tracking
+- **`user_settings`** - User preferences and NLH configuration settings
+- **`tags`** - Tagging system for better organization
+
+### Key Database Features:
+- **Real-time subscriptions** for live updates across users
+- **RLS (Row Level Security)** for user data isolation
+- **Stored procedures** for complex operations like task scheduling
+- **Full-text search** capabilities across notes content
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a new branch for your feature or bug fix (`git checkout -b feature/amazing-feature`)
+3. Make your changes and commit them with descriptive messages (`git commit -m 'Add amazing feature'`)
+4. Push your changes to your fork (`git push origin feature/amazing-feature`)
+5. Submit a pull request
 
-## License
+### Development Guidelines
+- Follow TypeScript best practices and maintain type safety
+- Use the existing UI component library (shadcn/ui) for consistency
+- Write clear, descriptive commit messages
+- Test your changes thoroughly before submitting
+- Update documentation as needed
+
+## 📝 License
 
 This project is available under the MIT License.
+
+## 📬 Contact
+
+If you have any questions or suggestions, feel free to open an issue or reach out through the repository.
+
+## 💖 Acknowledgments
+
+- Built with [React](https://reactjs.org/) and [TypeScript](https://www.typescriptlang.org/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Natural language processing powered by [compromise.js](https://github.com/spencermountain/compromise)
+- Database and authentication by [Supabase](https://supabase.com/)
+- Drag and drop functionality by [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd)
+
+---
+
+Thank you for checking out Chroma Notes! We hope it helps you manage your tasks and projects more effectively. ✨
