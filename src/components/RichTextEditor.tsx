@@ -1,30 +1,11 @@
 // src/components/RichTextEditor.tsx
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from '@/hooks/use-toast';
-import { 
-  Bold, 
-  Italic, 
-  Underline, 
-  Link, 
-  Image as ImageIcon, 
-  Type,
-  Palette
-} from 'lucide-react';
+// ... other imports
 import { NLHHighlighter } from './NLHHighlighter';
 import { useNLHSettings } from '@/hooks/useNLHSettings';
-
 import { Note } from '@/types/note';
 
-// Configuration for chunked processing (should match NLHHighlighter)
-const CHUNK_SIZE_THRESHOLD = 500; // Lines threshold for chunked processing
-
-// Gets the character offset of the cursor within a container
+// ... (getCursorPosition, setCursorPosition, CHUNK_SIZE_THRESHOLD functions remain the same) ...
 function getCursorPosition(parent: Node) {
   const selection = window.getSelection();
   let charCount = -1;
@@ -65,6 +46,8 @@ function setCursorPosition(parent: Node, position: number) {
   selection?.addRange(range);
 }
 
+const CHUNK_SIZE_THRESHOLD = 500;
+
 interface RichTextEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -73,6 +56,7 @@ interface RichTextEditorProps {
   notes: Note[];
 }
 export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
+  // ... (state and refs remain the same) ...
   const { user } = useAuth();
   const { settings } = useNLHSettings();
   
@@ -94,10 +78,15 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
 
+
   // Effect to apply NLH-processed content and restore the cursor
   useEffect(() => {
     // Only apply changes if NLH is enabled, user is not typing, and new content is available
     if (editorRef.current && processedContent && processedContent !== content && !isTyping && nlhEnabled && settings.globalEnabled) {
+      console.log('[Editor] Applying processed content from NLH.');
+      console.log('  -> Current content prop:', JSON.stringify(content));
+      console.log('  -> New processed content:', JSON.stringify(processedContent));
+      
       const selection = window.getSelection();
       let cursorPosition = -1;
       if (selection?.focusNode && editorRef.current.contains(selection.focusNode)) {
@@ -113,10 +102,12 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   }, [processedContent, content, isTyping, nlhEnabled, settings.globalEnabled]);
 
   const handleProcessedContent = useCallback((processed: string) => {
+    console.log('[Editor] Received processed content from NLHHighlighter:', JSON.stringify(processed));
     setProcessedContent(processed);
   }, []);
-
-  const handleFormat = (command: string, value?: string) => {
+  
+  // ... (handleFormat, updateFormatState, link/image handlers remain the same) ...
+    const handleFormat = (command: string, value?: string) => {
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount || !editorRef.current) return;
 
@@ -406,6 +397,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       
       // Trigger content change
       if (editorRef.current) {
+        console.log('[Editor] onPaste caused a change. Reading innerHTML:', JSON.stringify(editorRef.current.innerHTML));
         onChange(editorRef.current.innerHTML);
       }
     }
@@ -423,6 +415,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       handleImageUpload(file);
     }
   };
+
 
   const handleContentChange = () => {
     if (editorRef.current) {
@@ -442,6 +435,8 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       }, 500);
 
       const currentHTML = editorRef.current.innerHTML;
+      console.log('[Editor] onInput fired. Reading innerHTML:', JSON.stringify(currentHTML));
+
       
       let newContent = currentHTML.replace(/\[ \]/g, '<input type="checkbox" class="mr-2" />');
       newContent = newContent.replace(/\[x\]/g, '<input type="checkbox" checked class="mr-2" />');
@@ -449,12 +444,13 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       if (newContent.slice(-2) === '[[') {
         setShowNoteLinker(true);
       }
-
+      
+      console.log('[Editor] Calling onChange with content:', JSON.stringify(newContent));
       onChange(newContent);
     }
   };
 
-  const handleNoteLink = (note: Note) => {
+    const handleNoteLink = (note: Note) => {
     if (editorRef.current) {
       const link = document.createElement('a');
       link.href = `/note/${note.id}`;
@@ -472,9 +468,13 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
       setShowNoteLinker(false);
     }
   };
-  
+
   useEffect(() => {
     if (editorRef.current && content !== editorRef.current.innerHTML && !isTyping) {
+      console.log('[Editor] Syncing editor content with prop. isTyping:', isTyping);
+      console.log('  -> Editor innerHTML:', JSON.stringify(editorRef.current.innerHTML));
+      console.log('  -> New content prop:', JSON.stringify(content));
+      
       const selection = window.getSelection();
       let cursorPosition = -1;
       if (selection?.focusNode && editorRef.current.contains(selection.focusNode)) {

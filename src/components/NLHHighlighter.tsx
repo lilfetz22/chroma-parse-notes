@@ -16,6 +16,18 @@ const CHUNK_SIZE_THRESHOLD = 500; // Lines threshold for chunked processing
 const CHUNK_SIZE = 100; // Lines per chunk
 const CHUNK_DELAY = 10; // Milliseconds between chunks
 
+// Helper function to decode HTML entities
+const decodeHtmlEntities = (text: string): string => {
+  if (typeof window === 'undefined') {
+    // Basic fallback for non-browser environments, though this component is client-side.
+    return text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+  }
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+};
+
+
 export function NLHHighlighter({ content, enabled, settings, onProcessedContent, isPasted = false }: NLHHighlighterProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingContent, setPendingContent] = useState<string | null>(null);
@@ -28,6 +40,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
 
   // Process content in chunks for large pasted text
   const processContentInChunks = useCallback(async (text: string): Promise<string> => {
+    console.log('[NLH CHUNK] Starting chunk processing.');
     const lines = text.split('\n');
     const chunks: string[] = [];
     
@@ -41,18 +54,26 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
     // Process each chunk with a delay between them
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
+      console.log(`[NLH CHUNK] Processing chunk ${i + 1}/${chunks.length}`);
       
       // Use the same processing logic as the main function
       try {
         const spanRegex = /<span style="color: (.*?); font-weight: 500;">(.*?)<\/span>/g;
         const workingContent = chunk.replace(spanRegex, '$2');
+        
+        // **FIX:** Decode HTML entities before sending to NLP
+        const decodedContent = decodeHtmlEntities(workingContent);
+        console.log(`[NLH CHUNK ${i+1}] Decoded content:`, { from: workingContent, to: decodedContent });
+
 
         const tags: string[] = [];
         const tagPlaceholder = '___HTML_TAG_PLACEHOLDER___';
-        const textToAnalyze = workingContent.replace(/<[^>]+>/g, (match) => {
+        // **FIX:** Use the decoded content for analysis
+        const textToAnalyze = decodedContent.replace(/<[^>]+>/g, (match) => {
           tags.push(match);
           return tagPlaceholder;
         });
+        console.log(`[NLH CHUNK ${i+1}] Text for NLP:`, textToAnalyze);
         
         if (!textToAnalyze.trim()) {
           processedChunks.push(chunk);
@@ -106,6 +127,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
             tags.forEach(tag => {
               finalHtml = finalHtml.replace(tagPlaceholder, tag);
             });
+            console.log(`[NLH CHUNK ${i+1}] Final generated HTML:`, finalHtml);
             processedChunks.push(finalHtml);
           }
         }
@@ -163,20 +185,26 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
   }, [content, enabled, settings.globalEnabled, isPasted, isProcessing, processContentInChunks, onProcessedContent, previousContentLength]);
 
   const processedContent = useMemo(() => {
+    console.log('[NLH SYNC] Processing content...');
     // If we're processing chunks, don't do synchronous processing
     if (isProcessing || pendingContent) {
+      console.log('[NLH SYNC] Skipping: Chunk processing is active.');
       return content;
     }
     
     if (!enabled || !settings.globalEnabled || !content.trim()) {
+      console.log('[NLH SYNC] Skipping: Not enabled or content is empty.');
       return content;
     }
 
     // Check if this is large pasted content that should be chunked
     const lineCount = content.split('\n').length;
     if (isPasted && lineCount > CHUNK_SIZE_THRESHOLD) {
+      console.log('[NLH SYNC] Skipping: Large pasted content, deferring to chunk processor.');
       return content; // Let the effect handle chunked processing
     }
+    
+    console.log('[NLH SYNC] Received content:', JSON.stringify(content));
 
     // For normal content (not large pasted content), process synchronously
     try {
@@ -184,13 +212,20 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
       const spanRegex = /<span style="color: (.*?); font-weight: 500;">(.*?)<\/span>/g;
       const workingContent = content.replace(spanRegex, '$2');
 
+      // **FIX:** Decode HTML entities before text analysis to prevent re-encoding issues.
+      const decodedContent = decodeHtmlEntities(workingContent);
+      console.log('[NLH SYNC] Decoded content for analysis:', { from: workingContent, to: decodedContent });
+
+
       // 2. Protect HTML tags by replacing them with a placeholder.
       const tags: string[] = [];
       const tagPlaceholder = '___HTML_TAG_PLACEHOLDER___';
-      const textToAnalyze = workingContent.replace(/<[^>]+>/g, (match) => {
+      // **FIX:** Use the decoded content for analysis
+      const textToAnalyze = decodedContent.replace(/<[^>]+>/g, (match) => {
         tags.push(match);
         return tagPlaceholder;
       });
+      console.log('[NLH SYNC] Text for NLP:', JSON.stringify(textToAnalyze));
       
       if (!textToAnalyze.trim()) {
         return content; // Nothing to highlight, return original content to avoid changes.
@@ -253,7 +288,8 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
       tags.forEach(tag => {
         finalHtml = finalHtml.replace(tagPlaceholder, tag);
       });
-
+      
+      console.log('[NLH SYNC] Final generated HTML:', JSON.stringify(finalHtml));
       return finalHtml;
 
     } catch (error) {
@@ -265,6 +301,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
   useEffect(() => {
     // Only call the update function if the content has actually changed to avoid unnecessary re-renders.
     if (processedContent !== content) {
+      console.log('[NLH] Processed content is different. Calling onProcessedContent.');
       onProcessedContent(processedContent);
     }
   }, [processedContent, onProcessedContent, content]);
