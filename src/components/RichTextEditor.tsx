@@ -350,73 +350,67 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   const handlePaste = async (e: React.ClipboardEvent) => {
     e.preventDefault();
     
-    // Try to get HTML content first (preserves formatting), fallback to plain text
     let htmlContent = e.clipboardData.getData('text/html');
     const plainText = e.clipboardData.getData('text/plain');
+
+    console.log('[Editor] Original pasted HTML:', htmlContent);
     
-    // If no HTML content or it's just basic HTML, convert plain text to HTML with proper formatting
+    // --- START: Sanitize pasted HTML ---
+    if (htmlContent) {
+      // Use the browser's built-in parser to safely manipulate the HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      
+      // Select all elements in the parsed document
+      doc.body.querySelectorAll('*').forEach(el => {
+        // Remove all style attributes to prevent foreign styling
+        el.removeAttribute('style');
+        // Remove class attributes to prevent foreign CSS classes
+        el.removeAttribute('class');
+        // You could also remove other attributes if needed
+      });
+
+      // We only want the inner content, not the full <html><body> structure
+      htmlContent = doc.body.innerHTML;
+      console.log('[Editor] Sanitized pasted HTML:', htmlContent);
+    }
+    // --- END: Sanitize pasted HTML ---
+    
     if (!htmlContent || htmlContent.trim() === plainText.trim()) {
-      // Convert plain text to HTML, preserving line breaks and paragraphs
       htmlContent = plainText
-        .split('\n\n') // Split by double newlines (paragraphs)
-        .map(paragraph => paragraph.trim())
-        .filter(paragraph => paragraph.length > 0)
-        .map(paragraph => {
-          // Handle single line breaks within paragraphs
-          const lines = paragraph.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-          if (lines.length === 1) {
-            return `<p>${lines[0]}</p>`;
-          } else {
-            return `<p>${lines.join('<br>')}</p>`;
-          }
-        })
+        .split('\n\n')
+        .map(p => p.trim()).filter(p => p.length > 0)
+        .map(p => `<p>${p.split('\n').join('<br>')}</p>`)
         .join('');
       
-      // If no paragraphs were created, just wrap in a single paragraph with line breaks
       if (!htmlContent) {
         htmlContent = `<p>${plainText.split('\n').join('<br>')}</p>`;
       }
     }
     
-    // Count lines for chunked processing detection
     const lineCount = plainText.split('\n').length;
-    
-    // Set flag to indicate this is pasted content - only for large pastes
     if (lineCount > CHUNK_SIZE_THRESHOLD) {
       setIsPasted(true);
     }
     
-    // Use modern Selection API to insert formatted content
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       range.deleteContents();
       
-      // Create a document fragment from the HTML content
-      const div = document.createElement('div');
-      div.innerHTML = htmlContent;
-      const fragment = document.createDocumentFragment();
-      
-      // Move all nodes from div to fragment
-      while (div.firstChild) {
-        fragment.appendChild(div.firstChild);
-      }
-      
+      const fragment = range.createContextualFragment(htmlContent);
       range.insertNode(fragment);
       
-      // Move cursor to end of inserted content
       range.collapse(false);
       selection.removeAllRanges();
       selection.addRange(range);
       
-      // Trigger content change
       if (editorRef.current) {
         console.log('[Editor] onPaste caused a change. Reading innerHTML:', JSON.stringify(editorRef.current.innerHTML));
         onChange(editorRef.current.innerHTML);
       }
     }
     
-    // Reset the flag after processing is complete - longer delay for large content
     const resetDelay = lineCount > CHUNK_SIZE_THRESHOLD ? 1000 : 100;
     setTimeout(() => {
       setIsPasted(false);
