@@ -26,3 +26,4 @@ dist-ssr
 .cursorrules
 error log.txt
 supabase/.temp/*
+.github/copilot-instructions.md
