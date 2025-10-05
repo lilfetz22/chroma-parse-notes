@@ -73,7 +73,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
 
   // Process content in chunks for large pasted text
   const processContentInChunks = useCallback(async (text: string): Promise<string> => {
-    console.log('[NLH CHUNK] Starting chunk processing.');
+    // console.log('[NLH CHUNK] Starting chunk processing.');
     const lines = text.split('\n');
     const chunks: string[] = [];
     
@@ -87,14 +87,14 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
     // Process each chunk with a delay between them
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      console.log(`[NLH CHUNK] Processing chunk ${i + 1}/${chunks.length}`);
+      // console.log(`[NLH CHUNK] Processing chunk ${i + 1}/${chunks.length}`);
       
       try {
         // **FIX:** Use the new robust cleanup function
         const workingContent = cleanupHighlights(chunk);
 
         const decodedContent = decodeHtmlEntities(workingContent);
-        console.log(`[NLH CHUNK ${i+1}] Decoded content:`, { from: workingContent, to: decodedContent });
+        // console.log(`[NLH CHUNK ${i+1}] Decoded content:`, { from: workingContent, to: decodedContent });
 
         const tags: string[] = [];
         const tagPlaceholder = '___HTML_TAG_PLACEHOLDER___';
@@ -102,7 +102,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
           tags.push(match);
           return tagPlaceholder;
         });
-        console.log(`[NLH CHUNK ${i+1}] Text for NLP:`, textToAnalyze);
+        // console.log(`[NLH CHUNK ${i+1}] Text for NLP:`, textToAnalyze);
         
         if (!textToAnalyze.trim()) {
           processedChunks.push(chunk);
@@ -156,7 +156,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
             tags.forEach(tag => {
               finalHtml = finalHtml.replace(tagPlaceholder, tag);
             });
-            console.log(`[NLH CHUNK ${i+1}] Final generated HTML:`, finalHtml);
+            // console.log(`[NLH CHUNK ${i+1}] Final generated HTML:`, finalHtml);
             processedChunks.push(finalHtml);
           }
         }
@@ -211,32 +211,32 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
   }, [content, enabled, settings.globalEnabled, isPasted, isProcessing, processContentInChunks, onProcessedContent, previousContentLength]);
 
   const processedContent = useMemo(() => {
-    console.log('[NLH SYNC] Processing content...');
+    // console.log('[NLH SYNC] Processing content...');
     if (isProcessing || pendingContent) {
-      console.log('[NLH SYNC] Skipping: Chunk processing is active.');
+      // console.log('[NLH SYNC] Skipping: Chunk processing is active.');
       return content;
     }
     
     if (!enabled || !settings.globalEnabled || !content.trim()) {
-      console.log('[NLH SYNC] Skipping: Not enabled or content is empty.');
+      // console.log('[NLH SYNC] Skipping: Not enabled or content is empty.');
       return content;
     }
 
     const lineCount = content.split('\n').length;
     if (isPasted && lineCount > CHUNK_SIZE_THRESHOLD) {
-      console.log('[NLH SYNC] Skipping: Large pasted content, deferring to chunk processor.');
+      // console.log('[NLH SYNC] Skipping: Large pasted content, deferring to chunk processor.');
       return content;
     }
     
-    console.log('[NLH SYNC] Received content:', JSON.stringify(content));
+    // console.log('[NLH SYNC] Received content:', JSON.stringify(content));
 
     try {
       // **FIX:** Use the new robust cleanup function instead of the fragile regex.
       const workingContent = cleanupHighlights(content);
-      console.log('[NLH SYNC] Content after cleanup:', JSON.stringify(workingContent));
+      // console.log('[NLH SYNC] Content after cleanup:', JSON.stringify(workingContent));
 
       const decodedContent = decodeHtmlEntities(workingContent);
-      console.log('[NLH SYNC] Decoded content for analysis:', { from: workingContent, to: decodedContent });
+      // console.log('[NLH SYNC] Decoded content for analysis:', { from: workingContent, to: decodedContent });
 
       const tags: string[] = [];
       const tagPlaceholder = '___HTML_TAG_PLACEHOLDER___';
@@ -244,7 +244,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
         tags.push(match);
         return tagPlaceholder;
       });
-      console.log('[NLH SYNC] Text for NLP:', JSON.stringify(textToAnalyze));
+      // console.log('[NLH SYNC] Text for NLP:', JSON.stringify(textToAnalyze));
       
       if (!textToAnalyze.trim()) {
         return content;
@@ -302,7 +302,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
         finalHtml = finalHtml.replace(tagPlaceholder, tag);
       });
       
-      console.log('[NLH SYNC] Final generated HTML:', JSON.stringify(finalHtml));
+      // console.log('[NLH SYNC] Final generated HTML:', JSON.stringify(finalHtml));
       return finalHtml;
 
     } catch (error) {
@@ -313,7 +313,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
 
   useEffect(() => {
     if (processedContent !== content) {
-      console.log('[NLH] Processed content is different. Calling onProcessedContent.');
+      // console.log('[NLH] Processed content is different. Calling onProcessedContent.');
       onProcessedContent(processedContent);
     }
   }, [processedContent, onProcessedContent, content]);
