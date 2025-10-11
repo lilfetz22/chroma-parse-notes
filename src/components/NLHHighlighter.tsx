@@ -1,7 +1,19 @@
 // src/components/NLHHighlighter.tsx
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import nlp from 'compromise';
 import { NLHSettings } from '@/types/note';
+
+// Type definitions for compromise.js
+interface CompromiseTerm {
+  text: string;
+  tags: string[];
+  pre?: string;
+  post?: string;
+}
+
+interface CompromiseSentence {
+  terms: CompromiseTerm[];
+}
 
 interface NLHHighlighterProps {
   content: string;
@@ -9,12 +21,14 @@ interface NLHHighlighterProps {
   settings: NLHSettings;
   onProcessedContent: (content: string) => void;
   isPasted?: boolean; // Flag to indicate if content was pasted
+  isTyping?: boolean; // Flag to indicate if user is actively typing
 }
 
 // Configuration for chunked processing
 const CHUNK_SIZE_THRESHOLD = 500; // Lines threshold for chunked processing
 const CHUNK_SIZE = 100; // Lines per chunk
 const CHUNK_DELAY = 10; // Milliseconds between chunks
+const NLH_DEBOUNCE_DELAY = 300; // Milliseconds to wait after typing stops before processing
 
 // Helper function to decode HTML entities
 const decodeHtmlEntities = (text: string): string => {
@@ -61,10 +75,45 @@ const cleanupHighlights = (html: string): string => {
 };
 
 
-export function NLHHighlighter({ content, enabled, settings, onProcessedContent, isPasted = false }: NLHHighlighterProps) {
+export function NLHHighlighter({ content, enabled, settings, onProcessedContent, isPasted = false, isTyping = false }: NLHHighlighterProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingContent, setPendingContent] = useState<string | null>(null);
   const [previousContentLength, setPreviousContentLength] = useState(0);
+  const [debouncedContent, setDebouncedContent] = useState(content);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce content changes when user is typing
+  useEffect(() => {
+    if (isTyping) {
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      // Set new timer to update debounced content after delay
+      debounceTimerRef.current = setTimeout(() => {
+        setDebouncedContent(content);
+      }, NLH_DEBOUNCE_DELAY);
+      
+      return () => {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+      };
+    } else {
+      // If not typing, update immediately (for paste operations, etc.)
+      setDebouncedContent(content);
+    }
+  }, [content, isTyping]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Helper function to count lines in content
   const countLines = useCallback((text: string): number => {
@@ -118,10 +167,10 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
           ];
 
           let highlightedText = '';
-          const sentences = doc.json();
+          const sentences = doc.json() as CompromiseSentence[];
 
           sentences.forEach(sentence => {
-              (sentence.terms as any[]).forEach(term => {
+              sentence.terms.forEach(term => {
                   let color = null;
                   
                   if (term.text === tagPlaceholder) {
@@ -175,13 +224,12 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
 
   // Effect to handle chunked processing for large pasted content
   useEffect(() => {
-    // ... this effect remains the same ...
-    const currentContentLength = content.length;
+    const currentContentLength = debouncedContent.length;
     const isContentDeleted = currentContentLength < previousContentLength;
     
     setPreviousContentLength(currentContentLength);
     
-    if (!enabled || !settings.globalEnabled || !content.trim()) {
+    if (!enabled || !settings.globalEnabled || !debouncedContent.trim()) {
       return;
     }
 
@@ -189,13 +237,13 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
       return;
     }
 
-    const lineCount = content.split('\n').length;
+    const lineCount = debouncedContent.split('\n').length;
     
     if (isPasted && lineCount > CHUNK_SIZE_THRESHOLD && !isProcessing) {
       setIsProcessing(true);
-      setPendingContent(content);
+      setPendingContent(debouncedContent);
       
-      processContentInChunks(content)
+      processContentInChunks(debouncedContent)
         .then((result) => {
           setIsProcessing(false);
           setPendingContent(null);
@@ -205,34 +253,34 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
           console.error('💥 NLH chunked processing error:', error);
           setIsProcessing(false);
           setPendingContent(null);
-          onProcessedContent(content);
+          onProcessedContent(debouncedContent);
         });
     }
-  }, [content, enabled, settings.globalEnabled, isPasted, isProcessing, processContentInChunks, onProcessedContent, previousContentLength]);
+  }, [debouncedContent, enabled, settings.globalEnabled, isPasted, isProcessing, processContentInChunks, onProcessedContent, previousContentLength]);
 
   const processedContent = useMemo(() => {
     // console.log('[NLH SYNC] Processing content...');
-    if (isProcessing || pendingContent) {
-      // console.log('[NLH SYNC] Skipping: Chunk processing is active.');
-      return content;
+    if (isProcessing || pendingContent || isTyping) {
+      // console.log('[NLH SYNC] Skipping: Chunk processing is active or user is typing.');
+      return debouncedContent;
     }
     
-    if (!enabled || !settings.globalEnabled || !content.trim()) {
+    if (!enabled || !settings.globalEnabled || !debouncedContent.trim()) {
       // console.log('[NLH SYNC] Skipping: Not enabled or content is empty.');
-      return content;
+      return debouncedContent;
     }
 
-    const lineCount = content.split('\n').length;
+    const lineCount = debouncedContent.split('\n').length;
     if (isPasted && lineCount > CHUNK_SIZE_THRESHOLD) {
       // console.log('[NLH SYNC] Skipping: Large pasted content, deferring to chunk processor.');
-      return content;
+      return debouncedContent;
     }
     
-    // console.log('[NLH SYNC] Received content:', JSON.stringify(content));
+    // console.log('[NLH SYNC] Received content:', JSON.stringify(debouncedContent));
 
     try {
       // **FIX:** Use the new robust cleanup function instead of the fragile regex.
-      const workingContent = cleanupHighlights(content);
+      const workingContent = cleanupHighlights(debouncedContent);
       // console.log('[NLH SYNC] Content after cleanup:', JSON.stringify(workingContent));
 
       const decodedContent = decodeHtmlEntities(workingContent);
@@ -247,7 +295,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
       // console.log('[NLH SYNC] Text for NLP:', JSON.stringify(textToAnalyze));
       
       if (!textToAnalyze.trim()) {
-        return content;
+        return debouncedContent;
       }
 
       const doc = nlp(textToAnalyze);
@@ -262,10 +310,10 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
       ];
 
       let highlightedText = '';
-      const sentences = doc.json();
+      const sentences = doc.json() as CompromiseSentence[];
 
       sentences.forEach(sentence => {
-          (sentence.terms as any[]).forEach(term => {
+          sentence.terms.forEach(term => {
               let color = null;
               
               if (term.text === tagPlaceholder) {
@@ -294,7 +342,7 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
       });
 
       if (!highlightedText.trim()) {
-          return content;
+          return debouncedContent;
       }
 
       let finalHtml = highlightedText;
@@ -307,16 +355,16 @@ export function NLHHighlighter({ content, enabled, settings, onProcessedContent,
 
     } catch (error) {
       console.error('💥 NLH processing error:', error);
-      return content;
+      return debouncedContent;
     }
-  }, [content, enabled, settings, isPasted, isProcessing, pendingContent]);
+  }, [debouncedContent, enabled, settings, isPasted, isProcessing, pendingContent, isTyping]);
 
   useEffect(() => {
-    if (processedContent !== content) {
+    if (processedContent !== debouncedContent) {
       // console.log('[NLH] Processed content is different. Calling onProcessedContent.');
       onProcessedContent(processedContent);
     }
-  }, [processedContent, onProcessedContent, content]);
+  }, [processedContent, onProcessedContent, debouncedContent]);
 
   return null;
 }

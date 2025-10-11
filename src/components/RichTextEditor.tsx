@@ -71,8 +71,9 @@ interface RichTextEditorProps {
   nlhEnabled: boolean;
   onNLHToggle: () => void;
   notes: Note[];
+  isUserTyping?: boolean; // External typing indicator from parent
 }
-export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, notes, isUserTyping = false }: RichTextEditorProps) {
   const { user } = useAuth();
   const { settings } = useNLHSettings();
   
@@ -97,7 +98,14 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
   // Effect to apply NLH-processed content and restore the cursor
   useEffect(() => {
     // Only apply changes if NLH is enabled, user is not typing, and new content is available
-    if (editorRef.current && processedContent && processedContent !== content && !isTyping && nlhEnabled && settings.globalEnabled) {
+    // Also skip if we don't have processed content yet to avoid replacing during initial render
+    if (editorRef.current && 
+        processedContent && 
+        processedContent !== content && 
+        !isTyping && 
+        nlhEnabled && 
+        settings.globalEnabled &&
+        processedContent !== editorRef.current.innerHTML) {
       console.log('[Editor] Applying processed content from NLH.');
       console.log('  -> Current content prop:', JSON.stringify(content));
       console.log('  -> New processed content:', JSON.stringify(processedContent));
@@ -437,9 +445,10 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         clearTimeout(typingTimeoutRef.current);
       }
       
+      // Shorter timeout for typing detection, longer for onChange calls
       typingTimeoutRef.current = setTimeout(() => {
         setIsTyping(false);
-      }, 500);
+      }, 300);
 
       const currentHTML = editorRef.current.innerHTML;
       console.log('[Editor] onInput fired. Reading innerHTML:', JSON.stringify(currentHTML));
@@ -575,6 +584,7 @@ export function RichTextEditor({ content, onChange, nlhEnabled, onNLHToggle, not
         settings={settings}
         onProcessedContent={handleProcessedContent}
         isPasted={isPasted}
+        isTyping={isTyping || isUserTyping}
       />
 
       {/* Hidden file input */}

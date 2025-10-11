@@ -22,18 +22,27 @@ const Dashboard = () => {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [noteTitle, setNoteTitle] = useState('');
   const [noteContent, setNoteContent] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
-  // Auto-save timer
+  // Auto-save timer with optimized debouncing
   useEffect(() => {
     if (selectedNote && (noteTitle !== selectedNote.title || noteContent !== selectedNote.content)) {
+      setIsTyping(true);
+      
+      // Use a longer delay for auto-save to prevent excessive database calls
       const timer = setTimeout(() => {
+        setIsTyping(false);
         updateNote(selectedNote.id, {
           title: noteTitle || 'Untitled Note',
           content: noteContent,
         });
-      }, 1000);
+      }, 2000); // Increased from 1000ms to 2000ms
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+      };
+    } else {
+      setIsTyping(false);
     }
   }, [noteTitle, noteContent, selectedNote, updateNote]);
 
@@ -66,7 +75,7 @@ const Dashboard = () => {
         navigate(location.pathname, { replace: true, state: {} });
       }
     }
-  }, [notes, location.state, navigate]);
+  }, [notes, location.state, location.pathname, navigate]);
 
   if (!user) {
     return <Navigate to="/auth" replace />;
@@ -103,6 +112,14 @@ const Dashboard = () => {
     }
   };
 
+  const handleContentChange = (newContent: string) => {
+    setNoteContent(newContent);
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNoteTitle(e.target.value);
+  };
+
   const handleSignOut = async () => {
     const { error } = await signOut();
     if (error) {
@@ -136,7 +153,7 @@ const Dashboard = () => {
               <div className="p-4 border-b bg-card flex-shrink-0">
                 <Input
                   value={noteTitle}
-                  onChange={(e) => setNoteTitle(e.target.value)}
+                  onChange={handleTitleChange}
                   placeholder="Note title..."
                   className="text-lg font-semibold border-none px-0 focus-visible:ring-0 min-w-0"
                 />
@@ -144,10 +161,11 @@ const Dashboard = () => {
               <div className="flex-1 min-h-0">
                 <RichTextEditor
                   content={noteContent}
-                  onChange={setNoteContent}
+                  onChange={handleContentChange}
                   nlhEnabled={selectedNote.nlh_enabled}
                   onNLHToggle={handleNLHToggle}
                   notes={notes}
+                  isUserTyping={isTyping}
                 />
               </div>
             </>
