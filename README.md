@@ -10,6 +10,9 @@ A comprehensive project management and note-taking application designed to help 
 - **Customizable Highlighting**: Per-note and global settings with customizable colors for each part of speech
 - **Auto-save**: All changes are automatically saved to the database
 - **Global Full-text Search**: Instantly search across all your notes, regardless of which project they belong to. Selecting a search result will automatically switch you to the relevant project and open the note.
+- **Export Options**: Export notes in multiple formats:
+  - **TXT Export**: Download notes as plain text files with all formatting stripped for compatibility
+  - **PDF Export**: Generate high-quality PDF files that preserve all formatting, colors, and NLH highlighting
 
 ### 📋 Kanban Boards  
 - **Drag & Drop Interface**: Easily move cards between columns to update their status using `react-beautiful-dnd` 🖱️

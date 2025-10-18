@@ -11,8 +11,9 @@ import { RichTextEditor } from '@/components/RichTextEditor';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { AppHeader } from '@/components/AppHeader';
 import { Note } from '@/types/note';
-import { LogOut, FileText, Kanban } from 'lucide-react';
+import { LogOut, FileText, Kanban, Download, FileDigit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { exportNoteAsTxt, exportNoteAsPdf, getNoteContentElement } from '@/lib/export-utils';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -131,6 +132,66 @@ const Dashboard = () => {
     }
   };
 
+  const handleExportAsTxt = () => {
+    if (!selectedNote) {
+      toast({
+        variant: "destructive",
+        title: "No note selected",
+        description: "Please select a note to export.",
+      });
+      return;
+    }
+
+    try {
+      exportNoteAsTxt(noteContent, noteTitle || selectedNote.title);
+      toast({
+        title: "Export successful",
+        description: "Note exported as TXT file.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Export failed",
+        description: "Failed to export note as TXT file.",
+      });
+    }
+  };
+
+  const handleExportAsPdf = async () => {
+    if (!selectedNote) {
+      toast({
+        variant: "destructive",
+        title: "No note selected",
+        description: "Please select a note to export.",
+      });
+      return;
+    }
+
+    try {
+      const contentElement = getNoteContentElement();
+      if (!contentElement) {
+        toast({
+          variant: "destructive",
+          title: "Export failed",
+          description: "Could not find note content for PDF export.",
+        });
+        return;
+      }
+
+      await exportNoteAsPdf(contentElement, noteTitle || selectedNote.title);
+      toast({
+        title: "Export successful",
+        description: "Note exported as PDF file.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Export failed",
+        description: "Failed to export note as PDF file.",
+      });
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background">
       <AppHeader />
@@ -151,12 +212,34 @@ const Dashboard = () => {
           {selectedNote ? (
             <>
               <div className="p-4 border-b bg-card flex-shrink-0">
-                <Input
-                  value={noteTitle}
-                  onChange={handleTitleChange}
-                  placeholder="Note title..."
-                  className="text-lg font-semibold border-none px-0 focus-visible:ring-0 min-w-0"
-                />
+                <div className="flex items-center justify-between gap-4">
+                  <Input
+                    value={noteTitle}
+                    onChange={handleTitleChange}
+                    placeholder="Note title..."
+                    className="text-lg font-semibold border-none px-0 focus-visible:ring-0 min-w-0 flex-1"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportAsTxt}
+                      className="flex items-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Export TXT
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportAsPdf}
+                      className="flex items-center gap-2"
+                    >
+                      <FileDigit className="h-4 w-4" />
+                      Export PDF
+                    </Button>
+                  </div>
+                </div>
               </div>
               <div className="flex-1 min-h-0">
                 <RichTextEditor
