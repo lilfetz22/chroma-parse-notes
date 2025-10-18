@@ -6,10 +6,11 @@ import { CreateCardModal } from './CreateCardModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Loader2, Clock, Calendar } from 'lucide-react';
+import { Plus, Loader2, Clock, Calendar, Plane, PlaneTakeoff } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ScheduleTaskModal } from './ScheduleTaskModal';
 import { useScheduledTasks } from '@/hooks/useScheduledTasks';
+import { useUserSettings } from '@/hooks/useUserSettings';
 import { useNavigate } from 'react-router-dom';
 import { Card as CardType } from '@/types/kanban';
 
@@ -36,6 +37,7 @@ export function KanbanBoardView() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   const { createScheduledTask } = useScheduledTasks();
+  const { isOnVacation, toggleVacationMode, loading: vacationLoading } = useUserSettings();
 
   // Memoize sorted cards to avoid repeated sorting
   const sortedCardsByColumn = useMemo(() => {
@@ -214,6 +216,23 @@ export function KanbanBoardView() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">{boardData.board.title}</h1>
         <div className="flex items-center gap-2">
+          <Button
+            variant={isOnVacation ? 'default' : 'outline'}
+            onClick={toggleVacationMode}
+            disabled={vacationLoading}
+            className="flex items-center gap-2"
+          >
+            {isOnVacation ? (
+              <PlaneTakeoff className="w-4 h-4" />
+            ) : (
+              <Plane className="w-4 h-4" />
+            )}
+            {vacationLoading
+              ? 'Updating...'
+              : isOnVacation
+              ? "I'm Back!"
+              : 'Going on Vacation'}
+          </Button>
           <Button
             variant="outline"
             onClick={() => navigate('/schedule')}
