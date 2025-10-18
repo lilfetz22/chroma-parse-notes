@@ -321,6 +321,10 @@ export type Database = {
         Args: { project_id_param?: string }
         Returns: Json
       }
+      global_search: {
+        Args: { search_term: string }
+        Returns: Json[]
+      }
       process_scheduled_tasks: {
         Args: Record<PropertyKey, never>
         Returns: undefined

@@ -65,9 +65,9 @@ const Dashboard = () => {
     }
   }, [notes, selectedNote]);
 
-  // Handle navigation from Kanban board to specific note
+  // Handle navigation from Kanban board or global search to specific note
   useEffect(() => {
-    const state = location.state as { selectedNoteId?: string };
+    const state = location.state as { selectedNoteId?: string; projectId?: string };
     if (state?.selectedNoteId && notes.length > 0) {
       const note = notes.find(n => n.id === state.selectedNoteId);
       if (note) {
