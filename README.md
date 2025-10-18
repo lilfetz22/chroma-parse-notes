@@ -14,6 +14,15 @@ A comprehensive project management and note-taking application designed to help 
   - **TXT Export**: Download notes as plain text files with all formatting stripped for compatibility
   - **PDF Export**: Generate high-quality PDF files that preserve all formatting, colors, and NLH highlighting
 
+### 🔍 Global Search
+- **Universal Search**: Comprehensive search functionality accessible from any page with `⌘K` keyboard shortcut
+- **Cross-Content Search**: Search across projects, notes, and Kanban cards simultaneously with full-text search capabilities
+- **Command Palette Interface**: Clean, modern search interface with grouped results and keyboard navigation
+- **Intelligent Results**: Search results grouped by type (Projects, Notes, Cards) with highlighted preview snippets
+- **Smart Navigation**: Automatically switches to the correct project and opens the selected content
+- **Real-time Search**: Debounced input with live results and loading states
+- **Performance Optimized**: PostgreSQL full-text search with GIN indexes for fast query execution
+
 ### 📋 Kanban Boards  
 - **Drag & Drop Interface**: Easily move cards between columns to update their status using `react-beautiful-dnd` 🖱️
 - **Real-time Updates**: Changes are reflected instantly for all users 🔄
@@ -56,7 +65,16 @@ A comprehensive project management and note-taking application designed to help 
 
 ## 🆕 Recent Updates
 
-### Time-Based Task Scheduling (Latest)
+### Global Search Feature (Latest)
+- **Universal Access**: New search button in header accessible from any page
+- **Keyboard Shortcuts**: Press `⌘K` (Cmd+K) to instantly open the search interface
+- **Cross-Platform Search**: Search across all projects, notes, and Kanban cards simultaneously
+- **Command Palette UI**: Clean, modern interface with grouped results and keyboard navigation
+- **Highlighted Previews**: Search terms are highlighted in result snippets for quick scanning
+- **Smart Navigation**: Clicking results automatically switches projects and opens the correct content
+- **Performance Optimized**: Uses PostgreSQL full-text search with GIN indexes for fast results
+
+### Time-Based Task Scheduling
 - **Custom Time Setting**: Set specific times for when scheduled tasks should appear on your Kanban board
 - **Midnight Default**: All new and existing scheduled tasks default to midnight (00:00) for consistent behavior
 - **Time Display**: View scheduled times in HH:MM format on the scheduled tasks page
@@ -146,7 +164,8 @@ Follow these instructions to get the project up and running on your local machin
 │   │   ├── 20250827000001_upgrade_process_scheduled_tasks.sql
 │   │   ├── 20250831000000_add_priority_and_tagging_system.sql
 │   │   ├── 20250901000000_add_convert_card_to_scheduled_task.sql
-│   │   └── 20251018000000_add_scheduled_time_to_tasks.sql
+│   │   ├── 20251018000000_add_scheduled_time_to_tasks.sql
+│   │   └── 20251018000001_add_global_search_function.sql
 │   └── config.toml        # Supabase configuration
 ├── src/                    # Source code
 │   ├── components/         # React components
@@ -158,6 +177,7 @@ Follow these instructions to get the project up and running on your local machin
 │   │   │   ├── EditCardModal.tsx     # Card editing modal
 │   │   │   └── ScheduleTaskModal.tsx # Task scheduling modal
 │   │   ├── ui/             # shadcn/ui components
+│   │   ├── AppHeader.tsx             # Header with global search integration
 │   │   ├── RichTextEditor.tsx        # Custom rich text editor
 │   │   ├── NLHHighlighter.tsx        # Natural language highlighter
 │   │   ├── SchedulingOptions.tsx     # Task scheduling options with time picker
@@ -170,6 +190,8 @@ Follow these instructions to get the project up and running on your local machin
 │   │   ├── useNotes.tsx              # Notes management
 │   │   ├── useProject.tsx            # Project management
 │   │   ├── useTags.tsx               # Tags management
+│   │   ├── useGlobalSearch.tsx       # Global search functionality
+│   │   ├── use-debounce.tsx          # Debouncing utility hook
 │   │   └── useNLHSettings.tsx        # NLH settings management
 │   ├── pages/              # Page components
 │   │   ├── Dashboard.tsx             # Main notes interface
@@ -202,6 +224,7 @@ Follow these instructions to get the project up and running on your local machin
 - **Dashboard**: Main notes interface with list and editor featuring Natural Language Highlighting
 - **Kanban Board**: Visual task management with drag-and-drop functionality and real-time updates
 - **Scheduled Tasks**: Advanced task scheduling and management with recurring patterns and customizable times
+- **Global Search**: Universal search interface accessible via header button or `⌘K` shortcut with cross-content search capabilities
 - **Project Management**: Multi-project organization and switching
 - **Settings**: User preferences and NLH customization with color pickers
 - **Rich Text Editor**: Custom contentEditable implementation with formatting tools
@@ -224,8 +247,9 @@ The application uses Supabase PostgreSQL with the following main tables:
 ### Key Database Features:
 - **Real-time subscriptions** for live updates across users
 - **RLS (Row Level Security)** for user data isolation
-- **Stored procedures** for complex operations like task scheduling
-- **Full-text search** capabilities across notes content
+- **Stored procedures** for complex operations like task scheduling and global search
+- **Full-text search** capabilities with GIN indexes for optimal performance across notes, projects, and cards
+- **Search ranking** using PostgreSQL's ts_rank for relevance-based result ordering
 
 ## 🤝 Contributing
 
