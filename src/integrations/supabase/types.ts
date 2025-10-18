@@ -295,6 +295,68 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          user_id: string
+          nlh_global_enabled: boolean
+          nlh_highlight_noun: boolean
+          nlh_highlight_verb: boolean
+          nlh_highlight_adverb: boolean
+          nlh_highlight_adjective: boolean
+          nlh_highlight_number: boolean
+          nlh_highlight_proper_noun: boolean
+          nlh_color_noun: string
+          nlh_color_verb: string
+          nlh_color_adverb: string
+          nlh_color_adjective: string
+          nlh_color_number: string
+          nlh_color_proper_noun: string
+          is_on_vacation: boolean
+        }
+        Insert: {
+          user_id: string
+          nlh_global_enabled?: boolean
+          nlh_highlight_noun?: boolean
+          nlh_highlight_verb?: boolean
+          nlh_highlight_adverb?: boolean
+          nlh_highlight_adjective?: boolean
+          nlh_highlight_number?: boolean
+          nlh_highlight_proper_noun?: boolean
+          nlh_color_noun?: string
+          nlh_color_verb?: string
+          nlh_color_adverb?: string
+          nlh_color_adjective?: string
+          nlh_color_number?: string
+          nlh_color_proper_noun?: string
+          is_on_vacation?: boolean
+        }
+        Update: {
+          user_id?: string
+          nlh_global_enabled?: boolean
+          nlh_highlight_noun?: boolean
+          nlh_highlight_verb?: boolean
+          nlh_highlight_adverb?: boolean
+          nlh_highlight_adjective?: boolean
+          nlh_highlight_number?: boolean
+          nlh_highlight_proper_noun?: boolean
+          nlh_color_noun?: string
+          nlh_color_verb?: string
+          nlh_color_adverb?: string
+          nlh_color_adjective?: string
+          nlh_color_number?: string
+          nlh_color_proper_noun?: string
+          is_on_vacation?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
