@@ -23,11 +23,13 @@ A comprehensive project management and note-taking application designed to help 
 - **Card Management**: Create, update, and delete cards with detailed descriptions and priorities 📝
 
 ### ⏰ Task Scheduling
-- **Scheduled Tasks**: Convert cards or create new scheduled tasks with due dates 🗓️
-- **Recurring Tasks**: Support for various recurrence patterns (daily, weekly, monthly, etc.)
-- **Task Management**: Dedicated page to view, edit, and manage all scheduled tasks
+- **Scheduled Tasks**: Convert cards or create new scheduled tasks with due dates and specific times 🗓️
+- **Time-based Scheduling**: Set specific times for tasks to appear on your Kanban board (defaults to midnight) ⏰
+- **Recurring Tasks**: Support for various recurrence patterns (daily, weekly, monthly, etc.) with customizable times
+- **Task Management**: Dedicated page to view, edit, and manage all scheduled tasks with time display
 - **Priority System**: Assign priorities to cards to highlight important tasks 🚩
-- **Notifications**: Stay informed with real-time notifications 🔔
+- **Flexible Time Control**: Edit and adjust scheduled times for existing tasks
+- **Timezone Awareness**: All times respect the user's current timezone settings 🌍
 
 ### 🏷️ Tagging & Organization
 - **Tagging System**: Categorize cards using tags for better organization
@@ -48,6 +50,16 @@ A comprehensive project management and note-taking application designed to help 
 - **Theming**: Customizable themes to personalize your experience
 - **Responsive Design**: Works seamlessly across desktop and mobile devices
 - **Performance Optimized**: Fast loading and smooth interactions
+
+## 🆕 Recent Updates
+
+### Time-Based Task Scheduling (Latest)
+- **Custom Time Setting**: Set specific times for when scheduled tasks should appear on your Kanban board
+- **Midnight Default**: All new and existing scheduled tasks default to midnight (00:00) for consistent behavior
+- **Time Display**: View scheduled times in HH:MM format on the scheduled tasks page
+- **Time Editing**: Edit and adjust times for existing scheduled tasks
+- **Comprehensive Coverage**: Time selection available in all scheduling interfaces (card conversion, new task creation, scheduled task editing)
+- **User Timezone Support**: All times respect the user's current timezone
 
 ## 🛠️ Technology Stack
 
@@ -130,7 +142,8 @@ Follow these instructions to get the project up and running on your local machin
 │   │   ├── 20250824120000_add_scheduling_to_cards.sql
 │   │   ├── 20250827000001_upgrade_process_scheduled_tasks.sql
 │   │   ├── 20250831000000_add_priority_and_tagging_system.sql
-│   │   └── 20250901000000_add_convert_card_to_scheduled_task.sql
+│   │   ├── 20250901000000_add_convert_card_to_scheduled_task.sql
+│   │   └── 20251018000000_add_scheduled_time_to_tasks.sql
 │   └── config.toml        # Supabase configuration
 ├── src/                    # Source code
 │   ├── components/         # React components
@@ -144,8 +157,8 @@ Follow these instructions to get the project up and running on your local machin
 │   │   ├── ui/             # shadcn/ui components
 │   │   ├── RichTextEditor.tsx        # Custom rich text editor
 │   │   ├── NLHHighlighter.tsx        # Natural language highlighter
-│   │   ├── SchedulingOptions.tsx     # Task scheduling options
-│   │   ├── EditScheduledTaskModal.tsx # Scheduled task editor
+│   │   ├── SchedulingOptions.tsx     # Task scheduling options with time picker
+│   │   ├── EditScheduledTaskModal.tsx # Scheduled task editor with time control
 │   │   ├── TagInput.tsx              # Tag input component
 │   │   └── SettingsDialog.tsx        # Settings configuration
 │   ├── hooks/              # Custom React hooks
@@ -185,11 +198,12 @@ Follow these instructions to get the project up and running on your local machin
 
 - **Dashboard**: Main notes interface with list and editor featuring Natural Language Highlighting
 - **Kanban Board**: Visual task management with drag-and-drop functionality and real-time updates
-- **Scheduled Tasks**: Advanced task scheduling and management with recurring patterns
+- **Scheduled Tasks**: Advanced task scheduling and management with recurring patterns and customizable times
 - **Project Management**: Multi-project organization and switching
 - **Settings**: User preferences and NLH customization with color pickers
 - **Rich Text Editor**: Custom contentEditable implementation with formatting tools
 - **Natural Language Highlighter**: Real-time part-of-speech highlighting using compromise.js
+- **Time Scheduler**: Comprehensive time-based task scheduling with timezone support
 
 ## 📊 Database Schema
 
@@ -200,7 +214,7 @@ The application uses Supabase PostgreSQL with the following main tables:
 - **`boards`** - Kanban boards linked to projects
 - **`columns`** - Board columns with positioning and titles
 - **`cards`** - Kanban cards (simple and linked) with scheduling, priority, and tagging
-- **`scheduled_tasks`** - Task scheduling with recurrence patterns and activation tracking
+- **`scheduled_tasks`** - Task scheduling with recurrence patterns, activation tracking, and time-based scheduling
 - **`user_settings`** - User preferences and NLH configuration settings
 - **`tags`** - Tagging system for better organization
 
