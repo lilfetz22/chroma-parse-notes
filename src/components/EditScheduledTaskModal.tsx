@@ -44,6 +44,7 @@ export function EditScheduledTaskModal({
     recurrenceType: task.recurrence_type,
     selectedDate: new Date(task.next_occurrence_date),
     daysOfWeek: task.days_of_week || undefined,
+    selectedTime: task.scheduled_time ? task.scheduled_time.substring(0, 5) : '00:00', // Convert HH:MM:SS to HH:MM, default to midnight
   });
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export function EditScheduledTaskModal({
         recurrenceType: task.recurrence_type,
         selectedDate: new Date(task.next_occurrence_date),
         daysOfWeek: task.days_of_week || undefined,
+        selectedTime: task.scheduled_time ? task.scheduled_time.substring(0, 5) : '00:00', // Convert HH:MM:SS to HH:MM, default to midnight
       });
 
       // --- MODIFICATION START: Fetch full tag objects from tag_ids
@@ -108,6 +110,7 @@ export function EditScheduledTaskModal({
         recurrence_type: scheduleData.recurrenceType,
         days_of_week: scheduleData.daysOfWeek,
         next_occurrence_date: scheduleData.selectedDate.toISOString().split('T')[0],
+        scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00', // Convert HH:MM to HH:MM:SS, default to midnight
         priority: priority,
         tag_ids: selectedTags.map(tag => tag.id), // --- MODIFICATION: Add tag IDs to update payload
       };

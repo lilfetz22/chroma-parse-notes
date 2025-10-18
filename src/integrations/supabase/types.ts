@@ -232,6 +232,7 @@ export type Database = {
           priority: number
           project_id: string
           recurrence_type: string
+          scheduled_time: string
           summary: string | null
           tag_ids: string[] | null
           target_column_id: string
@@ -246,6 +247,7 @@ export type Database = {
           priority?: number
           project_id: string
           recurrence_type: string
+          scheduled_time?: string
           summary?: string | null
           tag_ids?: string[] | null
           target_column_id: string
@@ -260,6 +262,7 @@ export type Database = {
           priority?: number
           project_id?: string
           recurrence_type?: string
+          scheduled_time?: string
           summary?: string | null
           tag_ids?: string[] | null
           target_column_id?: string
@@ -298,12 +301,20 @@ export type Database = {
     }
     Functions: {
       convert_card_to_scheduled_task: {
-        Args: {
-          p_card_id: string
-          p_days_of_week: number[]
-          p_next_occurrence_date: string
-          p_recurrence_type: string
-        }
+        Args:
+          | {
+              p_card_id: string
+              p_days_of_week: number[]
+              p_next_occurrence_date: string
+              p_recurrence_type: string
+            }
+          | {
+              p_card_id: string
+              p_days_of_week: number[]
+              p_next_occurrence_date: string
+              p_recurrence_type: string
+              p_scheduled_time?: string
+            }
         Returns: Json
       }
       get_board_details: {

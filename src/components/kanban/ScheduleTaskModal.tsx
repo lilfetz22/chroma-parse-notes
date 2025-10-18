@@ -45,6 +45,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       recurrenceType: 'once' as RecurrenceType,
       selectedDate: tomorrow,
       daysOfWeek: undefined,
+      selectedTime: '00:00', // Default to midnight
     };
   });
 
@@ -135,6 +136,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       recurrence_type: scheduleData.recurrenceType,
       days_of_week: scheduleData.daysOfWeek,
       next_occurrence_date: nextOccurrenceDate,
+      scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00', // Convert HH:MM to HH:MM:SS, default to midnight
       tag_ids: selectedTags.map(tag => tag.id), // --- MODIFICATION: Add tag IDs
     };
 
@@ -152,6 +154,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       recurrenceType: 'once',
       selectedDate: tomorrow,
       daysOfWeek: undefined,
+      selectedTime: '00:00', // Reset to default midnight
     });
     setIsSubmitting(false);
     onClose();

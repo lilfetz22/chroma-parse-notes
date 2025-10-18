@@ -193,7 +193,7 @@ export function ScheduledTasks() {
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Next: {format(new Date(task.next_occurrence_date), 'MMM d, yyyy')}
+                        Next: {format(new Date(task.next_occurrence_date), 'MMM d, yyyy')} at {task.scheduled_time ? task.scheduled_time.substring(0, 5) : '00:00'}
                       </div>
                     </div>
                     <Separator className="my-3" />

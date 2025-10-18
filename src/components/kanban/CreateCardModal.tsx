@@ -51,6 +51,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
     recurrenceType: 'once' as RecurrenceType,
     selectedDate: undefined,
     daysOfWeek: undefined,
+    selectedTime: '00:00', // Default to midnight
   });
 
   // Load user's notes for linking
@@ -97,6 +98,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
           recurrence_type: scheduleData.recurrenceType,
           days_of_week: scheduleData.daysOfWeek,
           next_occurrence_date: nextOccurrenceDate,
+          scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00',
           priority: priority,
           tag_ids: selectedTags.map(tag => tag.id),
         };
@@ -209,6 +211,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
       recurrenceType: 'once',
       selectedDate: undefined,
       daysOfWeek: undefined,
+      selectedTime: '00:00', // Reset to default midnight
     });
     onClose();
   };

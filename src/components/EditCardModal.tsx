@@ -55,6 +55,7 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
     recurrenceType: 'once',
     selectedDate: undefined,
     daysOfWeek: undefined,
+    selectedTime: '00:00', // Default to midnight
   });
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
         recurrenceType: 'once',
         selectedDate: undefined,
         daysOfWeek: undefined,
+        selectedTime: '00:00', // Default to midnight
       });
     }
   }, [isOpen, card]);
@@ -121,6 +123,7 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
         p_recurrence_type: scheduleData.recurrenceType,
         p_days_of_week: scheduleData.daysOfWeek || null,
         p_next_occurrence_date: scheduleData.selectedDate.toISOString().split('T')[0],
+        p_scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00',
       });
 
       if (error) throw error;

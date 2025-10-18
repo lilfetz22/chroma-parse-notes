@@ -1,8 +1,9 @@
 import React from 'react';
 import { format, addDays, nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ export interface ScheduleData {
   recurrenceType: RecurrenceType;
   selectedDate?: Date;
   daysOfWeek?: number[];
+  selectedTime?: string; // Time in HH:MM format
 }
 
 interface SchedulingOptionsProps {
@@ -97,6 +99,13 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
     onScheduleChange({
       ...scheduleData,
       daysOfWeek: newDays.length > 0 ? newDays : undefined,
+    });
+  };
+
+  const handleTimeChange = (time: string) => {
+    onScheduleChange({
+      ...scheduleData,
+      selectedTime: time,
     });
   };
 
@@ -285,6 +294,24 @@ export function SchedulingOptions({ scheduleData, onScheduleChange }: Scheduling
               </Popover>
             </div>
           )}
+
+          {/* Time picker for all scheduled tasks */}
+          <div className="space-y-2">
+            <Label htmlFor="scheduled-time">Time</Label>
+            <div className="flex items-center space-x-2">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <Input
+                id="scheduled-time"
+                type="time"
+                value={scheduleData.selectedTime || '00:00'}
+                onChange={(e) => handleTimeChange(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Time when the task should appear on your Kanban board (midnight EST default)
+            </p>
+          </div>
         </div>
       )}
     </div>
