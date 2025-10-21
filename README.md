@@ -82,6 +82,13 @@ A comprehensive project management and note-taking application designed to help 
 - **Comprehensive Coverage**: Time selection available in all scheduling interfaces (card conversion, new task creation, scheduled task editing)
 - **User Timezone Support**: All times respect the user's current timezone
 
+### Enhanced Timezone Support (Latest)
+- **Automatic Detection**: Browser timezone is automatically detected when converting cards to scheduled tasks
+- **IANA Timezone Standards**: Uses standard timezone identifiers (e.g., 'America/New_York', 'Europe/London')
+- **Robust Fallback**: Gracefully falls back to UTC if timezone detection fails
+- **Database Integration**: Scheduled timestamps stored as timezone-aware values in UTC for consistency
+- **No Configuration Required**: Works seamlessly without user setup or timezone selection
+
 ## 🛠️ Technology Stack
 
 - **Frontend:**
