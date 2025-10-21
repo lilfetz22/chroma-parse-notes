@@ -26,6 +26,7 @@ import { ScheduledTask } from '@/types/scheduled-task';
 import { Tag } from '@/types/kanban'; // --- MODIFICATION: Import Tag
 import { supabase } from '@/integrations/supabase/client'; // --- MODIFICATION: Import supabase
 import { useAuth } from '@/hooks/useAuth'; // --- MODIFICATION: Import useAuth
+import { extractTimeFromTimestamp } from '@/lib/utils';
 
 export function ScheduledTasks() {
   const { user } = useAuth(); // --- MODIFICATION: Get user for fetching tags
@@ -193,7 +194,7 @@ export function ScheduledTasks() {
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Next: {format(new Date(task.next_occurrence_date), 'MMM d, yyyy')} at {task.scheduled_time ? task.scheduled_time.substring(0, 5) : '00:00'}
+                        Next: {format(new Date(task.next_occurrence_date), 'MMM d, yyyy')} at {extractTimeFromTimestamp(task.scheduled_timestamp)}
                       </div>
                     </div>
                     <Separator className="my-3" />

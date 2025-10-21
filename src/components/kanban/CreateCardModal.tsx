@@ -17,6 +17,7 @@ import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions'
 import { CreateScheduledTaskData, RecurrenceType } from '@/types/scheduled-task';
 import { useScheduledTasks } from '@/hooks/useScheduledTasks';
 import { TagInput } from '@/components/TagInput';
+import { createScheduledTimestamp } from '@/lib/utils';
 
 interface CreateCardModalProps {
   isOpen: boolean;
@@ -98,7 +99,7 @@ export function CreateCardModal({ isOpen, onClose, columnId, onCardCreated }: Cr
           recurrence_type: scheduleData.recurrenceType,
           days_of_week: scheduleData.daysOfWeek,
           next_occurrence_date: nextOccurrenceDate,
-          scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00',
+          scheduled_timestamp: createScheduledTimestamp(scheduleData.selectedDate, scheduleData.selectedTime || '00:00'),
           priority: priority,
           tag_ids: selectedTags.map(tag => tag.id),
         };

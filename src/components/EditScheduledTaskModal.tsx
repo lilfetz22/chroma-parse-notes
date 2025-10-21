@@ -16,6 +16,7 @@ import { Column, Tag } from '@/types/kanban'; // --- MODIFICATION: Import Tag
 import { toast } from '@/hooks/use-toast';
 import { TagInput } from './TagInput'; // --- MODIFICATION: Import TagInput
 import { supabase } from '@/integrations/supabase/client'; // --- MODIFICATION: Import supabase client
+import { extractTimeFromTimestamp, createScheduledTimestamp } from '@/lib/utils';
 
 interface EditScheduledTaskModalProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ export function EditScheduledTaskModal({
     recurrenceType: task.recurrence_type,
     selectedDate: new Date(task.next_occurrence_date),
     daysOfWeek: task.days_of_week || undefined,
-    selectedTime: task.scheduled_time ? task.scheduled_time.substring(0, 5) : '00:00', // Convert HH:MM:SS to HH:MM, default to midnight
+    selectedTime: extractTimeFromTimestamp(task.scheduled_timestamp), // Extract time from timestamp
   });
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function EditScheduledTaskModal({
         recurrenceType: task.recurrence_type,
         selectedDate: new Date(task.next_occurrence_date),
         daysOfWeek: task.days_of_week || undefined,
-        selectedTime: task.scheduled_time ? task.scheduled_time.substring(0, 5) : '00:00', // Convert HH:MM:SS to HH:MM, default to midnight
+        selectedTime: extractTimeFromTimestamp(task.scheduled_timestamp), // Extract time from timestamp
       });
 
       // --- MODIFICATION START: Fetch full tag objects from tag_ids
@@ -110,7 +111,7 @@ export function EditScheduledTaskModal({
         recurrence_type: scheduleData.recurrenceType,
         days_of_week: scheduleData.daysOfWeek,
         next_occurrence_date: scheduleData.selectedDate.toISOString().split('T')[0],
-        scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00', // Convert HH:MM to HH:MM:SS, default to midnight
+        scheduled_timestamp: createScheduledTimestamp(scheduleData.selectedDate, scheduleData.selectedTime || '00:00'), // Create full timestamp
         priority: priority,
         tag_ids: selectedTags.map(tag => tag.id), // --- MODIFICATION: Add tag IDs to update payload
       };

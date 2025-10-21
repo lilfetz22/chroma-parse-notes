@@ -49,7 +49,6 @@ export function useScheduledTasks() {
         .insert({
           user_id: user.id,
           project_id: activeProject.id,
-          scheduled_time: taskData.scheduled_time || '00:00:00', // Default to midnight if not provided
           ...taskData,
         })
         .select()
