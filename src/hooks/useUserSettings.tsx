@@ -55,7 +55,7 @@ export function useUserSettings() {
     } finally {
       setLoading(false);
     }
-  }, [user, supabase]);
+  }, [user]);
 
   useEffect(() => {
     fetchSettings();
@@ -92,7 +92,7 @@ export function useUserSettings() {
     } finally {
       setLoading(false);
     }
-  }, [user, supabase, isOnVacation]);
+  }, [user, isOnVacation]);
 
   return { isOnVacation, toggleVacationMode, loading, error, refetch: fetchSettings };
 }
