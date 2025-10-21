@@ -18,6 +18,7 @@ import { SchedulingOptions, ScheduleData } from '@/components/SchedulingOptions'
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { getUserTimezone } from '@/lib/utils';
 
 interface EditCardModalProps {
   isOpen: boolean;
@@ -124,6 +125,7 @@ export function EditCardModal({ isOpen, onClose, card, columns, onSave, onConver
         p_days_of_week: scheduleData.daysOfWeek || null,
         p_next_occurrence_date: scheduleData.selectedDate.toISOString().split('T')[0],
         p_scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00',
+        p_user_timezone: getUserTimezone(),
       });
 
       if (error) throw error;
