@@ -107,8 +107,10 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
         }
         
         if (nextScheduledDay === null) {
-          daysUntilNext = (7 - currentDayOfWeek) + scheduleData.daysOfWeek[0];
-          nextScheduledDay = scheduleData.daysOfWeek[0];
+          // Find the minimum day in the array for next week
+          const minDay = Math.min(...scheduleData.daysOfWeek);
+          daysUntilNext = (7 - currentDayOfWeek) + minDay;
+          nextScheduledDay = minDay;
         }
         
         const nextCustomWeekly = addDays(today, daysUntilNext);
