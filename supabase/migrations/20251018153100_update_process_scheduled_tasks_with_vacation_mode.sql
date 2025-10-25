@@ -54,7 +54,7 @@ BEGIN
       WHEN 'daily' THEN
         -- Update daily tasks to next day
         UPDATE public.scheduled_tasks
-        SET next_occurrence_date = (task_record.next_occurrence_date + INTERVAL '1 day')::date
+        SET next_occurrence_date = task_record.next_occurrence_date + INTERVAL '1 day'
         WHERE id = task_record.id;
 
       WHEN 'weekdays' THEN
@@ -62,13 +62,13 @@ BEGIN
         current_day_of_week := EXTRACT(DOW FROM task_record.next_occurrence_date);
         IF current_day_of_week = 5 THEN -- Friday
           -- Next occurrence is Monday (+3 days)
-          new_next_occurrence := task_record.next_occurrence_date + 3;
+          new_next_occurrence := task_record.next_occurrence_date + INTERVAL '3 days';
         ELSIF current_day_of_week = 6 THEN -- Saturday
           -- Next occurrence is Monday (+2 days)
-          new_next_occurrence := task_record.next_occurrence_date + 2;
+          new_next_occurrence := task_record.next_occurrence_date + INTERVAL '2 days';
         ELSE
           -- Next occurrence is next day
-          new_next_occurrence := task_record.next_occurrence_date + 1;
+          new_next_occurrence := task_record.next_occurrence_date + INTERVAL '1 day';
         END IF;
 
         UPDATE public.scheduled_tasks
@@ -78,33 +78,34 @@ BEGIN
       WHEN 'weekly' THEN
         -- Update weekly tasks to same day next week
         UPDATE public.scheduled_tasks
-        SET next_occurrence_date = (task_record.next_occurrence_date + INTERVAL '7 days')::date
+        SET next_occurrence_date = task_record.next_occurrence_date + INTERVAL '7 days'
         WHERE id = task_record.id;
 
       WHEN 'bi-weekly' THEN
         -- Update bi-weekly tasks to same day in 2 weeks
         UPDATE public.scheduled_tasks
-        SET next_occurrence_date = (task_record.next_occurrence_date + INTERVAL '14 days')::date
+        SET next_occurrence_date = task_record.next_occurrence_date + INTERVAL '14 days'
         WHERE id = task_record.id;
 
       WHEN 'monthly' THEN
-        -- Simplified monthly logic: Postgres handles month rollovers correctly
-        -- Jan 31 + 1 month = Feb 28/29 automatically
-        new_next_occurrence := (task_record.next_occurrence_date + INTERVAL '1 month')::date;
+        -- Add robust logic for adding one month, handling rollovers correctly
+        new_next_occurrence := (
+          date_trunc('month', task_record.next_occurrence_date) +
+          INTERVAL '1 month' +
+          (EXTRACT(DAY FROM task_record.next_occurrence_date) - 1) * INTERVAL '1 day'
+        );
+
+        -- If the resulting date is invalid (e.g., Jan 31 -> Feb 31),
+        -- truncate to the last day of the target month
+        IF new_next_occurrence > (date_trunc('month', new_next_occurrence) + INTERVAL '1 month' - INTERVAL '1 day') THEN
+          new_next_occurrence := date_trunc('month', new_next_occurrence) + INTERVAL '1 month' - INTERVAL '1 day';
+        END IF;
 
         UPDATE public.scheduled_tasks
         SET next_occurrence_date = new_next_occurrence
         WHERE id = task_record.id;
 
       WHEN 'custom_weekly' THEN
-        -- Check if days_of_week is NULL or empty
-        IF task_record.days_of_week IS NULL OR array_length(task_record.days_of_week, 1) IS NULL THEN
-          -- Skip this task or delete it (depending on your business logic)
-          -- For now, we'll just skip processing it
-          RAISE NOTICE 'Skipping task % - days_of_week is NULL or empty', task_record.id;
-          CONTINUE;
-        END IF;
-
         -- Find the next scheduled day from the days_of_week array
         current_day_of_week := EXTRACT(DOW FROM task_record.next_occurrence_date);
         next_scheduled_day := NULL;
@@ -125,7 +126,7 @@ BEGIN
           next_scheduled_day := task_record.days_of_week[1];
         END IF;
 
-        new_next_occurrence := task_record.next_occurrence_date + days_until_next;
+        new_next_occurrence := task_record.next_occurrence_date + (days_until_next * INTERVAL '1 day');
 
         UPDATE public.scheduled_tasks
         SET next_occurrence_date = new_next_occurrence
@@ -135,5 +136,3 @@ BEGIN
   END LOOP;
 END;
 $$;
-
-COMMENT ON FUNCTION public.process_scheduled_tasks() IS 'Processes scheduled tasks that are due, creating cards for users not on vacation. Handles various recurrence patterns including once, daily, weekdays, weekly, bi-weekly, monthly, and custom weekly schedules.';
