@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Kanban, LogOut, Search, FolderOpen, CreditCard } from 'lucide-react';
+import { FileText, Kanban, LogOut, Search, FolderOpen, CreditCard, Grid3x3, Settings, User, Calendar, FolderPen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProject } from '@/hooks/useProject';
@@ -137,7 +144,7 @@ export function AppHeader() {
         <div className="flex items-center gap-2">
           <ProjectSwitcher />
           
-          {/* Global Search Button */}
+          {/* Global Search Button - PRESERVED as top-level button */}
           <Button 
             variant="outline" 
             size="sm" 
@@ -149,28 +156,95 @@ export function AppHeader() {
             <CommandShortcut>⌘K</CommandShortcut>
           </Button>
           
-          {/* Show Notes button when on the Kanban board, otherwise show Kanban button */}
-          {location.pathname.startsWith('/board') ? (
-            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
-              <FileText className="h-4 w-4 mr-1" />
-              Notes
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={() => navigate('/board')}>
-              <Kanban className="h-4 w-4 mr-1" />
-              Kanban Board
-            </Button>
-          )}
-          <SettingsDialog />
+          {/* Actions Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Grid3x3 className="h-4 w-4" />
+                <span className="sr-only">Open actions menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              {/* Navigation items based on current location */}
+              {location.pathname.startsWith('/board') ? (
+                <DropdownMenuItem onClick={() => navigate('/')}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  <span>Notes</span>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => navigate('/board')}>
+                  <Kanban className="mr-2 h-4 w-4" />
+                  <span>Kanban Board</span>
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuItem onClick={() => navigate('/schedule')}>
+                <Calendar className="mr-2 h-4 w-4" />
+                <span>Scheduled Tasks</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem onClick={() => navigate('/projects')}>
+                <FolderPen className="mr-2 h-4 w-4" />
+                <span>Project Management</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Settings</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem 
+                onClick={() => {
+                  // Use a timeout to ensure the dropdown closes first
+                  setTimeout(() => {
+                    const settingsButton = document.querySelector('button[data-testid="settings-button"], button:has([data-testid="settings-icon"])') as HTMLButtonElement;
+                    if (!settingsButton) {
+                      // Fallback: look for any button containing "Settings" text or Settings icon
+                      const buttons = Array.from(document.querySelectorAll('button'));
+                      const targetButton = buttons.find(btn => 
+                        btn.textContent?.includes('Settings') || 
+                        btn.querySelector('svg')?.classList.contains('lucide-settings') ||
+                        btn.innerHTML.includes('Settings')
+                      );
+                      if (targetButton) {
+                        (targetButton as HTMLButtonElement).click();
+                      }
+                    } else {
+                      settingsButton.click();
+                    }
+                  }, 100);
+                }}
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                <span>App Settings</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem disabled>
+                <User className="mr-2 h-4 w-4" />
+                <span>{user?.email}</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <ThemeToggle />
-          <Separator orientation="vertical" className="h-6" />
-          <span className="text-sm text-muted-foreground">{user?.email}</span>
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-1" />
-            Sign Out
-          </Button>
         </div>
       </header>
+
+      {/* Hidden Settings Dialog trigger */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, pointerEvents: 'none' }}>
+        <SettingsDialog />
+      </div>
 
       {/* Global Search Dialog */}
       <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
