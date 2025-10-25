@@ -59,13 +59,22 @@ A comprehensive project management and note-taking application designed to help 
 - **Session Management**: Persistent login sessions across browser restarts
 
 ### 🎨 User Experience
+- **Consolidated Navigation**: Streamlined header with dropdown menu for organized access to all features
+- **Clean Interface Design**: Waffle menu (⚏) consolidates actions while preserving key features like global search
 - **Theming**: Customizable themes to personalize your experience
 - **Responsive Design**: Works seamlessly across desktop and mobile devices
 - **Performance Optimized**: Fast loading and smooth interactions
 
 ## 🆕 Recent Updates
 
-### Global Search Feature (Latest)
+### Header UI Redesign (Latest)
+- **Consolidated Actions Menu**: Replaced multiple header buttons with a clean dropdown menu using waffle icon (⚏)
+- **Preserved Global Search**: Maintained prominent global search button with `⌘K` shortcut as top-level element
+- **Organized Navigation**: Grouped actions into logical sections (Navigation, Settings, Account) with clear icons
+- **Improved Visual Density**: Reduced header clutter while maintaining all functionality
+- **Enhanced Accessibility**: Better organization and screen reader support for all menu items
+
+### Global Search Feature
 - **Universal Access**: New search button in header accessible from any page
 - **Keyboard Shortcuts**: Press `⌘K` (Cmd+K) to instantly open the search interface
 - **Cross-Platform Search**: Search across all projects, notes, and Kanban cards simultaneously
@@ -184,7 +193,7 @@ Follow these instructions to get the project up and running on your local machin
 │   │   │   ├── EditCardModal.tsx     # Card editing modal
 │   │   │   └── ScheduleTaskModal.tsx # Task scheduling modal
 │   │   ├── ui/             # shadcn/ui components
-│   │   ├── AppHeader.tsx             # Header with global search integration
+│   │   ├── AppHeader.tsx             # Header with consolidated dropdown menu navigation
 │   │   ├── RichTextEditor.tsx        # Custom rich text editor
 │   │   ├── NLHHighlighter.tsx        # Natural language highlighter
 │   │   ├── SchedulingOptions.tsx     # Task scheduling options with time picker
@@ -232,8 +241,8 @@ Follow these instructions to get the project up and running on your local machin
 - **Kanban Board**: Visual task management with drag-and-drop functionality and real-time updates
 - **Scheduled Tasks**: Advanced task scheduling and management with recurring patterns and customizable times
 - **Global Search**: Universal search interface accessible via header button or `⌘K` shortcut with cross-content search capabilities
-- **Project Management**: Multi-project organization and switching
-- **Settings**: User preferences and NLH customization with color pickers
+- **Project Management**: Multi-project organization and switching accessible via dropdown menu
+- **Settings**: User preferences and NLH customization with color pickers accessible via dropdown menu
 - **Rich Text Editor**: Custom contentEditable implementation with formatting tools
 - **Natural Language Highlighter**: Real-time part-of-speech highlighting using compromise.js
 - **Time Scheduler**: Comprehensive time-based task scheduling with timezone support
