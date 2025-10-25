@@ -22,6 +22,7 @@ import { CreateScheduledTaskData, RecurrenceType } from '@/types/scheduled-task'
 import { Column, Tag } from '@/types/kanban'; // --- MODIFICATION: Import Tag
 import { format, addDays, nextSunday, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday } from 'date-fns';
 import { TagInput } from '../TagInput'; // --- MODIFICATION: Import TagInput
+import { createScheduledTimestamp } from '@/lib/utils';
 
 interface ScheduleTaskModalProps {
   isOpen: boolean;
@@ -106,8 +107,10 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
         }
         
         if (nextScheduledDay === null) {
-          daysUntilNext = (7 - currentDayOfWeek) + scheduleData.daysOfWeek[0];
-          nextScheduledDay = scheduleData.daysOfWeek[0];
+          // Find the minimum day in the array for next week
+          const minDay = Math.min(...scheduleData.daysOfWeek);
+          daysUntilNext = (7 - currentDayOfWeek) + minDay;
+          nextScheduledDay = minDay;
         }
         
         const nextCustomWeekly = addDays(today, daysUntilNext);
@@ -136,7 +139,7 @@ export function ScheduleTaskModal({ isOpen, onClose, columns, onTaskScheduled }:
       recurrence_type: scheduleData.recurrenceType,
       days_of_week: scheduleData.daysOfWeek,
       next_occurrence_date: nextOccurrenceDate,
-      scheduled_time: scheduleData.selectedTime ? `${scheduleData.selectedTime}:00` : '00:00:00', // Convert HH:MM to HH:MM:SS, default to midnight
+      scheduled_timestamp: createScheduledTimestamp(scheduleData.selectedDate, scheduleData.selectedTime || '00:00'), // Create full timestamp
       tag_ids: selectedTags.map(tag => tag.id), // --- MODIFICATION: Add tag IDs
     };
 
