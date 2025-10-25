@@ -30,21 +30,36 @@ export function useGlobalSearch(searchTerm: string) {
         return [];
       }
 
+      console.log('[GlobalSearch] Searching for:', debouncedSearchTerm.trim());
+
       const { data, error } = await supabase.rpc('global_search', {
         search_term: debouncedSearchTerm.trim(),
       });
 
       if (error) {
+        console.error('[GlobalSearch] RPC Error:', error);
         throw new Error(`Search failed: ${error.message}`);
       }
 
-      // Parse the JSON results and type cast
-      return (data || []).map((item: unknown) => item as GlobalSearchResult);
+      console.log('[GlobalSearch] Raw data received:', data);
+      console.log('[GlobalSearch] Data type:', typeof data, 'Is array:', Array.isArray(data));
+
+      // Data is now returned as a proper array of objects
+      // After regenerating types, this will be properly typed
+      const results = (data || []) as unknown as GlobalSearchResult[];
+      console.log('[GlobalSearch] Parsed results:', results);
+      
+      return results;
     },
     enabled: !!user && !!debouncedSearchTerm.trim(),
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
   });
+
+  // Log error if present
+  if (error) {
+    console.error('[GlobalSearch] Query error:', error);
+  }
 
   return {
     results,

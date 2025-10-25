@@ -35,7 +35,17 @@ export function AppHeader() {
   const { setActiveProject } = useProject();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const { results, isLoading } = useGlobalSearch(searchQuery);
+  const { results, isLoading, error } = useGlobalSearch(searchQuery);
+
+  // Log search state for debugging
+  useEffect(() => {
+    if (searchQuery) {
+      console.log('[AppHeader] Search query:', searchQuery);
+      console.log('[AppHeader] Results:', results);
+      console.log('[AppHeader] Is loading:', isLoading);
+      console.log('[AppHeader] Error:', error);
+    }
+  }, [searchQuery, results, isLoading, error]);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -255,7 +265,7 @@ export function AppHeader() {
         />
         <CommandList>
           <CommandEmpty>
-            {isLoading ? 'Searching...' : 'No results found.'}
+            {isLoading ? 'Searching...' : error ? `Error: ${error.message}` : 'No results found.'}
           </CommandEmpty>
           
           {/* Projects */}
