@@ -18,6 +18,10 @@ export function useGlobalSearch(searchTerm: string) {
   const { user } = useAuth();
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+  console.log('[GlobalSearch] Hook called with searchTerm:', searchTerm, 'debouncedSearchTerm:', debouncedSearchTerm);
+  console.log('[GlobalSearch] User authenticated:', !!user, 'user ID:', user?.id);
+  console.log('[GlobalSearch] Supabase client available:', !!supabase);
+
   const {
     data: results = [],
     isLoading,
@@ -26,35 +30,62 @@ export function useGlobalSearch(searchTerm: string) {
   } = useQuery({
     queryKey: ['globalSearch', debouncedSearchTerm],
     queryFn: async (): Promise<GlobalSearchResult[]> => {
-      if (!user || !debouncedSearchTerm.trim()) {
+      console.log('[GlobalSearch] Query function executing for term:', debouncedSearchTerm);
+
+      if (!user) {
+        console.warn('[GlobalSearch] No authenticated user, returning empty results');
         return [];
       }
 
-      console.log('[GlobalSearch] Searching for:', debouncedSearchTerm.trim());
+      if (!debouncedSearchTerm.trim()) {
+        console.log('[GlobalSearch] Empty search term, returning empty results');
+        return [];
+      }
+
+      const trimmedTerm = debouncedSearchTerm.trim();
+      console.log('[GlobalSearch] Searching for:', trimmedTerm);
+      console.log('[GlobalSearch] Calling supabase.rpc with user ID:', user.id);
 
       const { data, error } = await supabase.rpc('global_search', {
-        search_term: debouncedSearchTerm.trim(),
+        search_term: trimmedTerm,
       });
 
+      console.log('[GlobalSearch] RPC call completed');
+      console.log('[GlobalSearch] Error from RPC:', error);
+      console.log('[GlobalSearch] Raw data received:', data);
+      console.log('[GlobalSearch] Data type:', typeof data, 'Is array:', Array.isArray(data));
+      console.log('[GlobalSearch] Data length:', data?.length);
+
       if (error) {
-        console.error('[GlobalSearch] RPC Error:', error);
+        console.error('[GlobalSearch] RPC Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw new Error(`Search failed: ${error.message}`);
       }
 
-      console.log('[GlobalSearch] Raw data received:', data);
-      console.log('[GlobalSearch] Data type:', typeof data, 'Is array:', Array.isArray(data));
+      if (!data) {
+        console.warn('[GlobalSearch] No data returned from RPC call');
+        return [];
+      }
 
       // Data is now returned as a proper array of objects
       // After regenerating types, this will be properly typed
       const results = (data || []) as unknown as GlobalSearchResult[];
-      console.log('[GlobalSearch] Parsed results:', results);
-      
+      console.log('[GlobalSearch] Parsed results count:', results.length);
+      console.log('[GlobalSearch] First result sample:', results[0]);
+      console.log('[GlobalSearch] All result IDs:', results.map(r => ({ id: r.id, type: r.type, title: r.title })));
+
       return results;
     },
     enabled: !!user && !!debouncedSearchTerm.trim(),
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
   });
+
+  console.log('[GlobalSearch] Query state - isLoading:', isLoading, 'hasError:', !!error, 'resultsCount:', results.length);
 
   // Log error if present
   if (error) {

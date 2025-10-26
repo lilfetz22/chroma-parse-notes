@@ -39,15 +39,37 @@ export function AppHeader() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const { results, isLoading, error } = useGlobalSearch(searchQuery);
 
+  // Log authentication and context state
+  useEffect(() => {
+    console.log('[AppHeader] Component state:', {
+      userAuthenticated: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      currentPath: location.pathname,
+      searchOpen,
+      searchQuery,
+      hasSearchResults: results.length > 0
+    });
+  }, [user, location.pathname, searchOpen, searchQuery, results.length]);
+
   // Log search state for debugging
   useEffect(() => {
+    console.log('[AppHeader] Search state update:', {
+      searchOpen,
+      searchQuery,
+      resultsCount: results.length,
+      isLoading,
+      hasError: !!error,
+      errorMessage: error?.message
+    });
+
     if (searchQuery) {
       console.log('[AppHeader] Search query:', searchQuery);
       console.log('[AppHeader] Results:', results);
       console.log('[AppHeader] Is loading:', isLoading);
       console.log('[AppHeader] Error:', error);
     }
-  }, [searchQuery, results, isLoading, error]);
+  }, [searchQuery, results, isLoading, error, searchOpen]);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -61,6 +83,7 @@ export function AppHeader() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
+        console.log('[AppHeader] Search shortcut triggered, toggling search dialog');
         setSearchOpen((open) => !open);
       }
     };
@@ -69,12 +92,21 @@ export function AppHeader() {
   }, []);
 
   const handleSearchSelect = async (result: GlobalSearchResult) => {
+    console.log('[AppHeader] Search result selected:', {
+      id: result.id,
+      type: result.type,
+      title: result.title,
+      project_id: result.project_id,
+      project_title: result.project_title
+    });
+
     setSearchOpen(false);
     setSearchQuery('');
 
     try {
       // Switch to the appropriate project if needed (skip if no project)
       if (result.project_id) {
+        console.log('[AppHeader] Switching to project:', result.project_id, result.project_title);
         // Find the project in the current projects list or create a minimal project object
         const targetProject: Project = {
           id: result.project_id,
@@ -88,8 +120,10 @@ export function AppHeader() {
       }
 
       // Navigate based on result type
+      console.log('[AppHeader] Navigating to result type:', result.type);
       switch (result.type) {
         case 'note':
+          console.log('[AppHeader] Navigating to note:', result.id, 'in project:', result.project_id);
           navigate('/', { 
             state: { 
               selectedNoteId: result.id,
@@ -99,14 +133,18 @@ export function AppHeader() {
           break;
         case 'card':
           if (result.project_id) {
+            console.log('[AppHeader] Navigating to card:', result.id, 'in project:', result.project_id);
             navigate('/board', { 
               state: { 
                 projectId: result.project_id 
               } 
             });
+          } else {
+            console.warn('[AppHeader] Card selected but no project_id available');
           }
           break;
         case 'project':
+          console.log('[AppHeader] Navigating to project:', result.id);
           navigate('/board', { 
             state: { 
               projectId: result.id 
@@ -115,7 +153,7 @@ export function AppHeader() {
           break;
       }
     } catch (error) {
-      console.error('Error navigating to search result:', error);
+      console.error('[AppHeader] Error navigating to search result:', error);
       toast({
         variant: 'destructive',
         title: 'Navigation failed',
@@ -146,6 +184,14 @@ export function AppHeader() {
     return acc;
   }, {} as Record<string, GlobalSearchResult[]>);
 
+  console.log('[AppHeader] Grouped results:', {
+    totalResults: results.length,
+    projects: groupedResults.project?.length || 0,
+    notes: groupedResults.note?.length || 0,
+    cards: groupedResults.card?.length || 0,
+    resultTypes: Object.keys(groupedResults)
+  });
+
   return (
     <>
       <header className="flex items-center justify-between p-4 border-b bg-card">
@@ -160,7 +206,10 @@ export function AppHeader() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => setSearchOpen(true)}
+            onClick={() => {
+              console.log('[AppHeader] Search button clicked, opening search dialog');
+              setSearchOpen(true);
+            }}
             className="relative"
           >
             <Search className="h-4 w-4 mr-2" />
@@ -268,11 +317,17 @@ export function AppHeader() {
       </div>
 
       {/* Global Search Dialog */}
-      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+      <CommandDialog open={searchOpen} onOpenChange={(open) => {
+        console.log('[AppHeader] Search dialog open state changed:', open);
+        setSearchOpen(open);
+      }}>
         <CommandInput
           placeholder="Search projects, notes, and cards..."
           value={searchQuery}
-          onValueChange={setSearchQuery}
+          onValueChange={(value) => {
+            console.log('[AppHeader] Search input changed from:', searchQuery, 'to:', value);
+            setSearchQuery(value);
+          }}
         />
         <CommandList>
           <CommandEmpty>
