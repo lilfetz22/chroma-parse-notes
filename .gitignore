@@ -27,3 +27,4 @@ dist-ssr
 error log.txt
 supabase/.temp/*
 .github/copilot-instructions.md
+DEPLOYMENT_INSTRUCTIONS.md

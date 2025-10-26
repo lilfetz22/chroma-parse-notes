@@ -48,6 +48,14 @@ A comprehensive project management and note-taking application designed to help 
 - **Priority Management**: Organize tasks by priority levels
 - **Project-specific Data**: Each project maintains its own notes, boards, and tasks
 
+### 📊 Accomplishments Export
+- **Performance Review Ready**: Export completed tasks to CSV format for performance review analysis
+- **Recurring Task Grouping**: Intelligently groups recurring tasks (e.g., "Daily Standup") into single rows with all completion dates
+- **Comprehensive Data**: Includes project names, task titles, summaries, tags, completion counts, and dates
+- **Flexible Date Ranges**: Select custom date ranges with a default of last 6 months
+- **LLM-Friendly Format**: CSV output designed to be fed into language models for accomplishment summarization
+- **One-Click Export**: Simple interface accessible from the header menu
+
 ### 🏗️ Project Management
 - **Multi-project Support**: Organize notes and boards into separate projects
 - **Project Switching**: Easy navigation between different projects
@@ -67,7 +75,15 @@ A comprehensive project management and note-taking application designed to help 
 
 ## 🆕 Recent Updates
 
-### Header UI Redesign (Latest)
+### Accomplishments Export Feature (Latest)
+- **Performance Review Export**: New CSV export feature for analyzing completed tasks
+- **Smart Grouping**: Automatically groups recurring tasks together with all completion dates
+- **Accessible from Header**: Available via waffle menu (⚏) under "Export Accomplishments"
+- **Comprehensive Data**: Exports project names, task titles, summaries, tags, and completion history
+- **Customizable Date Range**: Select any date range with intelligent default of last 6 months
+- **LLM Integration Ready**: CSV format optimized for feeding into language models for accomplishment analysis
+
+### Header UI Redesign
 - **Consolidated Actions Menu**: Replaced multiple header buttons with a clean dropdown menu using waffle icon (⚏)
 - **Preserved Global Search**: Maintained prominent global search button with `⌘K` shortcut as top-level element
 - **Organized Navigation**: Grouped actions into logical sections (Navigation, Settings, Account) with clear icons
@@ -181,7 +197,8 @@ Follow these instructions to get the project up and running on your local machin
 │   │   ├── 20250831000000_add_priority_and_tagging_system.sql
 │   │   ├── 20250901000000_add_convert_card_to_scheduled_task.sql
 │   │   ├── 20251018000000_add_scheduled_time_to_tasks.sql
-│   │   └── 20251018000001_add_global_search_function.sql
+│   │   ├── 20251018000001_add_global_search_function.sql
+│   │   └── 20251026120000_create_export_accomplishments_function.sql
 │   └── config.toml        # Supabase configuration
 ├── src/                    # Source code
 │   ├── components/         # React components
@@ -199,6 +216,7 @@ Follow these instructions to get the project up and running on your local machin
 │   │   ├── SchedulingOptions.tsx     # Task scheduling options with time picker
 │   │   ├── EditScheduledTaskModal.tsx # Scheduled task editor with time control
 │   │   ├── TagInput.tsx              # Tag input component
+│   │   ├── AccomplishmentsExportModal.tsx # Export accomplishments to CSV
 │   │   └── SettingsDialog.tsx        # Settings configuration
 │   ├── hooks/              # Custom React hooks
 │   │   ├── useKanbanBoard.tsx        # Kanban board state management
@@ -240,6 +258,7 @@ Follow these instructions to get the project up and running on your local machin
 - **Dashboard**: Main notes interface with list and editor featuring Natural Language Highlighting
 - **Kanban Board**: Visual task management with drag-and-drop functionality and real-time updates
 - **Scheduled Tasks**: Advanced task scheduling and management with recurring patterns and customizable times
+- **Accomplishments Export**: CSV export of completed tasks for performance review analysis with smart recurring task grouping
 - **Global Search**: Universal search interface accessible via header button or `⌘K` shortcut with cross-content search capabilities
 - **Project Management**: Multi-project organization and switching accessible via dropdown menu
 - **Settings**: User preferences and NLH customization with color pickers accessible via dropdown menu
@@ -263,9 +282,10 @@ The application uses Supabase PostgreSQL with the following main tables:
 ### Key Database Features:
 - **Real-time subscriptions** for live updates across users
 - **RLS (Row Level Security)** for user data isolation
-- **Stored procedures** for complex operations like task scheduling and global search
+- **Stored procedures** for complex operations like task scheduling, global search, and accomplishments export
 - **Full-text search** capabilities with GIN indexes for optimal performance across notes, projects, and cards
 - **Search ranking** using PostgreSQL's ts_rank for relevance-based result ordering
+- **Data aggregation** for recurring task grouping and performance analytics
 
 ## 🤝 Contributing
 

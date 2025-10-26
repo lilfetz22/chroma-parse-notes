@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Kanban, LogOut, Search, FolderOpen, CreditCard, Grid3x3, Settings, User, Calendar, FolderPen } from 'lucide-react';
+import { FileText, Kanban, LogOut, Search, FolderOpen, CreditCard, Grid3x3, Settings, User, Calendar, FolderPen, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ProjectSwitcher } from '@/components/ProjectSwitcher';
+import { AccomplishmentsExportModal } from '@/components/AccomplishmentsExportModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,7 @@ export function AppHeader() {
   const { setActiveProject } = useProject();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const { results, isLoading, error } = useGlobalSearch(searchQuery);
 
   // Log search state for debugging
@@ -202,6 +204,15 @@ export function AppHeader() {
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
+              <DropdownMenuLabel>Export</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              
+              <DropdownMenuItem onClick={() => setExportModalOpen(true)}>
+                <FileDown className="mr-2 h-4 w-4" />
+                <span>Export Accomplishments</span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator />
               <DropdownMenuLabel>Settings</DropdownMenuLabel>
               <DropdownMenuSeparator />
               
@@ -341,6 +352,12 @@ export function AppHeader() {
           )}
         </CommandList>
       </CommandDialog>
+
+      {/* Accomplishments Export Modal */}
+      <AccomplishmentsExportModal 
+        open={exportModalOpen} 
+        onOpenChange={setExportModalOpen} 
+      />
     </>
   );
 }
